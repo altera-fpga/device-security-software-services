@@ -1,0 +1,3 @@
+service:
+    protocol:
+        sigma: true
