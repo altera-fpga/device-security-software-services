@@ -33,6 +33,18 @@ create_build_dir:
 	mkdir -p $(BUILD_DIR)/src
 	mkdir -p $(BUILD_DIR)/mock
 
+$(BUILD_DIR)/src/%.o: ./FCSFilter/src/%.cpp
+	$(CC) -fPIC -Wall -Wextra -Werror -g $(FCS_SERVER_WITH_SIMULATOR_INCLUDE_FLAGS) -c $^ -o $@
+
+$(BUILD_DIR)/mock/%.o: ./FCSFilter/test/mocks/%.cpp
+	$(CC) -fPIC -Wall -Wextra -Werror -g $(FCS_SERVER_WITH_SIMULATOR_INCLUDE_FLAGS) -c $^ -o $@
+
+$(BUILD_DIR)/mock/combined.o: $(OBJS)
+	ld -r $^ -o $@
+
+$(BUILD_DIR)/libFCSMock.so: $(BUILD_DIR)/mock/combined.o
+	$(CC) -shared -o $(BUILD_DIR)/libFCSMock.so $^
+
 x86: create_build_dir
 	$(CC) $(CFLAGS) $(FCS_SERVER_INCLUDE_FLAGS) -o $(BUILD_DIR)/$(EXE_NAME).x86 $(FCS_FILTER_SOURCE_DIR)/*.cpp $(FCS_SERVER_SOURCE_DIR)/*.cpp -ldl
 
