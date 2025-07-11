@@ -73,8 +73,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.Arrays;
 import java.util.List;
 import static com.intel.bkp.bkps.rest.RestUtil.createFormattingConversionService;
@@ -143,9 +141,15 @@ public class AesCtrEncryptionKeyTest {
 
     private ServiceConfiguration serviceConfiguration;
 
+    private ServiceConfiguration serviceConfigurationVer1;
+
     private byte[] qekContent;
 
+    private byte[] qekContentVer1;
+
     private byte[] aesKeyContent;
+
+    private byte[] aesKeyContentVer1;
 
     @BeforeEach
     void setup() {
@@ -161,11 +165,18 @@ public class AesCtrEncryptionKeyTest {
         qek.setKeyName(TestHelper.DEFAULT_KEY_NAME);
         qekContent = loadBinary(ResourceDir.ROOT, "aes_testmode1.qek");
         qek.setValue(toHex(qekContent));
+        Qek qekVer1 = new Qek();
+        qekVer1.setKeyName(TestHelper.DEFAULT_KEY_NAME);
+        qekContentVer1 = loadBinary(ResourceDir.ROOT, "BKPSAESKey32.qek");
+        qekVer1.setValue(toHex(qekContentVer1));
         byte[] encryptionKeyData = fromHex(loadFile(ResourceDir.ROOT, "aes_key_sdm1_5_ver2.txt"));
         ENCRYPTION_KEY = toHex(encryptionKeyData);
         aesKeyContent = loadBinary(ResourceDir.ROOT, "signed_UDS_intelpuf_wrapped_aes_testmode1.ccert");
+        aesKeyContentVer1 = loadBinary(ResourceDir.ROOT, "signed_efuse_wrapped_aes_version_1.ccert");
         serviceConfiguration = TestHelper.createServiceConfigurationEntity(
             DEFAULT_OVERBUILD_MAX, STORAGE_TYPE, null, false, PUF_TYPE, KEY_WRAPPING_TYPE, qek, aesKeyContent);
+        serviceConfigurationVer1 = TestHelper.createServiceConfigurationEntity(
+            DEFAULT_OVERBUILD_MAX, STORAGE_TYPE, null, false, PufType.EFUSE, KeyWrappingType.INTERNAL, qekVer1, aesKeyContentVer1);
     }
 
     @Test
@@ -206,6 +217,42 @@ public class AesCtrEncryptionKeyTest {
                 .value(TestHelper.DEFAULT_EFUSES_PUB_MASK))
             .andExpect(jsonPath("$.attestationConfig.efusesPublic.value")
                 .value(TestHelper.DEFAULT_EFUSES_PUB_VALUE));
+    }
+
+    @Test
+    @Transactional
+    public void createVersion1ServiceConfigurationWithTestProgramFlag() throws Exception {
+        prepareSealingKey();
+        prepareAesKey(SecurityKeyType.AES_CTR, TestHelper.DEFAULT_KEY_NAME, ENCRYPTION_KEY, "AES/CTR/NoPadding");
+        int databaseSizeBeforeCreate = serviceConfigurationRepository.findAll().size();
+        // Create the ServiceConfiguration
+        ServiceConfigurationDTO serviceConfigurationDTO = serviceConfigurationMapper.toDto(serviceConfigurationVer1);
+        serviceConfigurationDTO.getConfidentialData().getAesKey().setTestProgram(true);
+        restMockMvc.perform(post(CONFIG_NODE + CONFIGURATION)
+                .contentType(RestUtil.APPLICATION_JSON_UTF8)
+                .content(RestUtil.convertObjectToJsonBytes(serviceConfigurationDTO)))
+            .andExpect(status().isCreated());
+
+        // Validate the ServiceConfiguration in the database
+        List<ServiceConfiguration> serviceConfigurationList = serviceConfigurationRepository.findAll();
+        assertEquals(databaseSizeBeforeCreate + 1, serviceConfigurationList.size());
+        ServiceConfiguration testServiceConfiguration = serviceConfigurationList.get(
+            serviceConfigurationList.size() - 1);
+        assertEquals(TestHelper.DEFAULT_NAME, testServiceConfiguration.getName());
+        assertEquals(PufType.EFUSE, testServiceConfiguration.getPufType());
+        assertEquals(DEFAULT_OVERBUILD_MAX, testServiceConfiguration.getOverbuildMax());
+
+        final AesKey aesKey = testServiceConfiguration.getConfidentialData().getAesKey();
+        assertEquals(StorageType.EFUSES, aesKey.getStorage());
+        assertEquals(KeyWrappingType.INTERNAL, aesKey.getKeyWrappingType());
+        aesGcmSealingKeyProvider.initialize(securityService.getKeyFromSecurityObject(SEALING_KEYNAME));
+        final byte[] decryptedAesContent = aesGcmSealingKeyProvider.decrypt(fromHex(aesKey.getValue()));
+        assert Arrays.equals(aesKeyContentVer1, decryptedAesContent);
+        assertEquals(false, aesKey.getTestProgram());
+        final Qek qek = testServiceConfiguration.getConfidentialData().getQek();
+        assertEquals(TestHelper.DEFAULT_KEY_NAME, qek.getKeyName());
+        final byte[] decryptedQekValue = aesGcmSealingKeyProvider.decrypt(fromHex(qek.getValue()));
+        assert Arrays.equals(qekContentVer1, decryptedQekValue);
     }
 
     @Test

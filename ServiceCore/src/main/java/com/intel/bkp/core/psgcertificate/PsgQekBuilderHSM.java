@@ -48,6 +48,7 @@ import static com.intel.bkp.core.endianness.StructureField.PSG_QEK_INFO_LENGTH;
 import static com.intel.bkp.core.endianness.StructureField.PSG_QEK_INTER_KEY_NUM;
 import static com.intel.bkp.core.endianness.StructureField.PSG_QEK_KEY_LENGTH;
 import static com.intel.bkp.core.endianness.StructureField.PSG_QEK_KEY_TYPE_MAGIC;
+import static com.intel.bkp.core.endianness.StructureField.PSG_QEK_KEY_VERSION;
 import static com.intel.bkp.core.endianness.StructureField.PSG_QEK_MAGIC;
 import static com.intel.bkp.core.endianness.StructureField.PSG_QEK_MAX_KEY_USES;
 import static com.intel.bkp.core.endianness.StructureField.PSG_QEK_SHA_LENGTH;
@@ -73,7 +74,7 @@ public class PsgQekBuilderHSM extends StructureBuilder<PsgQekBuilderHSM, PsgQekH
     private byte[] infoLength = new byte[Integer.BYTES];
     private byte[] keyLength = new byte[Integer.BYTES];
     private byte[] shaLength = new byte[Integer.BYTES];
-    private final byte[] reserved = new byte[Integer.BYTES];
+    private byte[] version = new byte[Integer.BYTES];
     private byte[] keyTypeMagic = new byte[Integer.BYTES];
     private byte[] maxKeyUses = new byte[Integer.BYTES];
     private byte[] interKeyNum = new byte[Integer.BYTES];
@@ -103,7 +104,7 @@ public class PsgQekBuilderHSM extends StructureBuilder<PsgQekBuilderHSM, PsgQekH
         entry.setInfoLength(convert(infoLength, PSG_QEK_INFO_LENGTH));
         entry.setKeyLength(convert(keyLength, PSG_QEK_KEY_LENGTH));
         entry.setShaLength(convert(shaLength, PSG_QEK_SHA_LENGTH));
-        entry.setReserved(reserved);
+        entry.setVersion(version);
         entry.setKeyTypeMagic(convert(keyTypeMagic, PSG_QEK_KEY_TYPE_MAGIC));
         entry.setMaxKeyUses(convert(maxKeyUses, PSG_QEK_MAX_KEY_USES));
         entry.setInterKeyNum(convert(interKeyNum, PSG_QEK_INTER_KEY_NUM));
@@ -145,8 +146,8 @@ public class PsgQekBuilderHSM extends StructureBuilder<PsgQekBuilderHSM, PsgQekH
                 throw new ParseStructureException("Invalid SHA length 0x%x, expected 0x%x".formatted(new BigInteger(shaLength).intValue(), SHA_LEN));
             }
 
-            buffer.get(reserved);
-            checkIfArrayFilledWithZeros(reserved);
+            buffer.get(version);
+            version = convert(version, PSG_QEK_KEY_VERSION);
             buffer.get(keyTypeMagic);
             keyTypeMagic = convert(keyTypeMagic, PSG_QEK_KEY_TYPE_MAGIC);
             if (KEY_TYPE_MAGIC != new BigInteger(keyTypeMagic).intValue()) {

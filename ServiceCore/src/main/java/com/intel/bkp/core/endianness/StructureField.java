@@ -100,6 +100,7 @@ public enum StructureField implements IStructureField {
     PSG_QEK_INFO_LENGTH,
     PSG_QEK_KEY_LENGTH,
     PSG_QEK_SHA_LENGTH,
+    PSG_QEK_KEY_VERSION,
     PSG_QEK_KEY_TYPE_MAGIC,
     PSG_QEK_MAX_KEY_USES,
     PSG_QEK_INTER_KEY_NUM,
