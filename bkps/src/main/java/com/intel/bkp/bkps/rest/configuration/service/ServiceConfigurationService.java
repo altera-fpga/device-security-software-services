@@ -63,6 +63,7 @@ import com.intel.bkp.crypto.aesctr.AesCtrQekIvProvider;
 import com.intel.bkp.crypto.exceptions.EncryptionProviderException;
 import com.intel.bkp.crypto.exceptions.HMacProviderException;
 import com.intel.bkp.crypto.hmac.HMacKdfProviderImpl;
+import com.intel.bkp.utils.ByteConverter;
 import org.apache.commons.codec.digest.DigestUtils;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -149,10 +150,30 @@ public class ServiceConfigurationService {
 
             // Decrypt and extract actual AES root key from QEK data
             aesCtrEncryptionKeyProvider.initialize(new AesCtrQekIvProvider(qekBuilderHSM.getIvData()), qek.getKeyName());
-            byte[] aesRootKey = aesCtrEncryptionKeyProvider.decrypt(qekBuilderHSM.getEncryptedAESKey());
+            byte[] aesRootKey = new byte[32];
+            byte[] kdkKey = new byte[32];
+            byte[] expectedSHA384Hash = new byte[48];
 
+            Integer version = ByteConverter.toInt(qekBuilderHSM.getVersion());
             // Verify hash of QEK
-            byte[] kdkKey = aesCtrEncryptionKeyProvider.decrypt(qekBuilderHSM.getEncryptedKDK());
+            if (version == 1) {
+                // Decrypt block of AES key, KDK and SHA384 hash
+                ByteBuffer buffer = ByteBuffer.allocate(0x70);
+                buffer.order(ByteOrder.LITTLE_ENDIAN);
+                buffer.put(qekBuilderHSM.getEncryptedAESKey());
+                buffer.put(qekBuilderHSM.getEncryptedKDK());
+                buffer.put(qekBuilderHSM.getEncryptedSHA384());
+                byte[] decodedData = aesCtrEncryptionKeyProvider.decrypt(buffer.array());
+                ByteBuffer decodedBuffer = ByteBuffer.wrap(decodedData);
+                decodedBuffer.get(aesRootKey);
+                decodedBuffer.get(kdkKey);
+                decodedBuffer.get(expectedSHA384Hash);
+            } else {
+                aesRootKey = aesCtrEncryptionKeyProvider.decrypt(qekBuilderHSM.getEncryptedAESKey());
+                kdkKey = aesCtrEncryptionKeyProvider.decrypt(qekBuilderHSM.getEncryptedKDK());
+                expectedSHA384Hash = aesCtrEncryptionKeyProvider.decrypt(qekBuilderHSM.getEncryptedSHA384());
+            }
+
             ByteBuffer bufferCheckHash = ByteBuffer.allocate(0x60);
             bufferCheckHash.order(ByteOrder.LITTLE_ENDIAN);
             bufferCheckHash.put(qekBuilderHSM.getReservedNoSalt());
@@ -160,7 +181,6 @@ public class ServiceConfigurationService {
             bufferCheckHash.put(aesRootKey);
             bufferCheckHash.put(kdkKey);
             byte[] sha384Hash = DigestUtils.sha384(bufferCheckHash.array());
-            byte[] expectedSHA384Hash = aesCtrEncryptionKeyProvider.decrypt(qekBuilderHSM.getEncryptedSHA384());
             if (!Arrays.equals(sha384Hash, expectedSHA384Hash)) {
                 throw new IOException("Failed to decrypt QEK data. QEK data is either corrupted or QEK encryption key that associated with the key name is mismatch.");
             }

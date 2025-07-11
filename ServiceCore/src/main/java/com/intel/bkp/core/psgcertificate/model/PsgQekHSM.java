@@ -47,7 +47,7 @@ public class PsgQekHSM implements IStructure {
     private byte[] infoLength = new byte[0];
     private byte[] keyLength = new byte[0];
     private byte[] shaLength = new byte[0];
-    private byte[] reserved = new byte[0];
+    private byte[] version = new byte[0];
     private byte[] keyTypeMagic = new byte[0];
     private byte[] maxKeyUses = new byte[0];
     private byte[] interKeyNum = new byte[0];
@@ -62,7 +62,7 @@ public class PsgQekHSM implements IStructure {
     @Override
     public byte[] array() {
         final int capacity = magic.length + qekDataLength.length + infoLength.length + keyLength.length
-            + shaLength.length + reserved.length + keyTypeMagic.length + maxKeyUses.length + interKeyNum.length
+            + shaLength.length + version.length + keyTypeMagic.length + maxKeyUses.length + interKeyNum.length
             + step.length + totalKeyUses.length + reservedNoSalt.length + ivData.length
             + encryptedAESKey.length + encryptedKDK.length + encryptedSHA384.length;
 
@@ -73,7 +73,7 @@ public class PsgQekHSM implements IStructure {
             .put(infoLength)
             .put(keyLength)
             .put(shaLength)
-            .put(reserved)
+            .put(version)
             .put(keyTypeMagic)
             .put(maxKeyUses)
             .put(interKeyNum)

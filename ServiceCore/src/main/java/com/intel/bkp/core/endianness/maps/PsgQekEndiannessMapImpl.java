@@ -38,6 +38,7 @@ import static com.intel.bkp.core.endianness.StructureField.PSG_QEK_DATA_LENGTH;
 import static com.intel.bkp.core.endianness.StructureField.PSG_QEK_INFO_LENGTH;
 import static com.intel.bkp.core.endianness.StructureField.PSG_QEK_INTER_KEY_NUM;
 import static com.intel.bkp.core.endianness.StructureField.PSG_QEK_KEY_LENGTH;
+import static com.intel.bkp.core.endianness.StructureField.PSG_QEK_KEY_VERSION;
 import static com.intel.bkp.core.endianness.StructureField.PSG_QEK_KEY_TYPE_MAGIC;
 import static com.intel.bkp.core.endianness.StructureField.PSG_QEK_MAGIC;
 import static com.intel.bkp.core.endianness.StructureField.PSG_QEK_MAX_KEY_USES;
@@ -59,6 +60,7 @@ public final class PsgQekEndiannessMapImpl extends BaseEndiannessMapImpl {
         put(PSG_QEK_INFO_LENGTH, CONVERT);
         put(PSG_QEK_KEY_LENGTH, CONVERT);
         put(PSG_QEK_SHA_LENGTH, CONVERT);
+        put(PSG_QEK_KEY_VERSION, CONVERT);
         put(PSG_QEK_KEY_TYPE_MAGIC, CONVERT);
         put(PSG_QEK_MAX_KEY_USES, CONVERT);
         put(PSG_QEK_INTER_KEY_NUM, CONVERT);
