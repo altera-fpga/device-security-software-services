@@ -38,7 +38,7 @@ LIBCURL_VERSION="8.5.0"
 GTEST_VERSION="1.14.0"
 LIBSPDM_VERSION="3.2.0"
 MINIMUM_JAVA_VERSION="17.0.0"
-BKPS_BUILD_VERSION="${BKPS_BUILD_VERSION:-0.0.1}"
+BUILD_VERSION="${BUILD_VERSION:-0.0.1}"
 
 set -E -o pipefail
 
@@ -481,25 +481,27 @@ function prompt_docker_required() {
 function build_sql_schema() {
     printf "${BUILD_SQL_SCHEMA}"
 
-    local sql_schema_file="${CURRENT_SCRIPT_PATH}/bkps/bkps-master-${BKPS_BUILD_VERSION}.sql"
-    local changelog_file="${CURRENT_SCRIPT_PATH}/bkps/changelog-bkps-master-${BKPS_BUILD_VERSION}.csv"
+    local sql_schema_file="${CURRENT_SCRIPT_PATH}/bkps/bkps-master-${BUILD_VERSION}.sql"
+    local out_sql_schema_file="${OUT_PATH}/bkps-${BUILD_VERSION}.sql"
+    local changelog_file="${CURRENT_SCRIPT_PATH}/bkps/changelog-bkps-master-${BUILD_VERSION}.csv"
 
     rm -f "${sql_schema_file}" "${changelog_file}" || return 1
 
-    KEYSTORE_DUMMY_ALIAS=dummy ./gradlew -Pprod -Paws -Pversion="${BKPS_BUILD_VERSION}" -Dversion="${BKPS_BUILD_VERSION}" :bkps:liquibaseGenerateSql || return 1
+    KEYSTORE_DUMMY_ALIAS=dummy ./gradlew -Pprod -Paws -Pversion="${BUILD_VERSION}" -Dversion="${BUILD_VERSION}" :bkps:liquibaseGenerateSql || return 1
 
     if [[ ! -s "${sql_schema_file}" ]]; then
         print_error "SQL schema file was not generated: ${sql_schema_file}"
         return 1
     fi
 
-    cp "${sql_schema_file}" "${OUT_PATH}/" || return 1
-    print_info "SQL schema copied to ${OUT_PATH}/$(basename "${sql_schema_file}")"
+    rm -f "${OUT_PATH}/bkps-"*.sql || return 1
+    cp "${sql_schema_file}" "${out_sql_schema_file}" || return 1
+    print_info "SQL schema copied to ${out_sql_schema_file}"
 }
 
 function copy_bkps_jar() {
     local source_jar=""
-    local output_jar="${OUT_PATH}/bkps-master-${BKPS_BUILD_VERSION}.jar"
+    local output_jar="${OUT_PATH}/bkps-${BUILD_VERSION}.jar"
 
     source_jar=$(find "${CURRENT_SCRIPT_PATH}/bkps/build/libs" -maxdepth 1 -type f -name "*.jar" ! -name "*-plain.jar" 2>/dev/null | sort | head -n 1)
 
@@ -508,7 +510,7 @@ function copy_bkps_jar() {
         return 1
     fi
 
-    rm -f "${OUT_PATH}/bkps-master-"*.jar || return 1
+    rm -f "${OUT_PATH}/bkps-"*.jar || return 1
     cp "${source_jar}" "${output_jar}" || return 1
     print_info "BKPS JAR copied to ${output_jar}"
 }
@@ -520,7 +522,7 @@ function print_generated_files_summary() {
     echo "  ${OUT_PATH}"
     echo
 
-    echo "BKPS Java artifacts:"
+    echo "BKP Java artifacts:"
     find "${OUT_PATH}" -maxdepth 1 -type f -name "*.jar" -printf "  %p\n" 2>/dev/null || true
     echo
 
@@ -597,7 +599,7 @@ main() {
     check_java
     create_dummy_key_if_does_not_exist
     check_error_code
-    KEYSTORE_DUMMY_ALIAS=dummy ./gradlew -Pversion="${BKPS_BUILD_VERSION}" -Dversion="${BKPS_BUILD_VERSION}" clean build deploy
+    KEYSTORE_DUMMY_ALIAS=dummy ./gradlew -Pversion="${BUILD_VERSION}" -Dversion="${BUILD_VERSION}" clean build deploy
     check_error_code
     build_sql_schema
     check_error_code
