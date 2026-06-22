@@ -255,24 +255,6 @@ function check_if_docker_daemon_can_run() {
 
     install_docker || return 1
 
-    # 2. INJECT THE FIX HERE: Set up and start the daemon ONLY if inside a nested container
-    if [[ -f /.dockerenv ]] || grep -sqE 'docker|containerd' /proc/1/cgroup; then
-        if ! docker ps > /dev/null 2>&1; then
-            echo "Starting background Docker daemon for nested container environment..."
-            apt-get install -y iptables kmod > /dev/null 2>&1
-            mkdir -p /var/run /var/log /var/lib/docker
-            dockerd --storage-driver=vfs --data-root=/var/lib/docker > /var/log/dockerd.log 2>&1 &
-
-            # Stalls for up to 10 seconds to let the socket file generate
-            for i in {1..10}; do
-                docker ps > /dev/null 2>&1 && break
-                sleep 1
-            done
-        fi
-    else
-        echo "Host environment detected. Skipping nested Docker daemon setup."
-    fi
-
     if ! command -v docker > /dev/null 2>&1; then
         print_error "Docker installation completed, but docker was not found in PATH."
         return 1
