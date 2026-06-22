@@ -38,8 +38,7 @@ LIBCURL_VERSION="8.5.0"
 GTEST_VERSION="1.14.0"
 LIBSPDM_VERSION="3.2.0"
 MINIMUM_JAVA_VERSION="17.0.0"
-BKPS_BUILD_VERSION="${BKPS_BUILD_VERSION:0.0.1}"
-BKPS_OUTPUT_BASE_NAME="${BKPS_OUTPUT_BASE_NAME:-bkpq}"
+BKPS_BUILD_VERSION="${BKPS_BUILD_VERSION:-0.0.1}"
 
 set -E -o pipefail
 
@@ -500,7 +499,7 @@ function build_sql_schema() {
 
 function copy_bkps_jar() {
     local source_jar=""
-    local output_jar="${OUT_PATH}/${BKPS_OUTPUT_BASE_NAME}.${BKPS_BUILD_VERSION}.jar"
+    local output_jar="${OUT_PATH}/bkps-master-${BKPS_BUILD_VERSION}.jar"
 
     source_jar=$(find "${CURRENT_SCRIPT_PATH}/bkps/build/libs" -maxdepth 1 -type f -name "*.jar" ! -name "*-plain.jar" 2>/dev/null | sort | head -n 1)
 
@@ -509,7 +508,7 @@ function copy_bkps_jar() {
         return 1
     fi
 
-    rm -f "${OUT_PATH}/bkps.jar" "${OUT_PATH}/bkps-"*.jar "${OUT_PATH}/${BKPS_OUTPUT_BASE_NAME}."*.jar || return 1
+    rm -f "${OUT_PATH}/bkps-master-"*.jar || return 1
     cp "${source_jar}" "${output_jar}" || return 1
     print_info "BKPS JAR copied to ${output_jar}"
 }
