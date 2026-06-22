@@ -1,7 +1,7 @@
 
 # VERIFIER dependency list
 ## Dependency License Report
-_2026-06-22 08:10:51 UTC_
+_2026-06-22 08:29:11 UTC_
 ## Apache License 2.0
 
 **1** **Group:** `io.swagger.core.v3` **Name:** `swagger-annotations` **Version:** `2.2.43` 

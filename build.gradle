@@ -38,3 +38,12 @@ allprojects {
         gradlePluginPortal()
     }
 }
+
+subprojects {
+    plugins.withType(JavaPlugin) {
+        dependencies {
+            testRuntimeOnly(platform(libs.junit.bom))
+            testRuntimeOnly libs.junit.platform.launcher
+        }
+    }
+}
