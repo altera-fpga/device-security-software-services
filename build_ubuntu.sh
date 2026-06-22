@@ -38,7 +38,7 @@ LIBCURL_VERSION="8.5.0"
 GTEST_VERSION="1.14.0"
 LIBSPDM_VERSION="3.2.0"
 MINIMUM_JAVA_VERSION="17.0.0"
-BKPS_BUILD_VERSION="${BKPS_BUILD_VERSION:-0.0.1}"
+BKPS_BUILD_VERSION="${BKPS_BUILD_VERSION:0.0.1}"
 BKPS_OUTPUT_BASE_NAME="${BKPS_OUTPUT_BASE_NAME:-bkpq}"
 
 set -E -o pipefail
@@ -482,8 +482,8 @@ function prompt_docker_required() {
 function build_sql_schema() {
     printf "${BUILD_SQL_SCHEMA}"
 
-    local sql_schema_file="${CURRENT_SCRIPT_PATH}/bkps/bkps-${BKPS_BUILD_VERSION}.sql"
-    local changelog_file="${CURRENT_SCRIPT_PATH}/bkps/changelog-bkps-${BKPS_BUILD_VERSION}.csv"
+    local sql_schema_file="${CURRENT_SCRIPT_PATH}/bkps/bkps-master-${BKPS_BUILD_VERSION}.sql"
+    local changelog_file="${CURRENT_SCRIPT_PATH}/bkps/changelog-bkps-master-${BKPS_BUILD_VERSION}.csv"
 
     rm -f "${sql_schema_file}" "${changelog_file}" || return 1
 
