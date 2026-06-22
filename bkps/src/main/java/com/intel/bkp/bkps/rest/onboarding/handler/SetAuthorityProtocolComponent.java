@@ -39,6 +39,7 @@ import com.intel.bkp.bkps.exception.SetAuthorityGenericException;
 import com.intel.bkp.bkps.programmer.model.ProgrammerMessage;
 import com.intel.bkp.bkps.programmer.model.ProgrammerResponse;
 import com.intel.bkp.bkps.programmer.utils.ProgrammerResponseToDataAdapter;
+import com.intel.bkp.bkps.protocol.common.model.FlowStage;
 import com.intel.bkp.bkps.protocol.common.service.GetAttestationCertificateMessageSender;
 import com.intel.bkp.bkps.protocol.common.service.GetChipIdMessageSender;
 import com.intel.bkp.bkps.protocol.common.service.GetIdCodeMessageSender;
@@ -91,18 +92,19 @@ public class SetAuthorityProtocolComponent extends SetAuthorityHandler {
 
     @Override
     public SetAuthorityResponseDTO handle(SetAuthorityTransferObject transferObject) {
-        final SetAuthorityRequestDTOReader dtoReader = transferObject.getDtoReader();
-        if (dtoReader.getJtagResponses().size() == EXPECTED_NUMBER_OF_RESPONSES) {
-            return perform(dtoReader);
+        final SetAuthorityContext context = transferObject.getDtoReader().getContext();
+        if (context.getFlowStage() == FlowStage.SET_AUTHORITY_SESSION) {
+            return perform(transferObject);
         }
         return successor.handle(transferObject);
     }
 
-    private SetAuthorityResponseDTO perform(SetAuthorityRequestDTOReader dtoReader) {
+    private SetAuthorityResponseDTO perform(SetAuthorityTransferObject transferObject) {
         if (!spdmBackgroundService.isProcessing()) {
             throw new SetAuthorityGenericException("SPDM Service is not working.");
         }
 
+        final SetAuthorityRequestDTOReader dtoReader = transferObject.getDtoReader();
         final SetAuthorityContext context = dtoReader.getContext();
 
         log.info(prepareLogEntry("parsing quartus responses..."));
@@ -152,7 +154,14 @@ public class SetAuthorityProtocolComponent extends SetAuthorityHandler {
             certificateChainProvider.get(deviceId, pufType, svn, enrollmentDeviceIdCert, forceEnrollment)
                 .orElseThrow(() -> new SetAuthorityGenericException(ZIP_NOT_FOUND_IN_CACHE));
 
-        spdmBackgroundService.startSetAuthority(certificateChain, slotId);
+        if (dtoReader.getContext().isMctpEncapsulateSupported()) {
+            log.debug("SPDM VCA returned success.");
+            spdmBackgroundService.startSetAuthority(certificateChain, slotId, true);
+        } else {
+            log.debug("SPDM VCA failed.");
+            spdmBackgroundService.startSetAuthority(certificateChain, slotId, false);
+        }
+
 
         try {
             final SpdmMessageDTO messageFromQueue = spdmBackgroundService.getMessageFromQueue();
@@ -162,6 +171,7 @@ public class SetAuthorityProtocolComponent extends SetAuthorityHandler {
 
             context.setDeviceId(deviceId);
             context.setSvn(svn);
+            context.setFlowStage(FlowStage.SET_AUTHORITY_CERTCHAIN);
 
             return new SetAuthorityResponseDTOBuilder()
                 .context(context)

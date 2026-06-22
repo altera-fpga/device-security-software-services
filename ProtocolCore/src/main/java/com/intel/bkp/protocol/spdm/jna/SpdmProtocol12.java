@@ -73,6 +73,7 @@ import static com.intel.bkp.protocol.spdm.jna.model.SpdmConstants.MAX_SPDM_BUFFE
 import static com.intel.bkp.protocol.spdm.jna.model.SpdmConstants.SPDM_GET_MEASUREMENTS_REQUEST_ATTRIBUTES_GENERATE_SIGNATURE;
 import static com.intel.bkp.protocol.spdm.jna.model.SpdmConstants.SPDM_GET_MEASUREMENTS_REQUEST_MEASUREMENT_OPERATION_ALL_MEASUREMENTS;
 import static com.intel.bkp.protocol.spdm.jna.model.SpdmConstants.SPDM_KEY_EXCHANGE_REQUEST_ALL_MEASUREMENTS_HASH;
+import static com.intel.bkp.protocol.spdm.jna.model.SpdmConstants.SPDM_KEY_EXCHANGE_REQUEST_NO_MEASUREMENT_SUMMARY_HASH;
 import static com.intel.bkp.utils.BitUtils.countSetBits;
 import static com.intel.bkp.utils.HexConverter.toFormattedHex;
 import static com.intel.bkp.utils.HexConverter.toHex;
@@ -204,12 +205,12 @@ public abstract class SpdmProtocol12 implements SpdmProtocol {
     }
 
     @Override
-    public void startSecureSession(int measurementSlotId) throws SpdmCommandFailedException {
+    public void startSecureSession(int measurementSlotId, Boolean needMeasurementHash) throws SpdmCommandFailedException {
         if (!isConnectionInitialized()) {
             throw new SpdmConnectionNotInitialized();
         }
 
-        final int sessionId = startSecureSessionInternal(measurementSlotId);
+        final int sessionId = startSecureSessionInternal(measurementSlotId, needMeasurementHash);
 
         if (sessionId == 0) {
             throw new SpdmRuntimeException("Secure session not initialized.");
@@ -424,7 +425,7 @@ public abstract class SpdmProtocol12 implements SpdmProtocol {
         }
     }
 
-    private int startSecureSessionInternal(int measurementSlotId) throws SpdmCommandFailedException {
+    private int startSecureSessionInternal(int measurementSlotId, Boolean needMeasurementHash) throws SpdmCommandFailedException {
         log.debug("Sending SPDM KEY_EXCHANGE ...");
 
         try (final Memory heartbeatPeriod = new CustomMemory(Uint8.SIZE);
@@ -432,22 +433,24 @@ public abstract class SpdmProtocol12 implements SpdmProtocol {
             sessionId.clear(Uint32.SIZE);
             heartbeatPeriod.clear(Uint8.SIZE);
             measurementHash.clear(SHA384_LEN);
-
+            int keyExchangeReq = needMeasurementHash ? SPDM_KEY_EXCHANGE_REQUEST_ALL_MEASUREMENTS_HASH : SPDM_KEY_EXCHANGE_REQUEST_NO_MEASUREMENT_SUMMARY_HASH;
             final LibSpdmReturn status = jnaInterface.libspdm_start_session_w(spdmContext.getContext(), false, null,
-                new Uint16(0), new Uint8(SPDM_KEY_EXCHANGE_REQUEST_ALL_MEASUREMENTS_HASH),
+                new Uint16(0), new Uint8(keyExchangeReq),
                 new Uint8(measurementSlotId), new Uint8(0), sessionId, heartbeatPeriod, measurementHash);
 
             log.debug("KEY_EXCHANGE status: {}", toFormattedHex(status.asLong()));
             final byte[] sessionIdBytes = getBytes(sessionId, Uint32.SIZE);
-            final byte[] measurementHashBytes = getBytes(measurementHash, SHA384_LEN);
-            if (!expectedMeasurementHash.isEmpty()) {
-                if (!toHex(measurementHashBytes).equals(expectedMeasurementHash)) {
-                    log.error("Measurement hash mismatch.");
+            if (needMeasurementHash) {
+                final byte[] measurementHashBytes = getBytes(measurementHash, SHA384_LEN);
+                if (!expectedMeasurementHash.isEmpty()) {
+                    if (!toHex(measurementHashBytes).equals(expectedMeasurementHash)) {
+                        log.error("Measurement hash mismatch.");
+                        throwOnError(LIBSPDM_STATUS_SPDM_INTERNAL_EXCEPTION);
+                    }
+                } else {
+                    log.error("Expected measurement hash is empty.");
                     throwOnError(LIBSPDM_STATUS_SPDM_INTERNAL_EXCEPTION);
                 }
-            } else {
-                log.error("Expected measurement hash is empty.");
-                throwOnError(LIBSPDM_STATUS_SPDM_INTERNAL_EXCEPTION);
             }
 
             throwOnError(status);

@@ -48,12 +48,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @ExtendWith(MockitoExtension.class)
 class SignatureVerifierTest {
 
-    // https://tsci.intel.com/content/IPCS/crls/IPCSSigningCA.crl
-    private static final String CRL_FILENAME = "IPCSSigningCA.crl";
-    // https://tsci.intel.com/content/IPCS/certs/IPCSSigningCA.cer
-    private static final String CHILD_CERT_FILENAME = "IPCSSigningCA.cer";
-    // https://tsci.intel.com/content/IPCS/certs/IPCS.cer
-    private static final String PARENT_CERT_FILENAME = "IPCS.cer";
+    // https://tsci.altera.com/content/IPCS/crls/IPCS_stratix10.crl
+    private static final String CRL_FILENAME = "IPCS_stratix10.crl";
+    // https://tsci.altera.com/content/IPCS/certs/IPCS_stratix10.cer
+    private static final String CHILD_CERT_FILENAME = "IPCS_stratix10.cer";
+    // https://tsci.altera.com/content/DICE/certs/DICE_RootCA.cer
+    private static final String PARENT_CERT_FILENAME = "DICE_RootCA.cer";
 
     private static X509CRL crl;
     private static X509Certificate childCert;

@@ -36,12 +36,11 @@ import com.intel.bkp.core.exceptions.JceSecurityProviderException;
 import com.intel.bkp.core.security.IKeystoreManager;
 import org.apache.commons.lang3.SystemUtils;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermission;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -57,21 +56,23 @@ public class FileBasedProvider implements IKeystoreManager {
     @Override
     public void load(KeyStore keyStore, String inputStreamParam, String password)
         throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException {
+
         if (inputStreamParam == null || inputStreamParam.isEmpty()) {
             throw new JceSecurityProviderException(
                 "Keystore filename for '" + this.getClass().getName() + "' was not specified in app properties.");
         }
 
-        File file = new File(inputStreamParam);
-        if (!file.exists() || file.isDirectory()) {
+        Path path = Path.of(inputStreamParam);
+        if (!Files.exists(path) || Files.isDirectory(path)) {
             keyStore.load(null, null);
             storeInternal(keyStore, inputStreamParam, password);
             if (!SystemUtils.IS_OS_WINDOWS) {
                 setOnlyOwnerPermissionsOnFile(inputStreamParam);
             }
         } else {
-            keyStore.load(new FileInputStream(inputStreamParam),
-                Optional.ofNullable(password).orElse("").toCharArray());
+            try (InputStream inputStream = Files.newInputStream(path)) {
+                keyStore.load(inputStream, Optional.ofNullable(password).orElse("").toCharArray());
+            }
         }
     }
 
@@ -83,7 +84,7 @@ public class FileBasedProvider implements IKeystoreManager {
 
     private void storeInternal(KeyStore keyStore, String inputStreamParam, String password)
         throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException {
-        try (FileOutputStream out = new FileOutputStream(inputStreamParam)) {
+        try (OutputStream out = Files.newOutputStream(Path.of(inputStreamParam))) {
             keyStore.store(out, Optional.ofNullable(password).orElse("").toCharArray());
         }
     }
@@ -92,6 +93,6 @@ public class FileBasedProvider implements IKeystoreManager {
         Set<PosixFilePermission> permissions = Stream
             .of(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE)
             .collect(Collectors.toSet());
-        Files.setPosixFilePermissions(Paths.get(path), permissions);
+        Files.setPosixFilePermissions(Path.of(path), permissions);
     }
 }

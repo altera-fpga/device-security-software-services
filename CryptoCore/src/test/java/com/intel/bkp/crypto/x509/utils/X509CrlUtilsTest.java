@@ -51,10 +51,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @ExtendWith(MockitoExtension.class)
 class X509CrlUtilsTest {
 
-    private static final String CRL_WITH_REVOKED_SERIAL_NUMBERS = "IPCSSigningCA.crl";
+    private static final String CRL_WITH_REVOKED_SERIAL_NUMBERS = "IPCS_stratix10.crl";
     private static final String REVOKED_SERIAL_NUMBER = "01099BDF89CA6BB908";
     private static final int REVOKED_SERIAL_NUMBERS_COUNT = 37;
-    private static final BigInteger CRL_NUMBER = new BigInteger("135");
+    private static final BigInteger CRL_NUMBER = new BigInteger("4");
 
     private static String crlInPem;
     private static X509CRL crl;

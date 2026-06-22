@@ -33,5 +33,5 @@
 package com.intel.bkp.core.properties;
 
 public enum AppUserIssuerType {
-    CASERVICE, USER
+   USER
 }

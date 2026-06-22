@@ -42,6 +42,7 @@ import com.intel.bkp.bkps.rest.initialization.model.dto.SigningKeyResponseDTO;
 import com.intel.bkp.bkps.rest.util.PsgCertificateManager;
 import com.intel.bkp.core.exceptions.BKPBadRequestException;
 import com.intel.bkp.core.exceptions.ParseStructureException;
+import com.intel.bkp.core.exceptions.PublicKeyHelperException;
 import com.intel.bkp.core.psgcertificate.PsgCertificateForBkpsAdapter;
 import com.intel.bkp.core.psgcertificate.PsgCertificateHelper;
 import com.intel.bkp.core.psgcertificate.PsgCertificateRootEntryBuilder;
@@ -102,13 +103,13 @@ public class SigningKeyService {
             rootSigningKeyRepository.save(
                 new CustomerRootSigningKey(parsedCertificateBuilder.build().array(), certificateFingerprint)
             );
-        } catch (PsgInvalidRootCertificateException | PsgCertificateChainWrongSizeException
-                 | ParseStructureException e) {
+        } catch (PsgInvalidRootCertificateException | PsgCertificateChainWrongSizeException | ParseStructureException
+                 | PublicKeyHelperException e) {
             throw new BKPBadRequestException(ErrorCodeMap.FAILED_TO_PARSE_ROOT_PUBLIC_KEY);
         }
     }
 
-    public void uploadSigningKeyChain(Long signingKeyId, String singleRootChain, String multiRootChain) {
+    public void uploadSigningKeyChain(Long signingKeyId, String singleRootChain, String multiRootChain) throws PublicKeyHelperException {
         log.info("Upload signing key chain for signing key: {}.", signingKeyId);
         log.debug("Single root chain content: {}.", StringEscapeUtils.escapeJava(singleRootChain));
         log.debug("Multi root chain content: {}.", StringEscapeUtils.escapeJava(multiRootChain));
@@ -132,7 +133,7 @@ public class SigningKeyService {
         return parsedChain;
     }
 
-    private void verifyChain(List<CertificateEntryWrapper> chainList, ECPublicKey signingKeyPublic) {
+    private void verifyChain(List<CertificateEntryWrapper> chainList, ECPublicKey signingKeyPublic) throws PublicKeyHelperException {
         certificateManager.verifyChainListSize(chainList);
         certificateManager.verifyLeafCertificateMatchesSigningKeyPub(chainList, signingKeyPublic);
         certificateManager.verifyLeafCertificatePermissions(chainList);
@@ -151,6 +152,8 @@ public class SigningKeyService {
             throw new BKPBadRequestException(ErrorCodeMap.CERTIFICATE_CHAIN_WRONG_SIZE);
         } catch (PsgInvalidRootCertificateException e) {
             throw new CertificateChainValidationFailed(e);
+        } catch (PublicKeyHelperException e) {
+            throw new RuntimeException(e);
         }
     }
 }

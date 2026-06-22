@@ -51,8 +51,10 @@ apply from: rootProject.file('gradle/common.gradle')
 
 def buildVersion = ext.getBuildVersion()
 
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
 
 jar {
     archiveBaseName.set('Utils')

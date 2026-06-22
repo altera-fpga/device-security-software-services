@@ -40,6 +40,7 @@ import com.intel.bkp.bkps.rest.initialization.service.SigningKeyService;
 import com.intel.bkp.bkps.rest.validator.FileRequired;
 import com.intel.bkp.core.exceptions.ApplicationError;
 import com.intel.bkp.core.exceptions.BKPBadRequestException;
+import com.intel.bkp.core.exceptions.PublicKeyHelperException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -175,6 +176,8 @@ public class SigningKeyController {
             );
         } catch (IOException e) {
             throw new BKPBadRequestException(ErrorCodeMap.FAILED_TO_PARSE_ROOT_PUBLIC_KEY);
+        } catch (PublicKeyHelperException e) {
+            throw new RuntimeException(e);
         }
     }
 }

@@ -50,7 +50,7 @@ public class SetAuthorityRequestDTOReader extends RequestDTOReader<SetAuthorityR
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private final AesGcmProvider encryptionProvider;
-    private final SetAuthorityContext context;
+    private SetAuthorityContext context;
 
     public SetAuthorityRequestDTOReader(AesGcmProvider encryptionProvider,
                                         SetAuthorityRequestDTO dto)

@@ -56,8 +56,12 @@ jar {
     }
 }
 
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+ext['commons-lang3.version'] = "${libs.versions.apache.commons.lang.get()}"
 
 group = 'com.intel.bkp.fpgacerts'
 version = buildVersion
@@ -74,6 +78,8 @@ dependencies {
     implementation project(':Utils')
     implementation project(':CryptoCore')
     implementation project(':ProtocolCore')
+    implementation libs.apache.commons.text
+    implementation libs.apache.httpclient5
 
     implementation libs.bouncycastle
     api libs.cbor

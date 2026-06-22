@@ -35,6 +35,7 @@ package com.intel.bkp.bkps.rest.util;
 import com.intel.bkp.bkps.exception.InitializationServiceException;
 import com.intel.bkp.bkps.rest.errors.enums.ErrorCodeMap;
 import com.intel.bkp.core.exceptions.BKPBadRequestException;
+import com.intel.bkp.core.exceptions.PublicKeyHelperException;
 import com.intel.bkp.core.psgcertificate.PsgCertificateEntry;
 import com.intel.bkp.core.psgcertificate.PsgCertificateEntryBuilder;
 import com.intel.bkp.core.psgcertificate.PsgCertificateHelper;
@@ -203,7 +204,7 @@ public class PsgCertificateManagerTest {
 
     @Test
     void verifyRootCertificate_withInvalidCert_throwsException()
-        throws PsgCertificateChainWrongSizeException, PsgInvalidRootCertificateException {
+        throws PsgCertificateChainWrongSizeException, PsgInvalidRootCertificateException, PublicKeyHelperException {
         // given
         List<CertificateEntryWrapper> certificateChainList = new LinkedList<>();
         certificateChainList.add(new CertificateEntryWrapper(PsgCertificateType.LEAF, new byte[4]));

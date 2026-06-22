@@ -131,7 +131,6 @@ void CurlWrapper::init(Config config, std::string endpoint)
     setCurlOptionWithErrorHandling(curlHandle, CURLOPT_SSLKEY, config.clientKeyFilePath.c_str());
     setCurlOptionWithErrorHandling(curlHandle, CURLOPT_KEYPASSWD, config.clientKeyPassword.c_str());
     setCurlOptionWithErrorHandling(curlHandle, CURLOPT_PROXY, config.proxyAddressAndPort.c_str());
-
     if (!config.proxyUsername.empty())
     {
         setCurlOptionWithErrorHandling(curlHandle, CURLOPT_PROXYUSERNAME, config.proxyUsername.c_str());

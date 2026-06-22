@@ -59,7 +59,7 @@ class VerifierChainBackupUtilTest {
     void getParentDirectory() {
         // given
         final String expectedParent = "parent";
-        final File file = new File(expectedParent + "/test");
+        final File file = Path.of(expectedParent, "test").toFile();
 
         // when
         final String result = sut.getParentDirectory(file);
@@ -78,7 +78,7 @@ class VerifierChainBackupUtilTest {
         doReturn(expectedTimestamp).when(sut).getTimestamp();
         doReturn(expectedHex).when(sut).getRandomizedHex();
 
-        final File file = new File("parent/" + fileName);
+        final File file = Path.of("parent", fileName).toFile();
 
         // when
         final String result = sut.getNewFileName(file);
@@ -98,7 +98,7 @@ class VerifierChainBackupUtilTest {
         doReturn(expectedHex).when(sut).getRandomizedHex();
 
         when(mockFile.toPath()).thenReturn(Path.of("parent/" + fileName));
-        final File newFile = new File("parent/" + expectedNewFileName);
+        final File newFile = Path.of("parent", expectedNewFileName).toFile();
 
         // when
         sut.backupExistingFile(mockFile);

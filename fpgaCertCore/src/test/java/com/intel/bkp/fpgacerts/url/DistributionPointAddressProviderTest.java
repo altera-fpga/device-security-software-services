@@ -33,71 +33,48 @@
 package com.intel.bkp.fpgacerts.url;
 
 import com.intel.bkp.fpgacerts.model.Family;
-import com.intel.bkp.fpgacerts.model.SmartNicFamily;
 import com.intel.bkp.fpgacerts.model.UdsChoice;
 import com.intel.bkp.fpgacerts.url.params.DiceEnrollmentParams;
 import com.intel.bkp.fpgacerts.url.params.DiceParams;
-import com.intel.bkp.fpgacerts.url.params.NicDiceParams;
 import com.intel.bkp.fpgacerts.url.params.RimParams;
 import com.intel.bkp.fpgacerts.url.params.RimSignedDataParams;
 import com.intel.bkp.fpgacerts.url.params.S10Params;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class DistributionPointAddressProviderTest {
 
-    private static final String PATH_CER_WITH_SLASH = "https://tsci.intel.com/content/IPCS/certs/";
-    private static final String PATH_CER_WITHOUT_SLASH = "https://tsci.intel.com/content/IPCS/certs";
-    private static final String PATH_NIC_CER_WITH_SLASH = "https://tsci.intel.com/content/NIC/certs/";
-    private static final String PATH_NIC_CER_WITHOUT_SLASH = "https://tsci.intel.com/content/NIC/certs";
+    private static final String PATH_CER_WITH_SLASH = "https://tsci.altera.com/content/IPCS/certs/";
+    private static final String PATH_CER_WITHOUT_SLASH = "https://tsci.altera.com/content/IPCS/certs";
 
-    private static final String PATH_RIM_WITH_SLASH = "https://tsci.intel.com/content/IPCS/rims/";
-    private static final String PATH_XRIM_WITH_SLASH = "https://tsci.intel.com/content/IPCS/crls/";
+    private static final String PATH_RIM_WITH_SLASH = "https://tsci.altera.com/content/IPCS/rims/";
+    private static final String PATH_XRIM_WITH_SLASH = "https://tsci.altera.com/content/IPCS/crls/";
 
     private static final S10Params S10_PARAMS = new S10Params("deviceId", "pufType");
     private static final DiceParams DICE_PARAMS = new DiceParams("skiInBase64", "UID");
     private static final DiceEnrollmentParams DICE_ENROLLMENT_PARAMS =
         new DiceEnrollmentParams("skiERinBase64", "SVN", "UID");
 
-    private static final NicDiceParams NIC_PARAMS_FOR_MEV = new NicDiceParams("skiInBase64", "UID", SmartNicFamily.MEV);
-    private static final NicDiceParams NIC_PARAMS_FOR_LKV = new NicDiceParams("skiInBase64", "UID", SmartNicFamily.LKV);
-    private static final NicDiceParams NIC_PARAMS_FOR_CNV = new NicDiceParams("skiInBase64", "UID", SmartNicFamily.CNV);
     private static final String EXPECTED_ATTESTATION_PATH = PATH_CER_WITH_SLASH + "attestation_DEVICEID_PUFTYPE.cer";
     private static final String EXPECTED_DEVICE_ID_PATH = PATH_CER_WITH_SLASH + "deviceid_uid_skiInBase64.cer";
     private static final String EXPECTED_ENROLLMENT_PATH = PATH_CER_WITH_SLASH + "enrollment_uid_svn_skiERinBase64.cer";
     private static final String EXPECTED_IID_UDS_PATH = PATH_CER_WITH_SLASH + "iiduds_uid_skiInBase64.cer";
-    private static final String EXPECTED_NIC_MEV_PATH = PATH_NIC_CER_WITH_SLASH + "01_uid.cer";
-    private static final String EXPECTED_NIC_LKV_PATH = PATH_NIC_CER_WITH_SLASH + "02_uid_skiInBase64.cer";
-    private static final String EXPECTED_NIC_CNV_PATH = PATH_NIC_CER_WITH_SLASH + "03_uid_skiInBase64.cer";
 
     private static final DistributionPointAddressProvider SUT =
-        new DistributionPointAddressProvider(PATH_CER_WITH_SLASH, PATH_NIC_CER_WITH_SLASH);
-    private static final DistributionPointAddressProvider SUT_WITHOUT_SLASH =
-        new DistributionPointAddressProvider(PATH_CER_WITHOUT_SLASH, PATH_NIC_CER_WITHOUT_SLASH);
-    private static final DistributionPointAddressProvider SUT_WITHOUT_NIC_PREFIX =
         new DistributionPointAddressProvider(PATH_CER_WITH_SLASH);
-
-    private static Stream<Arguments> getNicDeviceIdCertUrlParams() {
-        return Stream.of(
-            Arguments.of(NIC_PARAMS_FOR_MEV, EXPECTED_NIC_MEV_PATH),
-            Arguments.of(NIC_PARAMS_FOR_CNV, EXPECTED_NIC_CNV_PATH),
-            Arguments.of(NIC_PARAMS_FOR_LKV, EXPECTED_NIC_LKV_PATH)
-        );
-    }
+    private static final DistributionPointAddressProvider SUT_WITHOUT_SLASH =
+        new DistributionPointAddressProvider(PATH_CER_WITHOUT_SLASH);
 
     private static Stream<DistributionPointAddressProvider> getSuts() {
         return Stream.of(
             SUT,
-            SUT_WITHOUT_SLASH,
-            SUT_WITHOUT_NIC_PREFIX
+            SUT_WITHOUT_SLASH
         );
     }
 
@@ -165,33 +142,6 @@ class DistributionPointAddressProviderTest {
 
         // then
         assertEquals(EXPECTED_IID_UDS_PATH, result);
-    }
-
-    @ParameterizedTest
-    @MethodSource(value = "getNicDeviceIdCertUrlParams")
-    void getNicDeviceIdCertUrl_ReturnsExpected(NicDiceParams params, String expectedUrl) {
-        // when
-        final String result = SUT.getNicDeviceIdCertUrl(params);
-
-        // then
-        assertEquals(expectedUrl, result);
-    }
-
-    @ParameterizedTest
-    @MethodSource(value = "getNicDeviceIdCertUrlParams")
-    void getNicDeviceIdCertUrl_WithoutSlashInPrefix_ReturnsExpected(NicDiceParams params, String expectedUrl) {
-        // when
-        final String result = SUT_WITHOUT_SLASH.getNicDeviceIdCertUrl(params);
-
-        // then
-        assertEquals(expectedUrl, result);
-    }
-
-    @ParameterizedTest
-    @MethodSource(value = "getNicDeviceIdCertUrlParams")
-    void getNicDeviceIdCertUrl_WithoutNicPrefix_Throws(NicDiceParams params) {
-        // when-then
-        assertThrows(IllegalStateException.class, () -> SUT_WITHOUT_NIC_PREFIX.getNicDeviceIdCertUrl(params));
     }
 
     @Test

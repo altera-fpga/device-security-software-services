@@ -110,7 +110,7 @@ public class RandomUtils {
     }
 
     public static String generateRandomString(int length) {
-        return RandomStringUtils.random(length, true, true);
+        return RandomStringUtils.secure().next(length, true, true);
     }
 
     public static byte[] asBytesSwapped(int value) {

@@ -54,7 +54,7 @@ class PsgPublicKeyHelperTest {
     private static final PsgCurveType TEST_CURVE_TYPE = PsgCurveType.SECP384R1;
 
     @Test
-    void generateFingerprint_WithPsgPublicKeyBuilderArgument_Success() {
+    void generateFingerprint_WithPsgPublicKeyBuilderArgument_Success() throws PublicKeyHelperException {
         // given
         final PsgPublicKeyBuilder psgPublicKeyBuilder = generatePsgPublicKey();
 
@@ -85,7 +85,7 @@ class PsgPublicKeyHelperTest {
     }
 
     @Test
-    void areEquals_WithValidData_Success() {
+    void areEquals_WithValidData_Success() throws PublicKeyHelperException {
         // given
         final KeyPair keyPair = KeyGenUtils.genEc384();
         assert keyPair != null;
@@ -99,7 +99,7 @@ class PsgPublicKeyHelperTest {
     }
 
     @Test
-    void areEquals_WithInValidData_Throws() {
+    void areEquals_WithInValidData_Throws() throws PublicKeyHelperException {
         // given
         final KeyPair keyPair = KeyGenUtils.genEc384();
         final KeyPair keyPairOther = KeyGenUtils.genEc384();

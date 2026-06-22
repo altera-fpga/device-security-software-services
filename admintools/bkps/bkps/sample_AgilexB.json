@@ -5,7 +5,7 @@
         "max": -1
     },
     "testModeSecrets": true,
-    "corimUrl": "https://tsci.intel.com/content/IPCS/certs/agilexb_L1_rc6aifvOGS5y36VlYi_3FPnCte1X.corim",
+    "corimUrl": "https://tsci.altera.com/content/IPCS/certs/agilexb_L1_rc6aifvOGS5y36VlYi_3FPnCte1X.corim",
     "confidentialData": {
         "importMode": "ENCRYPTED",
         "aesKey": {

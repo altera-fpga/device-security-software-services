@@ -75,11 +75,11 @@ service:
 application:
     accept-unsigned-corim: false
     distribution-point:
-        main-path: https://pre1-tsci.intel.com/
+        main-path: https://pre1-tsci.dev.altera.com/
         attestation-cert-base-path: content/IPCS/certs/
         zip-base-path: content/IPCS/
         trusted-root-hash: >
-            A1B5D25D0C2F991EB5B3CBD408717B3A9296BE6E90D60997E29FEB3694F60D80,
+            A11BB90D6F9F4F2E5BE018699E4F75C37016458D4910398FF5F052B7120C678E,
             9DB7D8D004D650B40ED993F2B665E19DA65BD065D7BBD35D6C1439C4B4201259
         proxy:
             host: ''

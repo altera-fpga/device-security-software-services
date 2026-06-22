@@ -33,8 +33,10 @@
 package com.intel.bkp.bkps.attestation;
 
 import com.intel.bkp.bkps.attestation.mapping.CacheCborMapper;
+import com.intel.bkp.bkps.config.ApplicationProperties;
 import com.intel.bkp.bkps.connector.DpConnector;
 import com.intel.bkp.bkps.rest.prefetching.service.CorimPrefetchRepositoryService;
+import com.intel.bkp.core.properties.DistributionPoint;
 import com.upokecenter.cbor.CBORObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -60,6 +62,8 @@ class CacheCoRimFetcherTest {
     @Mock
     private CorimPrefetchRepositoryService corimPrefetchRepositoryService;
 
+    private ApplicationProperties applicationProperties;
+
     @Mock
     private DpConnector dpConnector;
 
@@ -68,7 +72,15 @@ class CacheCoRimFetcherTest {
     @BeforeEach
     void prepareSut() {
         when(corimPrefetchRepositoryService.getMapper()).thenReturn(new CacheCborMapper());
-        sut = new CacheCoRimFetcher(corimPrefetchRepositoryService, dpConnector);
+        applicationProperties = spy(new ApplicationProperties());
+        applicationProperties.setDistributionPoint(new DistributionPoint(
+            "https://tsci.intel.com/",
+            "content/IPCS/certs/",
+            "content/IPCS/",
+            null,
+            null
+        ));
+        sut = new CacheCoRimFetcher(corimPrefetchRepositoryService, dpConnector, applicationProperties);
     }
 
     @Test
@@ -79,7 +91,7 @@ class CacheCoRimFetcherTest {
     @Test
     void fetchAsHex_CallsBaseFetchMethod_ReturnsFetchResultAsHex() {
         // given
-        final String path = "somePath";
+        final String path = "https://somePath";
         final Optional<CBORObject> expected = Optional.of(cborObj);
         final var sutSpy = spy(sut);
         when(sutSpy.fetch(path)).thenReturn(expected);

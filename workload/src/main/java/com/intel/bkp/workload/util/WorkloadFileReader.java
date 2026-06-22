@@ -38,20 +38,19 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HexFormat;
 
 @Slf4j
 public class WorkloadFileReader {
 
     public boolean exists(String fileName) {
-        final Path filePath = Paths.get(fileName);
+        final Path filePath = Path.of(fileName);
         return Files.exists(filePath) && !Files.isDirectory(filePath);
     }
 
     public String readFile(String fileName) {
         log.debug("[WORKLOAD] Reading file: {}", fileName);
-        final Path filePath = Paths.get(fileName);
+        final Path filePath = Path.of(fileName);
         try {
             return HexFormat.of().formatHex(Files.readAllBytes(filePath));
         } catch (IOException e) {

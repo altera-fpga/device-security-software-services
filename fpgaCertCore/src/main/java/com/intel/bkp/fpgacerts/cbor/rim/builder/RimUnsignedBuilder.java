@@ -71,7 +71,7 @@ public class RimUnsignedBuilder extends RimBuilderBase<RimUnsigned> {
             .Add(RimUnsigned.CBOR_MANIFEST_ID_KEY, CBORObject.FromObject(fromHex(data.getManifestId())))
             .Add(RimUnsigned.CBOR_COMID_KEY,
                 CBORObject.NewArray().Add(CBORObject.FromObjectAndTag(
-                    RIM_CO_MID_BUILDER.designRim(isDesign()).build(data.getComIds().get(0)),
+                    RIM_CO_MID_BUILDER.designRim(data.isDesign()).build(data.getComIds().get(0)),
                     RimUnsigned.CBOR_COMID_TAG)))
             .Add(RimUnsigned.CBOR_LOCATORS_KEY, buildLocators(data.getLocators()))
             .Add(RimUnsigned.CBOR_PROFILE_KEY, CBORObject.NewArray().Add(

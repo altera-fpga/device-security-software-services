@@ -64,7 +64,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 @Slf4j
 public abstract class IntegrationTestBase {
 
-    private static final String DP_BASE_PATH = "https://pre1-tsci.intel.com/content";
+    private static final String DP_BASE_PATH = "https://pre1-tsci.dev.altera.com/content";
 
     @Autowired
     protected WebApplicationContext webApplicationContext;

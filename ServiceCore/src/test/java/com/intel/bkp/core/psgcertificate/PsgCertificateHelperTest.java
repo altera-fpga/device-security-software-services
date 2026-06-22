@@ -32,6 +32,7 @@
 
 package com.intel.bkp.core.psgcertificate;
 
+import com.intel.bkp.core.exceptions.PublicKeyHelperException;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgCertificateChainWrongSizeException;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgInvalidLeafCertificateException;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgInvalidParentCertificatesException;
@@ -304,7 +305,7 @@ class PsgCertificateHelperTest {
 
     @Test
     void verifyRootCertificateInternal_notThrowsAnything()
-        throws PsgCertificateChainWrongSizeException, PsgInvalidRootCertificateException {
+        throws PsgCertificateChainWrongSizeException, PsgInvalidRootCertificateException, PublicKeyHelperException {
         // given
         KeyPair rootKeyPair = KeyGenUtils.genEc384();
         assert rootKeyPair != null;

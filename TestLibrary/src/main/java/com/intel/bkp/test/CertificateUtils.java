@@ -107,7 +107,7 @@ public class CertificateUtils {
 
     public static Date getEndOfTimeDate() {
         long endOfTimeEpochMillis = LocalDate.of(9999, Month.DECEMBER, 31)
-            .atStartOfDay()
+            .atTime(23, 59, 59)
             .toInstant(ZoneOffset.UTC)
             .toEpochMilli();
         return new Date(endOfTimeEpochMillis);

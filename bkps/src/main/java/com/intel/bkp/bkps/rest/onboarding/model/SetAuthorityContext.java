@@ -32,6 +32,7 @@
 
 package com.intel.bkp.bkps.rest.onboarding.model;
 
+import com.intel.bkp.bkps.protocol.common.model.FlowStage;
 import com.intel.bkp.core.manufacturing.model.PufType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -53,4 +54,6 @@ public class SetAuthorityContext {
     private DeviceId deviceId;
     private String svn;
     private boolean forceEnrollment;
+    private boolean isMctpEncapsulateSupported;
+    private FlowStage flowStage;
 }

@@ -33,10 +33,11 @@
 package com.intel.bkp.verifier.protocol.common.service;
 
 import java.io.File;
+import java.nio.file.Path;
 
 public class ChainFileProvider {
 
     public File getChainFile(String filePath) {
-        return new File(filePath);
+        return Path.of(filePath).toFile();
     }
 }

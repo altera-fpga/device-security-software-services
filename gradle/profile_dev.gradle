@@ -48,7 +48,13 @@ if (project.hasProperty('ci')) {
     profiles += ',ci'
 }
 
-if (project.hasProperty('luna')) {
+if (project.hasProperty('logs')) {
+    profiles += ',logs'
+}
+
+if (project.hasProperty('garantir')) {
+    profiles += ',garantir'
+} else if (project.hasProperty('luna')) {
     profiles += ',luna'
 } else if (project.hasProperty('bouncycastle')) {
     profiles += ',bouncycastle'

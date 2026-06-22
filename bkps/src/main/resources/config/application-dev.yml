@@ -56,12 +56,12 @@ application:
         logstash: # Forward logs to logstash over a socket, used by LoggingConfiguration
             enabled: false
     distribution-point:
-        main-path: http://localhost:9090/
+        main-path: http://localhost:8000/
         attestation-cert-base-path: content/IPCS/certs/
         zip-base-path: content/IPCS/
         trusted-root-hash: >
-            A1B5D25D0C2F991EB5B3CBD408717B3A9296BE6E90D60997E29FEB3694F60D80,
-            9DB7D8D004D650B40ED993F2B665E19DA65BD065D7BBD35D6C1439C4B4201259
+            8F19C3380BA92615344ADF2C583DCFCD995844CF8C837FE2AEC8BB53CB43A800,
+            7A76703F2E21DE2D072B9F8C6A1745CD705114A422F765AF814B8CF31809330F
         proxy:
             host: ''
             port: 0

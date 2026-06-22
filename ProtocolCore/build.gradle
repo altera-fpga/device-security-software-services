@@ -47,8 +47,10 @@ plugins {
     id 'idea'
 }
 
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
 
 apply from: rootProject.file('gradle/common.gradle')
 

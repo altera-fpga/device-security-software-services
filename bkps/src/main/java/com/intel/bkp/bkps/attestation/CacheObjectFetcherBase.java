@@ -34,9 +34,15 @@ package com.intel.bkp.bkps.attestation;
 
 import com.intel.bkp.bkps.attestation.mapping.CacheObjectMapper;
 import com.intel.bkp.bkps.connector.DpConnector;
+import com.intel.bkp.bkps.rest.errors.enums.ErrorCodeMap;
 import com.intel.bkp.bkps.rest.prefetching.service.IPrefetchRepositoryService;
+import com.intel.bkp.core.exceptions.BKPRuntimeException;
+import com.intel.bkp.core.properties.DistributionPoint;
+import com.intel.bkp.core.utils.CustomErrorCode;
 import lombok.extern.slf4j.Slf4j;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Optional;
 
 @Slf4j
@@ -45,24 +51,46 @@ public abstract class CacheObjectFetcherBase<T> {
     private final IPrefetchRepositoryService<T> repositoryService;
     private final CacheObjectMapper<T> mapper;
     private final DpConnector connector;
+    private final DistributionPoint distributionPoint;
 
-    CacheObjectFetcherBase(IPrefetchRepositoryService<T> repositoryService, DpConnector connector) {
+    CacheObjectFetcherBase(IPrefetchRepositoryService<T> repositoryService, DpConnector connector, DistributionPoint distributionPoint) {
         this.repositoryService = repositoryService;
         this.mapper = repositoryService.getMapper();
         this.connector = connector;
+        this.distributionPoint = distributionPoint;
     }
 
     abstract boolean isValid(T obj);
 
     public Optional<T> fetch(String url) {
-        return findValidInCache(url)
-            .or(() -> downloadAndSaveInCache(url));
+        String validUrl = validate(url);
+        return findValidInCache(validUrl)
+            .or(() -> downloadAndSaveInCache(validUrl));
     }
 
     public Optional<T> fetchSkipCache(String url) {
-        findValidInCache(url).ifPresent(data ->
-            log.debug("Found valid data in cache, but fresh content shall be retrieved from url: {}", url));
-        return downloadAndSaveInCache(url);
+        String validUrl = validate(url);
+        findValidInCache(validUrl).ifPresent(data ->
+            log.debug("Found valid data in cache, but fresh content shall be retrieved from url: {}", validUrl));
+        return downloadAndSaveInCache(validUrl);
+    }
+
+    private String validate(String url) {
+        try {
+            URL originalUrl = new URL(url);
+            String originalDomain = originalUrl.getProtocol() + "://" + originalUrl.getAuthority();
+            URL expectedUrl = new URL(distributionPoint.getMainPath());
+            String expectedDomain = expectedUrl.getProtocol() + "://" + expectedUrl.getAuthority();
+            String validUrl = url;
+            // Replace only if the domains are different
+            if (!originalDomain.equals(expectedDomain)) {
+                validUrl = originalUrl.toString().replaceFirst(originalDomain, expectedDomain);
+            }
+            return validUrl;
+        } catch (MalformedURLException e) {
+            throw new BKPRuntimeException(new CustomErrorCode(ErrorCodeMap.MALFORMED_URL_PATH,
+                String.format(ErrorCodeMap.MALFORMED_URL_PATH.getExternalMessage(), url)));
+        }
     }
 
     private Optional<T> findValidInCache(String url) {

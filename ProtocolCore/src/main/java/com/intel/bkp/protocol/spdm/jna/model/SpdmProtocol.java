@@ -56,7 +56,7 @@ public interface SpdmProtocol extends AutoCloseable {
 
     void setAuthority(List<byte[]> certificateChain, int slotId) throws SpdmCommandFailedException;
 
-    void startSecureSession(int measurementSlotId) throws SpdmCommandFailedException;
+    void startSecureSession(int measurementSlotId, Boolean needMeasurementHash) throws SpdmCommandFailedException;
 
     void stopSecureSession() throws SpdmCommandFailedException;
 

@@ -56,6 +56,19 @@ public enum Oid {
     KEY_PURPOSE_ECA("2.23.133.5.4.100.12"),
 
     /*
+     Below OIDs are defined in DICE Certificate Profiles specification:
+     https://trustedcomputinggroup.org/wp-content/uploads/TCG-Endorsement-Architecture-for-Devices-r38_5May22.pdf
+
+     tcg OBJECT IDENTIFIER ::= {2 23 133}
+     tcg-dice OBJECT IDENTIFIER ::= { tcg platformClass(5) 4 }
+     tcg-dice-kp OBJECT IDENTIFIER ::= { tcg-dice 100 }
+     tcg-dice-kp-manifestSign OBJECT IDENTIFIER ::= {tcg-dice-kp 13}
+     tcg-dice-kp-manifestRevoke OBJECT IDENTIFIER ::= {tcg-dice-kp 14}
+    */
+    KEY_PURPOSE_MANIFEST_SIGN("2.23.133.5.4.100.13"),
+    KEY_PURPOSE_MANIFEST_REVOKE("2.23.133.5.4.100.14"),
+
+    /*
      Below OIDs are defined in DICE Attestation Architecture specification:
      https://trustedcomputinggroup.org/wp-content/uploads/DICE-Attestation-Architecture-r23-final.pdf
 
@@ -74,7 +87,13 @@ public enum Oid {
      */
     KEY_PURPOSE_BKP("2.16.840.1.113741.1.15.1.1.4"),
     INTEL_FPGA_FUSES("2.16.840.1.113741.1.15.2"),
-    MEASUREMENT_TYPES("2.16.840.1.113741.1.15.4");
+    MEASUREMENT_TYPES("2.16.840.1.113741.1.15.4"),
+
+    /*
+     Below OIDs are defined for SPDM
+     */
+    DMTF_SPDM_EXTENSION("1.3.6.1.4.1.412.274.6"),
+    DMTF_HARDWARE_IDENTITY("1.3.6.1.4.1.412.274.2");
 
     private final String oid;
 }

@@ -34,6 +34,7 @@ package com.intel.bkp.crypto.x509.generation;
 
 import com.intel.bkp.crypto.CryptoUtils;
 import com.intel.bkp.crypto.constants.CryptoConstants;
+import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
@@ -69,6 +70,7 @@ import static com.intel.bkp.crypto.x509.utils.KeyIdentifierUtils.calculateSubjec
 import static com.intel.bkp.crypto.x509.utils.KeyIdentifierUtils.createAuthorityKeyIdentifier;
 import static com.intel.bkp.crypto.x509.utils.KeyIdentifierUtils.createSubjectKeyIdentifier;
 
+@Slf4j
 public class X509CertificateBuilder {
 
     private static final Provider CERT_CONVERTER_PROVIDER = CryptoUtils.getBouncyCastleProvider();
@@ -168,11 +170,20 @@ public class X509CertificateBuilder {
 
     public X509Certificate sign(PrivateKey privateKey, Provider signProvider, String signAlgorithm)
         throws OperatorCreationException, CertificateException {
+        long start = System.currentTimeMillis();
         ContentSigner signer = new JcaContentSignerBuilder(signAlgorithm)
             .setProvider(signProvider)
             .build(privateKey);
-        return new JcaX509CertificateConverter()
+        long end = System.currentTimeMillis();
+        log.debug("Time for Signer creation: " + (end - start) + " ms");
+
+        // Measure time for certificate building
+        start = System.currentTimeMillis();
+        X509Certificate cert = new JcaX509CertificateConverter()
             .setProvider(CERT_CONVERTER_PROVIDER)
             .getCertificate(builder.build(signer));
+        end = System.currentTimeMillis();
+        log.debug("Time for certificate creation: " + (end - start) + " ms");
+        return cert;
     }
 }

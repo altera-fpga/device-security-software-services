@@ -32,6 +32,10 @@
 
 package com.intel.bkp.fpgacerts.dp;
 
+import org.apache.hc.client5.http.io.HttpClientConnectionManager;
+import org.apache.hc.client5.http.ssl.DefaultHostnameVerifier;
+import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
+import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactoryBuilder;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -41,8 +45,6 @@ import org.mockito.MockedStatic;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import java.security.KeyManagementException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
@@ -50,11 +52,14 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 class DistributionPointConnectorTest {
 
     private static MockedStatic<SSLContext> SSLContextMockStatic;
-    private static MockedStatic<Executors> executorsMockStatic;
+    private static MockedStatic<SSLConnectionSocketFactory> SSLSocketFactoryMockStatic;
+    private static MockedStatic<SSLConnectionSocketFactoryBuilder> SSLSocketFactoryBuilderMockStatic;
+    private static MockedStatic<HttpClientConnectionManager> HttpClientConnectionManagerMockStatic;
 
     @Mock
     private TrustManager[] managers;
@@ -62,25 +67,35 @@ class DistributionPointConnectorTest {
     @BeforeAll
     static void prepareStaticMock() {
         SSLContextMockStatic = mockStatic(SSLContext.class);
-        executorsMockStatic = mockStatic(Executors.class);
+        SSLSocketFactoryMockStatic = mockStatic(SSLConnectionSocketFactory.class);
+        SSLSocketFactoryBuilderMockStatic = mockStatic(SSLConnectionSocketFactoryBuilder.class);
+        HttpClientConnectionManagerMockStatic = mockStatic(HttpClientConnectionManager.class);
     }
 
     @AfterAll
     static void closeStaticMock() {
         SSLContextMockStatic.close();
-        executorsMockStatic.close();
+        SSLSocketFactoryMockStatic.close();
+        HttpClientConnectionManagerMockStatic.close();
     }
 
     @Test
     void constructor_Success() throws KeyManagementException {
         // given
         SSLContext sslContext = mock(SSLContext.class);
-        ExecutorService executor = mock(ExecutorService.class);
+        SSLConnectionSocketFactory sslConnectionSocketFactory = mock(SSLConnectionSocketFactory.class);
+        SSLConnectionSocketFactoryBuilder sslConnectionSocketFactoryBuilder = mock(SSLConnectionSocketFactoryBuilder.class);
         SSLContextMockStatic.when(() -> SSLContext.getInstance(any())).thenReturn(sslContext);
         doNothing().when(sslContext).init(eq(null), eq(managers), any());
-        executorsMockStatic.when(Executors::newSingleThreadExecutor).thenReturn(executor);
+        SSLSocketFactoryBuilderMockStatic.when(SSLConnectionSocketFactoryBuilder::create).thenReturn(sslConnectionSocketFactoryBuilder);
+        when(sslConnectionSocketFactoryBuilder
+            .setSslContext(eq(sslContext))).thenReturn(sslConnectionSocketFactoryBuilder);
+        when(sslConnectionSocketFactoryBuilder
+            .setHostnameVerifier(any(DefaultHostnameVerifier.class)))
+            .thenReturn(sslConnectionSocketFactoryBuilder);
+        when(sslConnectionSocketFactoryBuilder.build()).thenReturn(sslConnectionSocketFactory);
 
         // when-then
-        assertDoesNotThrow(() -> new DistributionPointConnector("", 0, managers));
+        assertDoesNotThrow(() -> new DistributionPointConnector("", 0, "", managers));
     }
 }

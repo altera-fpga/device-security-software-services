@@ -4,6 +4,6 @@
     "certificate_key": "#PATH_TO_USER_PEM_KEY#",
     "certificate": "#PATH_TO_USER_PEM_CERT#",
     "certificate_ca": "#PATH_TO_SERVER_CA_PEM_CERT#",
-    "system_proxy": true,
+    "system_proxy": false,
     "debug": false
 }

@@ -317,6 +317,16 @@ public class JceSecurityProvider implements ISecurityProvider {
                 String.format("Failed to retrieve public key for key '%1s'.", name)));
     }
 
+    public PublicKey getPubKeyObjFromSecurityObject(String name) {
+        log.debug("Getting public key from security object with name {}.", name);
+        return Optional.ofNullable(getCertificates(name))
+            .filter(certs -> certs.length != 0)
+            .map(certificates1 -> certificates1[0])
+            .map(Certificate::getPublicKey)
+            .orElseThrow(() -> new JceSecurityProviderException(
+                String.format("Failed to retrieve public key for key '%1s'.", name)));
+    }
+
     private Certificate[] getCertificates(String name) {
         log.debug("Getting certificates from security object with name {}.", name);
         try {

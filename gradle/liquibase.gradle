@@ -50,20 +50,24 @@ ext {
 }
 
 def liquibaseCommand(command) {
-    javaexec {
-        standardOutput = new FileOutputStream(new File("$projectDir/${project.name.toLowerCase()}-${jar.getArchiveVersion().getOrElse("")}.sql"), true)
-        classpath sourceSets.main.runtimeClasspath
-        classpath configurations.liquibase
-        main = "liquibase.integration.commandline.Main"
+    def changeLogDir = new File("$projectDir/src/main/resources/config/liquibase/")
+    changeLogDir.eachFileMatch(~/.*\.yaml/) { file ->
+        def changeLogFileName = file.name.replace('.yaml', '')
+        javaexec {
+            standardOutput = new FileOutputStream(new File("$projectDir/${project.name.toLowerCase()}-${changeLogFileName}-${jar.getArchiveVersion().getOrElse("")}.sql"), true)
+            classpath sourceSets.main.runtimeClasspath
+            classpath configurations.liquibase
+            main = "liquibase.integration.commandline.Main"
 
-        args "--changeLogFile=src/main/resources/config/liquibase/master.yaml"
-        args "--referenceUrl=hibernate:spring:com.intel.bkp.domain?dialect=org.hibernate.dialect.PostgreSQLDialect&hibernate.implicit_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy"
-        args "--username=${project.name}"
-        args "--password="
-        args "--contexts=aws"
-        args "--url=offline:postgresql?version=${postgre_version}&changeLogFile=changelog-${project.name.toLowerCase()}-${jar.getArchiveVersion().getOrElse("")}.csv"
-        args "--driver=org.postgresql.Driver"
-        args command
+            args "--changeLogFile=src/main/resources/config/liquibase/${file.name}"
+            args "--referenceUrl=hibernate:spring:com.intel.bkp.domain?dialect=org.hibernate.dialect.PostgreSQLDialect&hibernate.implicit_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy"
+            args "--username=${project.name}"
+            args "--password="
+            args "--contexts=aws"
+            args "--url=offline:postgresql?version=${postgre_version}&changeLogFile=changelog-${project.name.toLowerCase()}-${changeLogFileName}-${jar.getArchiveVersion().getOrElse("")}.csv"
+            args "--driver=org.postgresql.Driver"
+            args command
+        }
     }
 }
 

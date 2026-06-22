@@ -33,8 +33,10 @@
 package com.intel.bkp.bkps.attestation;
 
 import com.intel.bkp.bkps.attestation.mapping.CacheBytesMapper;
+import com.intel.bkp.bkps.config.ApplicationProperties;
 import com.intel.bkp.bkps.connector.DpConnector;
 import com.intel.bkp.bkps.rest.prefetching.service.ZipPrefetchRepositoryService;
+import com.intel.bkp.core.properties.DistributionPoint;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -70,12 +72,22 @@ class CacheZipFetcherTest {
     @Mock
     private DpConnector dpConnector;
 
+    private ApplicationProperties applicationProperties;
+
     private CacheZipFetcher sut;
 
     @BeforeEach
     void prepareSut() {
         when(zipPrefetchRepositoryService.getMapper()).thenReturn(new CacheBytesMapper());
-        sut = new CacheZipFetcher(zipPrefetchRepositoryService, dpConnector);
+        applicationProperties = spy(new ApplicationProperties());
+        applicationProperties.setDistributionPoint(new DistributionPoint(
+            "https://tsci.intel.com/",
+            "content/IPCS/certs/",
+            "content/IPCS/",
+            null,
+            null
+        ));
+        sut = new CacheZipFetcher(zipPrefetchRepositoryService, dpConnector, applicationProperties);
     }
 
     @ParameterizedTest
@@ -88,7 +100,7 @@ class CacheZipFetcherTest {
     @Test
     void fetchCertificate_CallsBaseFetchMethod() {
         // given
-        final String path = "somePath";
+        final String path = "https://somePath";
         final Optional<byte[]> expected = Optional.of(new byte[]{0x02, 0x02});
         final var sutSpy = spy(sut);
         when(sutSpy.fetchSkipCache(path)).thenReturn(expected);

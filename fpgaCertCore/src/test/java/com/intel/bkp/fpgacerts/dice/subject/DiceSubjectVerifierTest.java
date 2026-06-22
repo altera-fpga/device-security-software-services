@@ -311,8 +311,8 @@ class DiceSubjectVerifierTest {
     }
 
     private String generateSubject(String company, String familyName, String deviceId) {
-        final String level = RandomStringUtils.randomAlphanumeric(2);
-        final String additionalData = RandomStringUtils.randomAlphanumeric(16);
+        final String level = RandomStringUtils.secure().nextAlphanumeric(2);
+        final String additionalData = RandomStringUtils.secure().nextAlphanumeric(16);
         return String.format("CN=%s:%s:%s:%s:%s", company, familyName, level, additionalData, deviceId);
     }
 

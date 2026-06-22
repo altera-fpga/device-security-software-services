@@ -52,15 +52,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class X509CrlParserTest {
 
-    // https://tsci.intel.com/content/IPCS/crls/IPCSSigningCA.crl
-    private static final String PEM_CRL_FILENAME = "IPCSSigningCA.crl";
-    private static final String PEM_CERT_SUBJECT = "CN=IPCS Signing Cert Test,OU=Intel PUF Certificate Service," +
-        "O=Intel Corporation,L=Santa Clara,ST=CA,C=US";
+    // https://tsci.altera.com/content/IPCS/crls/IPCS_stratix10.crl
+    private static final String PEM_CRL_FILENAME = "IPCS_stratix10.crl";
+    private static final String PEM_CERT_SUBJECT = "CN=Intel:Stratix10:IPCS";
     private static final String DEVICE_ID_REVOKED = "8062002DB6189C87";
 
     // https://tsci.intel.com/content/DICE/crls/DICE.crl
     private static final String DER_CRL_FILENAME = "DICE.crl";
-    private static final String DER_CERT_SUBJECT = "CN=Intel DICE Root CA";
+    private static final String DER_CERT_SUBJECT = "CN=Altera DICE Root CA";
 
     private static final byte[] WRONG_DATA_ARG = new byte[]{0x01, 0x02};
 

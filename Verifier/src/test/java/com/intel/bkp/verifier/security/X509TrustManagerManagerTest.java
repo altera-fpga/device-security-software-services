@@ -46,7 +46,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.File;
-import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.KeyStore;
 
 import static ch.qos.logback.classic.Level.WARN;
@@ -89,7 +91,9 @@ class X509TrustManagerManagerTest {
     @Test
     void getTrustManagers_trustStoreDoesNotExist_verifyLogExists() {
         // given
-        when(trustStore.getLocation()).thenReturn(new File(tempDir, TRUST_STORE_PATH_NON_EXISTENT).getAbsolutePath());
+        when(trustStore.getLocation())
+            .thenReturn(Path.of(tempDir.getPath(), TRUST_STORE_PATH_NON_EXISTENT).toAbsolutePath().toString());
+
 
         // when
         final var trustManagers = sut.getTrustManagers();
@@ -128,9 +132,9 @@ class X509TrustManagerManagerTest {
     @Test
     void getTrustManagers_Success() {
         // given
-        when(trustStore.getLocation()).thenReturn(new File(tempDir, TRUST_STORE_PATH).getAbsolutePath());
+        when(trustStore.getLocation())
+            .thenReturn(Path.of(tempDir.getPath(), TRUST_STORE_PATH).toAbsolutePath().toString());
         when(trustStore.getType()).thenReturn(TRUST_STORE_TYPE);
-        when(trustStore.getLocation()).thenReturn(new File(tempDir, TRUST_STORE_PATH).getAbsolutePath());
         when(trustStore.getPassword()).thenReturn(TRUST_STORE_PASSWORD);
 
         // when-then
@@ -138,13 +142,13 @@ class X509TrustManagerManagerTest {
     }
 
     private void initKeystore() throws Exception {
-        final KeyStore instance = KeyStore.getInstance(TRUST_STORE_TYPE);
+        KeyStore keyStore = KeyStore.getInstance(TRUST_STORE_TYPE);
         char[] password = TRUST_STORE_PASSWORD.toCharArray();
-        instance.load(null, password);
-        final File keystoreFile = new File(tempDir, TRUST_STORE_PATH);
+        keyStore.load(null, password);
 
-        try (FileOutputStream out = new FileOutputStream(keystoreFile)) {
-            instance.store(out, password);
+        Path keystorePath = tempDir.toPath().resolve(TRUST_STORE_PATH);
+        try (OutputStream out = Files.newOutputStream(keystorePath)) {
+            keyStore.store(out, password);
         }
     }
 

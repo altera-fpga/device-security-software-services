@@ -32,6 +32,8 @@
 
 package com.intel.bkp.crypto.interfaces;
 
+import java.security.PublicKey;
+
 public interface ISecurityProviderCommon {
 
     void login();
@@ -45,4 +47,6 @@ public interface ISecurityProviderCommon {
     void deleteSecurityObject(String name);
 
     byte[] getPubKeyFromSecurityObject(String name);
+
+    PublicKey getPubKeyObjFromSecurityObject(String name);
 }

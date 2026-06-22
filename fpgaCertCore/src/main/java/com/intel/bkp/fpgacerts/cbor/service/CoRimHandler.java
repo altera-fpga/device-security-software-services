@@ -75,7 +75,7 @@ import static com.intel.bkp.utils.HexConverter.fromHex;
 @Slf4j
 public class CoRimHandler implements IRimHandler<CBORObject> {
 
-    private static final int FIRST_COM_ID = 0;
+    public static final int FIRST_COM_ID = 0;
     protected static final int MAX_NESTED_LOCATORS_DEPTH = 16;
 
     private final ReferenceTripleToTcbInfoMeasurementMapper measurementMapper;
@@ -169,6 +169,7 @@ public class CoRimHandler implements IRimHandler<CBORObject> {
             case RIM_UNSIGNED -> handleUnsigned(cborParser, rimCbor);
             default -> throw new RimVerificationException("not a CoRIM object.");
         };
+
         verifyXCoRim(helperDTO);
 
         if (!linkedTags.isEmpty() && !helperDTO.rim.isDesign()) {

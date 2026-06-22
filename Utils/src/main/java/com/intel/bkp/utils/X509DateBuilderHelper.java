@@ -61,7 +61,7 @@ public class X509DateBuilderHelper {
     }
 
     public static String notAfterDate() {
-        return DateBuilder.infinite().build(DateBuilder.DATE);
+        return DateBuilder.infinite().build(DateBuilder.DATE_TIME);
     }
 
     public static String notAfterDate(Integer validityYears) {

@@ -102,9 +102,9 @@ public class SpdmBackgroundService {
         asyncSpdmActions.getVersionThread(MdcHelper.get());
     }
 
-    public void startSetAuthority(List<byte[]> certificateChain, int slotId) {
+    public void startSetAuthority(List<byte[]> certificateChain, int slotId, Boolean isMctpEncapsulateSupported) {
         spdmMessageSenderService.clear();
-        asyncSpdmActions.setAuthorityThread(MdcHelper.get(), certificateChain, slotId);
+        asyncSpdmActions.setAuthorityThread(MdcHelper.get(), certificateChain, slotId, isMctpEncapsulateSupported);
     }
 
     public void startVcaForProvisioningThread() {

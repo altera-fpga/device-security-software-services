@@ -50,7 +50,7 @@ public class VerifierChainBackupUtil {
     public void backupExistingFile(File chainFile) {
         final String parentDir = getParentDirectory(chainFile);
         final String newFileName = getNewFileName(chainFile);
-        final File newFile = new File(parentDir, newFileName);
+        File newFile = Path.of(parentDir, newFileName).toFile();
         if (!chainFile.renameTo(newFile)) {
             log.error("""
                 Failed to rename existing chain QKY file to: {}.

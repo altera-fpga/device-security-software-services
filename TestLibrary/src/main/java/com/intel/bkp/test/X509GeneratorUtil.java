@@ -158,7 +158,7 @@ public class X509GeneratorUtil {
 
     private static X509CRL generateCrl(Optional<Date> nowOptional) throws CrlGenerationFailed {
         final CrlParamsUtil crlParams = new CrlParamsUtil();
-        return X509CrlGenerator.generateCrl(crlParams, nowOptional);
+        return X509CrlGenerator.generateCrl(crlParams, nowOptional, crlParams.getIssuer());
 
     }
 

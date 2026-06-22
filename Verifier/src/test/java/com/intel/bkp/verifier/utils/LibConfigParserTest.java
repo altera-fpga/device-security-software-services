@@ -44,7 +44,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import static com.intel.bkp.protocol.spdm.jna.model.SpdmConstants.DEFAULT_CT_EXPONENT;
 import static com.intel.bkp.verifier.config.Properties.LIB_SPDM_CT_EXPONENT;
@@ -238,6 +237,6 @@ class LibConfigParserTest {
     private static Path getExternalDirectoryPathForConfig(String configName) throws URISyntaxException {
         final URL resource = LibConfigParserTest.class.getClassLoader().getResource(configName);
         assert resource != null;
-        return Paths.get(resource.toURI()).getParent();
+        return Path.of(resource.toURI()).getParent();
     }
 }

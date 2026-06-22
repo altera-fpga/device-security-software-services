@@ -45,11 +45,9 @@ import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurement;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoValue;
 import com.intel.bkp.fpgacerts.model.Family;
 import com.intel.bkp.test.rim.RimGenerator;
-import com.intel.bkp.test.rim.XrimGenerator;
 
 import java.security.KeyPair;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static com.intel.bkp.fpgacerts.dice.tcbinfo.FwidHashAlg.FWIDS_HASH_ALG_SHA384;
@@ -86,21 +84,13 @@ public class FirmwareRimTestData extends TestDataBase {
         final String testData = toHex(signedRimGenerator.generate());
 
         final List<LocatorItem> locators = signedRimGenerator.locators();
-        final String xrimLink = getLink(locators, LocatorType.XCORIM);
         final String cerLink = getLink(locators, LocatorType.CER);
-
-        final byte[] xrimContent = XrimGenerator
-            .instance()
-            .keyPair(keyPair)
-            .generate();
 
         return TestDataDTO.builder()
             .deviceData(prepareMeasurementsFromDevice())
             .testData(testData)
             .cerLink(cerLink)
-            .dpLinks(Map.of(
-                xrimLink, xrimContent
-            )).build();
+            .build();
     }
 
     @Override

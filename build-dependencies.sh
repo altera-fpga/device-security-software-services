@@ -42,6 +42,9 @@ BUILD_LIBCURL_AARCH64=false
 BUILD_GTEST=false
 BUILD_MBEDTLS=false
 BUILD_LIBSPDM=false
+CMAKE_POLICY_FLAG=""
+
+set -E -o pipefail
 
 export no_proxy="altera.com,.altera.com,${no_proxy}"
 
@@ -128,7 +131,7 @@ function verify_version_provided() {
 
 function create_output_folders() {
     local library_folder_name=$1
-    mkdir -p ${OUTPUT_DIR}/${library_folder_name}/{lib,include}
+    mkdir -p "${OUTPUT_DIR}/${library_folder_name}/lib" "${OUTPUT_DIR}/${library_folder_name}/include"
 }
 
 function copy_headers_to_output() {
@@ -137,7 +140,7 @@ function copy_headers_to_output() {
 
     print_info "Copying headers from ${path_to_include_folder} to ${OUTPUT_DIR}/${path_to_output_folder}"
 
-    cp -rL ${path_to_include_folder} ${OUTPUT_DIR}/${path_to_output_folder}
+    cp -rL "${path_to_include_folder}" "${OUTPUT_DIR}/${path_to_output_folder}"
 }
 
 function copy_artifacts_to_output() {
@@ -147,7 +150,7 @@ function copy_artifacts_to_output() {
 
     print_info "Copying ${artifacts_extension} from ${path_to_artifacts_folder} to ${OUTPUT_DIR}/${path_to_output_folder}"
 
-    cp -P ${path_to_artifacts_folder}/${artifacts_extension} ${OUTPUT_DIR}/${path_to_output_folder}
+    cp -P "${path_to_artifacts_folder}"/${artifacts_extension} "${OUTPUT_DIR}/${path_to_output_folder}"
 }
 
 function copy_artifacts_to_output_recursive() {
@@ -155,7 +158,7 @@ function copy_artifacts_to_output_recursive() {
     local artifacts_extension=$2
     local path_to_output_folder=$3
 
-    copy_files_recursive ${path_to_artifacts_folder} ${artifacts_extension} ${OUTPUT_DIR}/${path_to_output_folder}
+    copy_files_recursive "${path_to_artifacts_folder}" "${artifacts_extension}" "${OUTPUT_DIR}/${path_to_output_folder}"
 }
 
 function check_error_code() {
@@ -185,7 +188,7 @@ function downloadFromLibrarySource() {
     local path_to_repository=$4
     local library_full_filename="${library_name}-${library_version}.tar.gz"
 
-    mkdir -p ${workdir} && cd ${workdir} || (print_error "Failed to create and enter working directory: ${workdir}" && exit 1)
+    mkdir -p "${workdir}" && cd "${workdir}" || (print_error "Failed to create and enter working directory: ${workdir}" && exit 1)
 
     if [ -f "${library_full_filename}" ]; then
         print_info "Package for ${library_name} already exists - skipped downloading: ${library_full_filename}"
@@ -194,9 +197,9 @@ function downloadFromLibrarySource() {
         wget --no-if-modified-since -N "${path_to_repository}/${packed_filename}" -O "${library_full_filename}"|| \
         curl -o "${library_full_filename}" -L "${path_to_repository}/${packed_filename}" || (print_error "Failed to download" && exit 1)
 
-        tar xzf ${library_full_filename} || (print_error "Failed to unpack library" && exit 1)
+        tar xzf "${library_full_filename}" || (print_error "Failed to unpack library" && exit 1)
     fi
-    cd ${HOME_DIR} || exit 1
+    cd "${HOME_DIR}" || exit 1
 }
 
 function handle_openssl() {
@@ -212,8 +215,8 @@ function handle_openssl() {
     local packed_filename=openssl-${library_version}.tar.gz
     local path_to_repository=https://www.openssl.org/source/
 
-    downloadFromLibrarySource ${library_name} ${workdir} ${packed_filename} ${path_to_repository} && \
-    build_openssl ${library_name} ${library_path} ${arch}
+    downloadFromLibrarySource "${library_name}" "${workdir}" "${packed_filename}" "${path_to_repository}" && \
+    build_openssl "${library_name}" "${library_path}" "${arch}"
 
     print_info "---- Finished building: ${library_name}, version: ${library_version} ----"
 }
@@ -232,8 +235,8 @@ function handle_boost() {
     local packed_filename=boost_${version_sed}.tar.gz
     local path_to_repository=https://sourceforge.net/projects/boost/files/boost/${library_version}
 
-    downloadFromLibrarySource ${library_name} ${workdir} ${packed_filename} ${path_to_repository} && \
-    build_boost ${library_name} ${library_path} ${arch}
+    downloadFromLibrarySource "${library_name}" "${workdir}" "${packed_filename}" "${path_to_repository}" && \
+    build_boost "${library_name}" "${library_path}" "${arch}"
 
     print_info "---- Finished building: ${library_name}, version: ${library_version} ----"
 }
@@ -251,8 +254,8 @@ function handle_libcurl() {
     local packed_filename=curl-${library_version}.tar.gz
     local path_to_repository=https://curl.se/download
 
-    downloadFromLibrarySource ${library_name} ${workdir} ${packed_filename} ${path_to_repository} && \
-    build_libcurl ${library_name} ${library_path} ${arch}
+    downloadFromLibrarySource "${library_name}" "${workdir}" "${packed_filename}" "${path_to_repository}" && \
+    build_libcurl "${library_name}" "${library_path}" "${arch}"
 
     print_info "---- Finished building: ${library_name}, version: ${library_version} ----"
 }
@@ -270,8 +273,8 @@ function handle_gtest() {
     local packed_filename=v${library_version}.tar.gz
     local path_to_repository=https://github.com/google/googletest/archive/refs/tags
 
-    downloadFromLibrarySource ${library_name} ${workdir} ${packed_filename} ${path_to_repository} && \
-    build_gtest ${library_name} ${library_path}
+    downloadFromLibrarySource "${library_name}" "${workdir}" "${packed_filename}" "${path_to_repository}" && \
+    build_gtest "${library_name}" "${library_path}"
 
     print_info "---- Finished building: ${library_name}, version: ${library_version} ----"
 }
@@ -289,8 +292,8 @@ function handle_mbedtls() {
     local packed_filename=mbedtls-${library_version}.tar.gz
     local path_to_repository=https://github.com/ARMmbed/mbedtls/archive
 
-    downloadFromLibrarySource ${library_name} ${workdir} ${packed_filename} ${path_to_repository} && \
-    build_mbedtls ${library_name} ${library_path}
+    downloadFromLibrarySource "${library_name}" "${workdir}" "${packed_filename}" "${path_to_repository}" && \
+    build_mbedtls "${library_name}" "${library_path}"
 
     print_info "---- Finished building: ${library_name}, version: ${library_version} ----"
 }
@@ -308,8 +311,8 @@ function handle_libspdm() {
     local path_to_repository=https://github.com/DMTF/libspdm/archive/refs/tags
     local library_path=${workdir}/libspdm-${library_version}
 
-    downloadFromLibrarySource ${library_name} ${workdir} ${packed_filename} ${path_to_repository} && \
-    build_libspdm ${library_name} ${library_path}
+    downloadFromLibrarySource "${library_name}" "${workdir}" "${packed_filename}" "${path_to_repository}" && \
+    build_libspdm "${library_name}" "${library_path}"
 
     print_info "---- Finished building: ${library_name}, version: ${library_version} ----"
 }
@@ -322,23 +325,24 @@ function build_openssl() {
     cd "${library_path}" || exit 1
     clean_environment_var
 
-    if [ $arch = "aarch64" ]; then
+    if [ "${arch}" = "aarch64" ]; then
         ./Configure linux-aarch64 --cross-compile-prefix=aarch64-linux-gnu- shared -L-fPIC -L-O0 -fPIC -O0
     else
         ./config shared -L-fPIC -L-g -L-O0 -fPIC -g -O0
     fi
+    check_error_code
     make -j $(nproc) --silent
 
     check_error_code
 
-    cd ${HOME_DIR} || exit 1
+    cd "${HOME_DIR}" || exit 1
 
     local output_folder_name="${library_name}"
     create_output_folders "${output_folder_name}" && \
-    copy_headers_to_output "${library_path}"/include/ ${output_folder_name} && \
-    copy_artifacts_to_output ${library_path} "*.so*" ${output_folder_name}/lib && \
-    # copy also static lib to be used in libspdm
-    copy_artifacts_to_output ${library_path} "*.a" ${output_folder_name}/lib
+    copy_headers_to_output "${library_path}/include/" "${output_folder_name}" && \
+    copy_artifacts_to_output "${library_path}" "*.so*" "${output_folder_name}/lib" && \
+    copy_artifacts_to_output "${library_path}" "*.a" "${output_folder_name}/lib"
+    check_error_code
 }
 
 function build_boost() {
@@ -351,16 +355,21 @@ function build_boost() {
     clean_environment_var
 
     ./bootstrap.sh --with-libraries=program_options --prefix=./${build_output_dir}
-    if [ $arch = "aarch64" ]; then
+    check_error_code
+    if [ "${arch}" = "aarch64" ]; then
         sed -i 's/using gcc/using gcc : arm : aarch64-linux-gnu-g++/g' project-config.jam
+        check_error_code
     fi
     ./b2
+    check_error_code
     ./b2 install
+    check_error_code
     local output_folder_name="${library_name}"
     create_output_folders "${output_folder_name}" && \
-    cp -rLv "${library_path}"/${build_output_dir}/* ${OUTPUT_DIR}/${output_folder_name}/
+    cp -rLv "${library_path}/${build_output_dir}"/* "${OUTPUT_DIR}/${output_folder_name}/"
+    check_error_code
 
-    cd ${HOME_DIR} || exit 1
+    cd "${HOME_DIR}" || exit 1
 }
 
 function build_libcurl() {
@@ -372,8 +381,8 @@ function build_libcurl() {
     clean_environment_var
 
     local output_folder_name="${library_name}"
-    export OPENSSL_ROOT_DIR=${OUTPUT_DIR}/openssl
-    if [ $arch = "aarch64" ]; then
+    export OPENSSL_ROOT_DIR="${OUTPUT_DIR}/openssl"
+    if [ "${arch}" = "aarch64" ]; then
         export CROSS_COMPILE="aarch64-linux-gnu"
         export AR=${CROSS_COMPILE}-ar
         export AS=${CROSS_COMPILE}-as
@@ -385,8 +394,16 @@ function build_libcurl() {
         ./configure --target=${CROSS_COMPILE} --host=${CROSS_COMPILE} --build=i586-pc-linux-gnu --with-openssl=${OPENSSL_ROOT_DIR} --without-zlib --without-zstd --prefix=$(pwd)/output
         check_error_code
         make
-        # make fails, because it is unable to link with openssl for curl executable (it is not needed). Libraries should be built succesfully
+        local make_status=$?
+        if [[ ${make_status} -ne 0 ]]; then
+            print_info "libcurl make returned ${make_status}; continuing because the curl executable may fail while libraries are usable."
+        fi
         make install
+        check_error_code
+        if ! find "$(pwd)/output/lib" -maxdepth 1 \( -name 'libcurl.so*' -o -name 'libcurl.a' \) | grep -q .; then
+            print_error "libcurl library was not produced"
+            exit 1
+        fi
     else
         ./configure --with-openssl=${OPENSSL_ROOT_DIR} --without-zlib --without-zstd --prefix=$(pwd)/output
         check_error_code
@@ -400,11 +417,12 @@ function build_libcurl() {
 
     local output_folder_name="${library_name}"
     create_output_folders "${output_folder_name}" &&
-    mkdir -p ${OUTPUT_DIR}/${output_folder_name}/include/curl &&
-    cp -rL "${library_path}"/output/* ${OUTPUT_DIR}/${output_folder_name} &&
-    cp -rL "${library_path}"/include/curl/*.h ${OUTPUT_DIR}/${output_folder_name}/include/curl/
+    mkdir -p "${OUTPUT_DIR}/${output_folder_name}/include/curl" &&
+    cp -rL "${library_path}"/output/* "${OUTPUT_DIR}/${output_folder_name}" &&
+    cp -rL "${library_path}"/include/curl/*.h "${OUTPUT_DIR}/${output_folder_name}/include/curl/"
+    check_error_code
 
-    cd ${HOME_DIR} || exit 1
+    cd "${HOME_DIR}" || exit 1
 }
 
 function build_libspdm() {
@@ -415,8 +433,9 @@ function build_libspdm() {
     clean_environment_var
 
     build_libspdm_internal "Release" "${library_name}"
+    check_error_code
 
-    cd ${HOME_DIR} || exit 1
+    cd "${HOME_DIR}" || exit 1
 }
 
 function build_libspdm_internal() {
@@ -426,32 +445,32 @@ function build_libspdm_internal() {
     local openssl_folder_name="openssl"
     local openssl_root_dir=${OUTPUT_DIR}/${openssl_folder_name}
 
-    custom_defines="-DLIBSPDM_MAX_MESSAGE_BUFFER_SIZE=20000 -DLIBSPDM_MAX_CERT_CHAIN_BLOCK_LEN=15000 -DLIBSPDM_MAX_CERT_CHAIN_SIZE=18000 -DLIBSPDM_MAX_MEASUREMENT_RECORD_SIZE=15000"
-    algorithms_enabled="-DLIBSPDM_RECORD_TRANSCRIPT_DATA_SUPPORT=1"
-    algorithms_disabled="-DLIBSPDM_ENABLE_CAPABILITY_CHUNK_CAP=0 -DLIBSPDM_ENABLE_CAPABILITY_CSR_CAP=0 -DLIBSPDM_ENABLE_CAPABILITY_HBEAT_CAP=0 -DLIBSPDM_ENABLE_CAPABILITY_PSK_CAP=0 -DLIBSPDM_ENABLE_CAPABILITY_CHAL_CAP=0"
+    local custom_defines="-DLIBSPDM_MAX_MESSAGE_BUFFER_SIZE=20000 -DLIBSPDM_MAX_CERT_CHAIN_BLOCK_LEN=15000 -DLIBSPDM_MAX_CERT_CHAIN_SIZE=18000 -DLIBSPDM_MAX_MEASUREMENT_RECORD_SIZE=15000"
+    local algorithms_enabled="-DLIBSPDM_RECORD_TRANSCRIPT_DATA_SUPPORT=1"
+    local algorithms_disabled="-DLIBSPDM_ENABLE_CAPABILITY_CHUNK_CAP=0 -DLIBSPDM_ENABLE_CAPABILITY_CSR_CAP=0 -DLIBSPDM_ENABLE_CAPABILITY_HBEAT_CAP=0 -DLIBSPDM_ENABLE_CAPABILITY_PSK_CAP=0 -DLIBSPDM_ENABLE_CAPABILITY_CHAL_CAP=0"
 
     local sources_dir=$(pwd)
     local build_dir="build/${cmake_build_type}"
     mkdir -p "${build_dir}" && cd "${build_dir}" || exit 1
     clean_environment_var
 
-    cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DARCH=x64 -DTOOLCHAIN=GCC -DTARGET="${cmake_build_type}" -DDISABLE_TESTS=1 -DCRYPTO=openssl -DENABLE_BINARY_BUILD=1 -DCMAKE_C_FLAGS="${custom_defines} ${algorithms_enabled} ${algorithms_disabled} -I${openssl_root_dir}/include" -DCOMPILED_LIBCRYPTO_PATH=${openssl_root_dir}/lib/libcrypto.a -DCOMPILED_LIBSSL_PATH=${openssl_root_dir}/lib/libssl.a ${sources_dir}
+    cmake ${CMAKE_POLICY_FLAG} -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DARCH=x64 -DTOOLCHAIN=GCC -DTARGET="${cmake_build_type}" -DDISABLE_TESTS=1 -DCRYPTO=openssl -DENABLE_BINARY_BUILD=1 -DCMAKE_C_FLAGS="${custom_defines} ${algorithms_enabled} ${algorithms_disabled} -I${openssl_root_dir}/include" -DCOMPILED_LIBCRYPTO_PATH="${openssl_root_dir}/lib/libcrypto.a" -DCOMPILED_LIBSSL_PATH="${openssl_root_dir}/lib/libssl.a" "${sources_dir}"
     check_error_code
 
     make
     check_error_code
 
     create_output_folders "${output_folder_name}" &&
-    cp -rL "${library_path}"/include ${OUTPUT_DIR}/${output_folder_name} || exit 1
+    cp -rL "${library_path}/include" "${OUTPUT_DIR}/${output_folder_name}" || exit 1
 
     local lib_path="${library_path}/${build_dir}/lib"
-    output_lib_filenames=(libdebuglib_null.a libdebuglib.a libmalloclib.a libmemlib.a libplatform_lib_null.a libplatform_lib.a librnglib.a libspdm_common_lib.a libspdm_crypt_lib.a libspdm_requester_lib.a libspdm_secured_message_lib.a libspdm_transport_mctp_lib.a libcryptlib_openssl.a libspdm_device_secret_lib_null.a)
+    local output_lib_filenames=(libdebuglib_null.a libdebuglib.a libmalloclib.a libmemlib.a libplatform_lib_null.a libplatform_lib.a librnglib.a libspdm_common_lib.a libspdm_crypt_lib.a libspdm_requester_lib.a libspdm_secured_message_lib.a libspdm_transport_mctp_lib.a libcryptlib_openssl.a libspdm_device_secret_lib_null.a)
     for i in "${output_lib_filenames[@]}"
     do
         cp "${lib_path}/${i}" "${OUTPUT_DIR}/${output_folder_name}/lib/" || exit 1
     done
 
-    cd "${sources_dir}"
+    cd "${sources_dir}" || exit 1
 }
 
 function build_gtest() {
@@ -462,18 +481,20 @@ function build_gtest() {
     clean_environment_var
 
     mkdir -p build && cd build || exit 1
-    cmake -DBUILD_GMOCK=ON ../
+    cmake ${CMAKE_POLICY_FLAG} -DBUILD_GMOCK=ON ../
+    check_error_code
     make -j $(nproc) --silent
 
     check_error_code
 
-    cd ${HOME_DIR} || exit 1
+    cd "${HOME_DIR}" || exit 1
 
     local output_folder_name="${library_name}"
     create_output_folders "${output_folder_name}" &&
-    copy_headers_to_output "${library_path}"/googletest/include ${output_folder_name} &&
-    copy_headers_to_output "${library_path}"/googlemock/include ${output_folder_name} &&
-    copy_artifacts_to_output_recursive "${library_name}" "*.a" ${output_folder_name}/lib
+    copy_headers_to_output "${library_path}/googletest/include" "${output_folder_name}" &&
+    copy_headers_to_output "${library_path}/googlemock/include" "${output_folder_name}" &&
+    copy_artifacts_to_output_recursive "${library_name}" "*.a" "${output_folder_name}/lib"
+    check_error_code
 }
 
 function build_mbedtls() {
@@ -484,24 +505,37 @@ function build_mbedtls() {
     clean_environment_var
 
     mkdir -p build && cd build || exit 1
-    cmake -DENABLE_TESTING=OFF ../
+    cmake ${CMAKE_POLICY_FLAG} -DENABLE_TESTING=OFF ../
+    check_error_code
     make -j $(nproc) --silent
 
     check_error_code
 
-    cd ${HOME_DIR} || exit 1
+    cd "${HOME_DIR}" || exit 1
 
     local output_folder_name="${library_name}"
     create_output_folders "${output_folder_name}" && \
-    copy_headers_to_output "${library_path}"/include ${output_folder_name} && \
-    copy_artifacts_to_output_recursive "${library_name}" "*.a" ${output_folder_name}/lib
+    copy_headers_to_output "${library_path}/include" "${output_folder_name}" && \
+    copy_artifacts_to_output_recursive "${library_name}" "*.a" "${output_folder_name}/lib"
+    check_error_code
 }
 
 function copy_files_recursive {
-    find ${WORK_DIR}/$1 -name $2 | while read line; do
+    local path_to_artifacts_folder=$1
+    local artifacts_extension=$2
+    local path_to_output_folder=$3
+    local found=false
+
+    while IFS= read -r -d '' line; do
+        found=true
         echo "Processing file '$line'"
-        cp -- "$line" $3
-    done
+        cp -- "$line" "${path_to_output_folder}" || return 1
+    done < <(find "${WORK_DIR}/${path_to_artifacts_folder}" -name "${artifacts_extension}" -print0)
+
+    if [[ "${found}" == false ]]; then
+        print_error "No ${artifacts_extension} files found under ${WORK_DIR}/${path_to_artifacts_folder}"
+        return 1
+    fi
 }
 
 function doit() {
@@ -566,8 +600,73 @@ function prepare_building_environment() {
 function clean_directory() {
     if [[ "$CLEAN" == true ]]; then
         echo 'Cleaning...'
-        rm -rf dependencies
+        rm -rf "${OUTPUT_DIR}"
         rm -rf build_dependencies
+    fi
+}
+
+function check_cmake() {
+    if ! command -v cmake &> /dev/null; then
+        print_info "cmake not found. Installing..."
+        sudo apt --yes install cmake
+        check_error_code
+        if ! command -v cmake &> /dev/null; then
+            print_error "Failed to install cmake. Aborting!"
+            exit 1
+        fi
+    fi
+
+    local cmake_version
+    cmake_version=$(cmake --version | head -1 | awk '{print $3}')
+    print_info "Detected cmake version: ${cmake_version}"
+
+    # CMake >= 3.27 dropped support for cmake_minimum_required < 3.5
+    if [[ "$(printf '%s\n' "3.27" "${cmake_version}" | sort -V | head -1)" == "3.27" ]]; then
+        print_info "cmake >= 3.27 detected — enabling CMAKE_POLICY_VERSION_MINIMUM=3.5"
+        CMAKE_POLICY_FLAG="-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
+    fi
+}
+
+function check_required_tools() {
+    sudo apt update
+    check_error_code
+
+    local basic_packages=("make" "wget" "curl" "tar" "perl" "python3")
+    for pkg in "${basic_packages[@]}"; do
+        if ! command -v "$pkg" &> /dev/null; then
+            print_info "${pkg} not found. Installing..."
+            sudo apt --yes install "$pkg"
+            check_error_code
+            if ! command -v "$pkg" &> /dev/null; then
+                print_error "Failed to install ${pkg}. Aborting!"
+                exit 1
+            fi
+        fi
+    done
+
+    if ! command -v gcc &> /dev/null; then
+        print_info "build-essential not found. Installing..."
+        sudo apt --yes install build-essential
+        check_error_code
+        if ! command -v gcc &> /dev/null; then
+            print_error "Failed to install build-essential. Aborting!"
+            exit 1
+        fi
+    fi
+
+    if [[ "$BUILD_OPENSSL_AARCH64" == true || "$BUILD_BOOST_AARCH64" == true || "$BUILD_LIBCURL_AARCH64" == true ]]; then
+        local cross_packages=("gcc-aarch64-linux-gnu" "g++-aarch64-linux-gnu" "binutils-aarch64-linux-gnu")
+        for pkg in "${cross_packages[@]}"; do
+            if ! dpkg -s "$pkg" &> /dev/null 2>&1; then
+                print_info "${pkg} not found. Installing..."
+                sudo apt --yes install "$pkg"
+                check_error_code
+                if ! dpkg -s "$pkg" &> /dev/null 2>&1; then
+                    print_error "Failed to install ${pkg}. Aborting!"
+                    exit 1
+                fi
+            fi
+        done
     fi
 }
 
@@ -584,8 +683,10 @@ main() {
     print_info "BOOST_AARCH64_VERSION is set to: ${BOOST_AARCH64_VERSION}"
     print_info "LIBCURL_AARCH64_VERSION is set to: ${LIBCURL_AARCH64_VERSION}"
 
-    clean_directory
     prepare_building_environment
+    clean_directory
+    check_required_tools
+    check_cmake
     doit
 
     print_info "Done"

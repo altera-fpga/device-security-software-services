@@ -167,6 +167,6 @@ class X509DateBuilderHelperTest {
         String actualDateString = X509DateBuilderHelper.notAfterDate();
 
         // then
-        assertEquals(INFINITE_DATE, actualDateString);
+        assertEquals(INFINITE_DATE + " 23:59:59", actualDateString);
     }
 }

@@ -52,11 +52,10 @@ class X509UtilsWrapperTest {
 
     private static final String TEST_FOLDER = "certs/s10/";
 
-    // https://tsci.intel.com/content/IPCS/certs/IPCSSigningCA.cer
-    private static final String PARENT_CERT_FILENAME = "IPCSSigningCA.cer";
-    private static final String CERT_SUBJECT = "CN=IPCS Signing Cert Test, OU=Intel PUF Certificate Service, "
-        + "O=Intel Corporation, L=Santa Clara, ST=CA, C=US";
-    private static final String ISSUER_URL = "https://tsci.intel.com/content/IPCS/certs/IPCS.cer";
+    // https://tsci.altera.com/content/IPCS/certs/IPCS_stratix10.cer
+    private static final String PARENT_CERT_FILENAME = "IPCS_stratix10.cer";
+    private static final String CERT_SUBJECT = "CN=Intel:Stratix10:IPCS";
+    private static final String ISSUER_URL = "https://tsci.altera.com/content/DICE/certs/DICE_RootCA.cer";
 
     private static byte[] certificate;
 

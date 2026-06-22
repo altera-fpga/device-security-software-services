@@ -1,53 +1,54 @@
 [versions]
-apache-commons-cli = "1.9.0"
-apache-commons-codec = "1.17.1"
-apache-commons-csv = "1.12.0"
+apache-commons-cli = "1.11.0"
+apache-commons-codec = "1.21.0"
+apache-commons-csv = "1.14.1"
 apache-commons-dbutils = "1.8.1"
-apache-commons-io = "2.18.0"
-apache-commons-lang = "3.17.0"
-apache-commons-text = "1.13.0"
+apache-commons-io = "2.21.0"
+apache-commons-lang = "3.20.0"
+apache-commons-text = "1.15.0"
 apache-httpclient5 = "5.3.1"
 asciidoctor = "3.3.2"
-awssdk = "2.30.11"
+awssdk = "2.34.6"
 bouncycastle = "1.77"
 cbor = "4.5.6"
 failsafe = "3.3.2"
-google-jib = "3.4.4"
+google-jib = "3.5.3"
 gradle-versions = "0.51.0"
 hamcrest-library = "3.0"
-hazelcast = "5.5.0"
-hibernate = "6.6.5.Final"
-jackson = "2.18.2"
+hazelcast = "5.6.0"
+hibernate = "6.6.2.Final"
+jackson = "2.21.1"
+jackson-annotations = "2.21"
 jakarta-validation-api = "3.1.0"
-jazzer = "0.22.1"
-jna = "5.16.0"
-junit = "5.11.3"
+jazzer = "0.30.0"
+jna = "5.18.1"
+junit = "6.0.3"
 junit5PluginVersion = "1.2.1"
-logback = "1.5.16"
-logstash-logback-encoder = "8.0"
-lombok-plugin = "8.11"
+logback = "1.5.32"
+logstash-logback-encoder = "9.0"
+lombok-plugin = "9.2.0"
 lombok-mapstruct-binding = "0.2.0"
 mapstruct = "1.6.3"
-mockito = "5.14.2"
-modernizer = "1.10.0"
+mockito = "5.22.0"
+modernizer = "1.12.0"
 openapi-generator-plugin = "5.4.0"
 pitest = "1.15.0"
-plantuml-plugin = "8.11"
-shedlock = "6.0.2"
+plantuml-plugin = "9.2.0"
+shedlock = "7.6.0"
 slf4j-api = "2.0.16"
 slf4j-test = "2.9.0"
 sonar-plugin = "3.3"
 spring-boot = "3.3.5"
-spring-dependency-management = "1.1.7"
-spring-restdocs = "3.0.3"
+spring-dependency-management = "1.1.6"
+spring-restdocs = "3.0.5"
 springdoc-openapi = "2.6.0"
 sqlite-plugin = "0.2"
-sqlite-jdbc = "3.49.0.0"
-swagger-annotations = "2.2.28"
-testcontainers = "1.20.4"
+sqlite-jdbc = "3.51.2.0"
+swagger-annotations = "2.2.43"
+testcontainers = "1.21.4"
 webjars-bootstrap = "5.3.3"
 webjars-client = "1.5.1"
-webjars-jquery = "3.7.1"
+webjars-jquery = "4.0.0"
 webjars-locator = "0.52"
 webjars-websocket = "2.3.4"
 xchart = "3.8.8"
@@ -62,7 +63,6 @@ apache-commons-lang = { module = "org.apache.commons:commons-lang3", version.ref
 apache-commons-text = { module = "org.apache.commons:commons-text", version.ref = "apache-commons-text" }
 apache-httpclient5 = { module = "org.apache.httpcomponents.client5:httpclient5", version.ref = "apache-httpclient5" }
 awssdk-apache-client = { module = "software.amazon.awssdk:apache-client" }
-awssdk-bom = { module = "software.amazon.awssdk:bom", version.ref = "awssdk" }
 awssdk-s3 = { module = "software.amazon.awssdk:s3" }
 awssdk-sts = { module = "software.amazon.awssdk:sts" }
 awssdk-ses = { module = "software.amazon.awssdk:ses" }
@@ -76,7 +76,7 @@ hibernate-core = { module = "org.hibernate:hibernate-core", version.ref = "hiber
 hibernate-jpamodelgen = { module = "org.hibernate:hibernate-jpamodelgen", version.ref = "hibernate" }
 hibernate-validator = { module = "org.hibernate.validator:hibernate-validator" }
 hikari = { module = "com.zaxxer:HikariCP" }
-jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jackson" }
+jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jackson-annotations" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
 jakarta-validation-api = { module = "jakarta.validation:jakarta.validation-api", version.ref = "jakarta-validation-api" }
 jazzer-junit = { module = 'com.code-intelligence:jazzer-junit', version.ref = "jazzer" }
@@ -84,6 +84,8 @@ jna = { module = "net.java.dev.jna:jna", version.ref = "jna" }
 json-path = { module = "com.jayway.jsonpath:json-path" }
 junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+junit-platform-engine = { module = "org.junit.platform:junit-platform-engine", version.ref = "junit" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junit" }
 liquibase-core = { module = "org.liquibase:liquibase-core" }
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 logback-core = { module = "ch.qos.logback:logback-core", version.ref = "logback" }

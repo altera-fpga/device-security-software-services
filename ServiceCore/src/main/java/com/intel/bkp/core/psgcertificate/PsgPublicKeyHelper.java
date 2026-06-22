@@ -32,6 +32,7 @@
 
 package com.intel.bkp.core.psgcertificate;
 
+import com.intel.bkp.core.exceptions.PublicKeyHelperException;
 import com.intel.bkp.core.utils.PublicKeyHelperBase;
 import com.intel.bkp.crypto.CryptoUtils;
 import com.intel.bkp.crypto.curve.CurvePoint;
@@ -44,15 +45,15 @@ import static com.intel.bkp.crypto.CryptoUtils.getPubKeyXYLenForPubKey;
 public class PsgPublicKeyHelper extends PublicKeyHelperBase {
 
 
-    public PsgPublicKeyHelper(CurvePoint point) {
+    public PsgPublicKeyHelper(CurvePoint point) throws PublicKeyHelperException {
         super(point);
     }
 
-    public static PsgPublicKeyHelper from(PsgPublicKeyBuilder psgPublicKeyBuilder) {
+    public static PsgPublicKeyHelper from(PsgPublicKeyBuilder psgPublicKeyBuilder) throws PublicKeyHelperException {
         return new PsgPublicKeyHelper(psgPublicKeyBuilder.getCurvePoint());
     }
 
-    public static PsgPublicKeyHelper from(byte[] data) {
+    public static PsgPublicKeyHelper from(byte[] data) throws PublicKeyHelperException {
         return new PsgPublicKeyHelper(new PsgPublicKeyBuilder().parse(data).getCurvePoint());
     }
 

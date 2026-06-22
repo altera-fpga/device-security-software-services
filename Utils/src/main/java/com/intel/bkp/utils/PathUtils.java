@@ -37,7 +37,7 @@ import lombok.NoArgsConstructor;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -66,6 +66,6 @@ public class PathUtils {
     }
 
     public static String getFileNameWithoutExtension(String path) {
-        return FilenameUtils.removeExtension(Paths.get(path).getFileName().toString());
+        return FilenameUtils.removeExtension(Path.of(path).getFileName().toString());
     }
 }

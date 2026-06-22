@@ -38,14 +38,13 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 @Slf4j
 public class VerifierFileReader {
 
     public byte[] readFileBytes(String fileName) {
         log.debug("Reading file: {}", fileName);
-        Path filePath = Paths.get(fileName);
+        Path filePath = Path.of(fileName);
         try {
             return Files.readAllBytes(filePath);
         } catch (IOException e) {

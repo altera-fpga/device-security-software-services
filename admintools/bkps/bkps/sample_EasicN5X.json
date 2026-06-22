@@ -4,6 +4,7 @@
     "overbuild": {
         "max": -1
     },
+    "requireIidUds": false,
     "confidentialData": {
         "importMode": "ENCRYPTED",
         "aesKey": {
