@@ -1,7 +1,7 @@
 
 # BKPS dependency list
 ## Dependency License Report
-_2026-06-22 12:59:45 UTC_
+_2026-06-29 08:40:44 UTC_
 ## Apache 2
 
 **1** **Group:** `com.opencsv` **Name:** `opencsv` **Version:** `5.9` 
