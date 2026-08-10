@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -43,6 +43,7 @@ import com.intel.bkp.utils.PathUtils;
 import com.intel.bkp.verifier.config.JceSecurityConfiguration;
 import com.intel.bkp.verifier.database.SQLiteHelper;
 import com.intel.bkp.verifier.exceptions.VerifierKeyNotInitializedException;
+import com.intel.bkp.verifier.exceptions.VerifierRuntimeException;
 import com.intel.bkp.verifier.model.LibConfig;
 import com.intel.bkp.verifier.model.VerifierKeyParams;
 import com.intel.bkp.verifier.protocol.common.service.VerifierKeyManager;
@@ -137,9 +138,17 @@ public class AppContext implements AutoCloseable {
 
     private static DistributionPointConnector prepareDistributionPointConnector(LibConfig libConfig,
                                                                                 TrustStore trustStore) {
-        final Proxy proxy = libConfig.getDistributionPoint().getProxy();
-        return new DistributionPointConnector(proxy.getHost(), proxy.getPort(),
-            new X509TrustManagerManager(trustStore).getTrustManagers());
+        try {
+            final Proxy proxy = libConfig.getDistributionPoint().getProxy();
+            return new DistributionPointConnector(
+                proxy.getHost(),
+                proxy.getPort(),
+                libConfig.getDistributionPoint().getMainPath(),
+                new X509TrustManagerManager(trustStore).getTrustManagers());
+        } catch (Exception e) {
+            log.debug("Exception occurred while preparing distribution point connector.", e);
+            throw new VerifierRuntimeException("Failed to prepare distribution point connector", e);
+        }
     }
 
     /**
@@ -168,11 +177,6 @@ public class AppContext implements AutoCloseable {
     @Override
     public void close() {
         sqLiteHelper.close();
-        try {
-            dpConnector.close();
-        } catch (Exception e) {
-            log.error("Failed to close active DP connections.");
-        }
         INSTANCE = null;
     }
 }

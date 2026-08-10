@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -50,7 +50,7 @@ public class SetAuthorityRequestDTOReader extends RequestDTOReader<SetAuthorityR
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private final AesGcmProvider encryptionProvider;
-    private final SetAuthorityContext context;
+    private SetAuthorityContext context;
 
     public SetAuthorityRequestDTOReader(AesGcmProvider encryptionProvider,
                                         SetAuthorityRequestDTO dto)

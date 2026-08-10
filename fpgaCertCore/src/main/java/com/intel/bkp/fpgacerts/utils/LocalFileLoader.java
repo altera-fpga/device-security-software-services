@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -34,7 +34,7 @@ package com.intel.bkp.fpgacerts.utils;
 
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.net.URI;
 import java.nio.file.Files;
 import java.util.Optional;
@@ -43,13 +43,17 @@ import java.util.Optional;
 public class LocalFileLoader {
 
     public static Optional<byte[]> load(URI uri) {
-        final File file = new File((uri.getAuthority() == null ? "" : uri.getAuthority()) + uri.getPath());
-        if (!file.exists() || file.isDirectory()) {
-            log.error("Failed to read local file: {}. File does not exist or is directory.", uri);
-            return Optional.empty();
-        }
         try {
-            return Optional.of(Files.readAllBytes(file.toPath()));
+            Path path = Path.of(
+                uri.getAuthority() == null ? uri.getPath() : uri.getAuthority() + uri.getPath()
+            );
+
+            if (!Files.exists(path) || Files.isDirectory(path)) {
+                log.error("Failed to read local file: {}. File does not exist or is directory.", uri);
+                return Optional.empty();
+            }
+
+            return Optional.of(Files.readAllBytes(path));
         } catch (Exception e) {
             log.error("Failed to read local file: {}. Error message: {}", uri, e.getMessage());
             log.debug("Stacktrace: ", e);

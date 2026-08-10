@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -32,6 +32,8 @@
 
 package com.intel.bkp.bkps.connector;
 
+import com.intel.bkp.bkps.config.ApplicationProperties;
+import com.intel.bkp.core.properties.DistributionPoint;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -60,6 +62,7 @@ import static org.mockito.Mockito.when;
 class DpConnectorTest {
 
     private static final String TEST_URL = "https://example.domain.com/test.cer";
+    private static final String NEW_TEST_URL = "https://example.domain.new.com/test.cer";
     private static final Class<byte[]> RESPONSE_TYPE = byte[].class;
     private static final byte[] EXAMPLE_CERT_CONTENT = new byte[]{1, 2, 3, 4};
 
@@ -75,19 +78,22 @@ class DpConnectorTest {
     @BeforeEach
     void setUp() {
         when(restTemplateService.getRestTemplate()).thenReturn(restTemplate);
+        ApplicationProperties properties = new ApplicationProperties();
+        properties.setDistributionPoint(new DistributionPoint(NEW_TEST_URL, "", "", null, null));
+        sut = new DpConnector(restTemplate, properties);
     }
 
     @Test
     void tryGetBytes_WithValidResponse_Success() {
         // given
-        when(restTemplate.getForEntity(TEST_URL, RESPONSE_TYPE))
+        when(restTemplate.getForEntity(NEW_TEST_URL, RESPONSE_TYPE))
             .thenReturn(ResponseEntity.of(Optional.of(EXAMPLE_CERT_CONTENT)));
 
         // when
         final Optional<byte[]> response = sut.tryGetBytes(TEST_URL);
 
         // then
-        verify(restTemplate).getForEntity(TEST_URL, RESPONSE_TYPE);
+        verify(restTemplate).getForEntity(NEW_TEST_URL, RESPONSE_TYPE);
         assertTrue(response.isPresent());
         response.ifPresent(bytes -> assertEquals(toHex(EXAMPLE_CERT_CONTENT), toHex(bytes)));
     }
@@ -95,28 +101,28 @@ class DpConnectorTest {
     @Test
     void tryGetBytes_WithEmptyResponse_ReturnsEmpty() {
         // given
-        when(restTemplate.getForEntity(TEST_URL, RESPONSE_TYPE))
+        when(restTemplate.getForEntity(NEW_TEST_URL, RESPONSE_TYPE))
             .thenReturn(ResponseEntity.of(Optional.empty()));
 
         // when
         final Optional<byte[]> response = sut.tryGetBytes(TEST_URL);
 
         // then
-        verify(restTemplate).getForEntity(TEST_URL, RESPONSE_TYPE);
+        verify(restTemplate).getForEntity(NEW_TEST_URL, RESPONSE_TYPE);
         assertFalse(response.isPresent());
     }
 
     @Test
     void tryGetBytes_WithWrongResponseCode_ReturnsEmpty() {
         // given
-        when(restTemplate.getForEntity(TEST_URL, RESPONSE_TYPE))
+        when(restTemplate.getForEntity(NEW_TEST_URL, RESPONSE_TYPE))
             .thenThrow(HttpClientErrorException.create(HttpStatus.BAD_REQUEST, "test", new HttpHeaders(), null, null));
 
         // when
         final Optional<byte[]> response = sut.tryGetBytes(TEST_URL);
 
         // then
-        verify(restTemplate).getForEntity(TEST_URL, RESPONSE_TYPE);
+        verify(restTemplate).getForEntity(NEW_TEST_URL, RESPONSE_TYPE);
         assertFalse(response.isPresent());
     }
 }

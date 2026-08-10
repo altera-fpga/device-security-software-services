@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -117,22 +117,22 @@ public class PsgCertificateHelper {
         }
     }
 
-    public static String generateFingerprint(PsgCertificateRootEntryBuilder psgCertificateBuilder) {
+    public static String generateFingerprint(PsgCertificateRootEntryBuilder psgCertificateBuilder) throws PublicKeyHelperException {
         return PsgPublicKeyHelper.from(psgCertificateBuilder.getPsgPublicKeyBuilder()).generateFingerprint();
     }
 
-    public static String generateSha256Fingerprint(PsgCertificateRootEntryBuilder psgCertificateBuilder) {
+    public static String generateSha256Fingerprint(PsgCertificateRootEntryBuilder psgCertificateBuilder) throws PublicKeyHelperException {
         return PsgPublicKeyHelper.from(psgCertificateBuilder.getPsgPublicKeyBuilder()).generateSha256Fingerprint();
     }
 
     private boolean verifyRootCertificateInternal(
-        PsgCertificateRootEntryBuilder root, PsgCertificateRootEntryBuilder certObj) {
+        PsgCertificateRootEntryBuilder root, PsgCertificateRootEntryBuilder certObj) throws PublicKeyHelperException {
         return generateFingerprint(root).equals(generateFingerprint(certObj));
     }
 
     public void verifyRootCertificateInternal(
         List<CertificateEntryWrapper> certificateChainList, byte[] rootCertificate)
-        throws PsgCertificateChainWrongSizeException, PsgInvalidRootCertificateException {
+        throws PsgCertificateChainWrongSizeException, PsgInvalidRootCertificateException, PublicKeyHelperException {
 
         PsgCertificateRootEntryBuilder toVerifyEntry = findRootCertificateInChain(certificateChainList);
         PsgCertificateRootEntryBuilder rootEntry = parseRootCertificate(rootCertificate);

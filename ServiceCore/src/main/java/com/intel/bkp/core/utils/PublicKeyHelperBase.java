@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -61,7 +61,7 @@ public class PublicKeyHelperBase {
     private final BigInteger affineX;
     private final BigInteger affineY;
 
-    public PublicKeyHelperBase(CurvePoint point) {
+    public PublicKeyHelperBase(CurvePoint point) throws PublicKeyHelperException {
         this.point = point;
         this.affineX = ensurePositivePointValue(CurvePoint::getPointA);
         this.affineY = ensurePositivePointValue(CurvePoint::getPointB);
@@ -98,8 +98,12 @@ public class PublicKeyHelperBase {
         return PemFormatEncoder.encode(PemFormatHeader.PUBLIC_KEY, toPublic().getEncoded());
     }
 
-    private BigInteger ensurePositivePointValue(Function<CurvePoint, byte[]> getBytes) {
+    private BigInteger ensurePositivePointValue(Function<CurvePoint, byte[]> getBytes) throws PublicKeyHelperException {
         final CurvePoint point = getPoint();
-        return new BigInteger(padLeft(getBytes.apply(point), point.getCurveSpec().getSize() + 1));
+        byte[] bytes = getBytes.apply(point);
+        if (bytes == null || bytes.length == 0) {
+            throw new PublicKeyHelperException("Curve point bytes are null or empty.");
+        }
+        return new BigInteger(padLeft(bytes, point.getCurveSpec().getSize() + 1));
     }
 }

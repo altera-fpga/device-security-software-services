@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -61,7 +61,7 @@ public class X509DateBuilderHelper {
     }
 
     public static String notAfterDate() {
-        return DateBuilder.infinite().build(DateBuilder.DATE);
+        return DateBuilder.infinite().build(DateBuilder.DATE_TIME);
     }
 
     public static String notAfterDate(Integer validityYears) {

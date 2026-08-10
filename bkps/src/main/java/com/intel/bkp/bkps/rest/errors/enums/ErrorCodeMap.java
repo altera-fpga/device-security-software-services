@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -98,6 +98,7 @@ public enum ErrorCodeMap implements IErrorCode {
     CERTIFICATE_IN_TRUSTSTORE_CHECK_FAILED(2175, "Failed to check if certificate is saved in truststore."),
     CERTIFICATE_FAILED_TO_REMOVE(2176, "Failed to remove certificate: specified alias '%s' not found"),
     SPDM_PROCESS_RUNNING(2177, "SPDM Process is still running. Please try again in a few seconds."),
+    MALFORMED_URL_PATH(2178, "URL path \"%s\" to be fetched is malformed."),
 
     /* =========== Onboarding =========== */
     PREFETCHING_GENERIC_EXCEPTION(2300, "Prefetching failed."),
@@ -150,6 +151,11 @@ public enum ErrorCodeMap implements IErrorCode {
     DIFFERENT_AES_KEY_VALUE(2407, "Detected different AES Key test flag value: %s."),
     CORRUPTED_QEK(2408, "Failed to parse confidentialData.qek.value."),
     MISSING_ENCRYPTED_QEK(2409, "Field 'encryptedQek' is required for ENCRYPTED import mode."),
+    CREATE_ID_EXISTS_RESTRICTION_POLICY(2410, "ID assignment is not permitted for new appraisal policies."),
+    PARSE_ERROR_WHEN_UPLOADING(2411, "Failed to upload the target file due to invalid syntax or format."),
+    PATH_NOT_EXIST_IN_PREFETCH(2412, "The target path does not exist in the BKPS prefetch table."),
+    UNSUPPORTED_FILETYPE_IN_PREFETCH(2413, "The file type %s is not supported by the BKPS prefetch."),
+    CORRUPTED_APPRAISAL_POLICY(2414, "Failed to parse the appraisal policy. Check for syntax errors or unsupported fields in the appraisal policy and try again."),
 
     /* =========== Provisioning Init Group =========== */
     OTHER_TRANSACTION_IN_PROGRESS(2500, "Provisioning failed - another transaction in progress."),

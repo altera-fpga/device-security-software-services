@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -38,6 +38,8 @@ import com.intel.bkp.bkps.rest.onboarding.handler.SetAuthorityDoneComponent;
 import com.intel.bkp.bkps.rest.onboarding.handler.SetAuthorityHandler;
 import com.intel.bkp.bkps.rest.onboarding.handler.SetAuthorityProtocolCommunicationComponent;
 import com.intel.bkp.bkps.rest.onboarding.handler.SetAuthorityProtocolComponent;
+import com.intel.bkp.bkps.rest.onboarding.handler.SetAuthorityProtocolDecisionCommunicationComponent;
+import com.intel.bkp.bkps.rest.onboarding.handler.SetAuthorityProtocolDecisionComponent;
 import com.intel.bkp.bkps.rest.onboarding.handler.SetAuthorityQuartusStatusVerifierComponent;
 import com.intel.bkp.bkps.rest.onboarding.handler.SetAuthoritySupportedCommandsComponent;
 import com.intel.bkp.bkps.rest.onboarding.model.SetAuthorityRequestDTO;
@@ -58,9 +60,11 @@ import static lombok.AccessLevel.PACKAGE;
 public class SetAuthorityService {
 
     private final SetAuthoritySupportedCommandsComponent supportedCommandsComponent;
-    private final SetAuthorityCreateComponent createComponent;
+    private final SetAuthorityProtocolDecisionComponent protocolDecisionComponent;
     private final SetAuthorityAdapterComponent adapterComponent;
     private final SetAuthorityQuartusStatusVerifierComponent quartusStatusVerifierComponent;
+    private final SetAuthorityProtocolDecisionCommunicationComponent protocolDecisionCommunicationComponent;
+    private final SetAuthorityCreateComponent createComponent;
     private final SetAuthorityProtocolComponent protocolInitiateComponent;
     private final SetAuthorityProtocolCommunicationComponent protocolCommunicationComponent;
     private final SetAuthorityDoneComponent doneComponent;
@@ -72,10 +76,12 @@ public class SetAuthorityService {
     @PostConstruct
     void init() {
         entrypointComponent.setSuccessor(supportedCommandsComponent);
-        supportedCommandsComponent.setSuccessor(createComponent);
-        createComponent.setSuccessor(adapterComponent);
+        supportedCommandsComponent.setSuccessor(protocolDecisionComponent);
+        protocolDecisionComponent.setSuccessor(adapterComponent);
         adapterComponent.setSuccessor(quartusStatusVerifierComponent);
-        quartusStatusVerifierComponent.setSuccessor(protocolInitiateComponent);
+        quartusStatusVerifierComponent.setSuccessor(protocolDecisionCommunicationComponent);
+        protocolDecisionCommunicationComponent.setSuccessor(createComponent);
+        createComponent.setSuccessor(protocolInitiateComponent);
         protocolInitiateComponent.setSuccessor(protocolCommunicationComponent);
         protocolCommunicationComponent.setSuccessor(doneComponent);
     }

@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -36,6 +36,7 @@ import com.intel.bkp.bkps.exception.InitializationServiceException;
 import com.intel.bkp.bkps.exception.PsgCertificateInvalidPermissionsException;
 import com.intel.bkp.bkps.rest.errors.enums.ErrorCodeMap;
 import com.intel.bkp.core.exceptions.BKPBadRequestException;
+import com.intel.bkp.core.exceptions.PublicKeyHelperException;
 import com.intel.bkp.core.psgcertificate.PsgCertificateEntryBuilder;
 import com.intel.bkp.core.psgcertificate.PsgCertificateHelper;
 import com.intel.bkp.core.psgcertificate.PsgPublicKeyHelper;
@@ -72,6 +73,8 @@ public class PsgCertificateManager extends PsgCertificateHelper {
             throw new InitializationServiceException(ErrorCodeMap.CERTIFICATE_CHAIN_WRONG_SIZE);
         } catch (PsgInvalidRootCertificateException e) {
             throw new InitializationServiceException(ErrorCodeMap.ROOT_CERTIFICATE_IS_INCORRECT);
+        } catch (PublicKeyHelperException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -94,7 +97,7 @@ public class PsgCertificateManager extends PsgCertificateHelper {
         verifyPermissionsMask(leafCertificateInChain.getPsgPublicKeyBuilder().getPublicKeyPermissions());
     }
 
-    public void verifyLeafCertificateMatchesSigningKeyPub(List<CertificateEntryWrapper> chainList, ECPublicKey pubKey) {
+    public void verifyLeafCertificateMatchesSigningKeyPub(List<CertificateEntryWrapper> chainList, ECPublicKey pubKey) throws PublicKeyHelperException {
         final PsgCertificateEntryBuilder leafCertificateInChain = getLeafCert(chainList);
 
         if (!PsgPublicKeyHelper.from(leafCertificateInChain.getPsgPublicKeyBuilder()).areEqual(pubKey)) {

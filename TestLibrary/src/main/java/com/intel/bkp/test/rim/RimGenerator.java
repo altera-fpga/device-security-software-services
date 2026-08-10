@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -50,6 +50,7 @@ import com.intel.bkp.fpgacerts.cbor.signer.CborSignatureVerifier;
 import com.intel.bkp.fpgacerts.cbor.signer.CoseMessage1Signer;
 import com.intel.bkp.fpgacerts.cbor.signer.cose.CborKeyPair;
 import com.intel.bkp.fpgacerts.cbor.signer.cose.model.AlgorithmId;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.MeasurementType;
 import com.intel.bkp.fpgacerts.model.Family;
 import com.intel.bkp.fpgacerts.utils.SkiHelper;
 import com.intel.bkp.utils.PathUtils;
@@ -73,13 +74,11 @@ import java.util.Optional;
 import static com.intel.bkp.fpgacerts.cbor.LocatorType.CER;
 import static com.intel.bkp.fpgacerts.cbor.LocatorType.CORIM;
 import static com.intel.bkp.fpgacerts.cbor.LocatorType.XCORIM;
-import static com.intel.bkp.test.RandomUtils.generateRandomBytes;
 import static com.intel.bkp.test.RandomUtils.generateRandomHex;
 import static com.intel.bkp.test.rim.ComidBuilderUtils.environmentMap;
 import static com.intel.bkp.test.rim.ComidBuilderUtils.measurementMap;
 import static com.intel.bkp.test.rim.ComidBuilderUtils.versionMap;
 import static com.intel.bkp.utils.HexConverter.fromHex;
-import static com.intel.bkp.utils.HexConverter.toHex;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @Setter
@@ -95,8 +94,10 @@ public class RimGenerator {
 
     private String distributionPointUrl = DP_URL;
     private Family family = Family.AGILEX;
-    private String layer0Digest = toHex(generateRandomBytes(64));
-    private String layer1Digest = toHex(generateRandomBytes(48));
+    private String layer0Digest = generateRandomHex(64);
+    private String layer1Digest = generateRandomHex(48);
+    private Integer layer0Svn = 0;
+    private Integer layer1Svn = 0;
     private boolean signed = true;
     private boolean design = false;
     private boolean expired = false;
@@ -106,6 +107,13 @@ public class RimGenerator {
     private Comid fwComid;
     private Comid designComid;
     private List<LocatorItem> locators = new ArrayList<>();
+    private String expectedDigest0 = generateRandomHex(48);
+    private String expectedDigest1 = generateRandomHex(48);
+    private String expectedDigest2 = generateRandomHex(48);
+    private String issuerKeyId = generateRandomHex(ISSUER_KEY_LEN);
+    private boolean includeProfile = false;
+    private Instant date = null;
+    private String fwVersion = "release-2023.28.1.1";
 
     public static RimGenerator instance() {
         return new RimGenerator();
@@ -177,7 +185,7 @@ public class RimGenerator {
         return RimProtectedHeader.builder()
             .algorithmId(algorithmId)
             .contentType(ProtectedHeaderType.RIM.getContentType())
-            .issuerKeyId(generateRandomHex(ISSUER_KEY_LEN))
+            .issuerKeyId(issuerKeyId)
             .metaMap(ProtectedMetaMap.builder()
                 .metaItems(
                     List.of(ProtectedSignersItem.builder()
@@ -187,7 +195,9 @@ public class RimGenerator {
                             .entityName("CN=Intel:%s:ManSign".formatted(family.getFamilyName()))
                             .build())
                 )
-                .signatureValidity(expired ? now.minus(5, ChronoUnit.MINUTES) : now.plus(1, ChronoUnit.DAYS))
+                .signatureValidity(expired ? now.minus(5, ChronoUnit.MINUTES)
+                                   : date != null ? date
+                                   : now.plus(1, ChronoUnit.DAYS))
                 .build())
             .build();
     }
@@ -236,12 +246,16 @@ public class RimGenerator {
             .claims(Claims.builder()
                 .referenceTriples(List.of(
                     ReferenceTriple.builder()
-                        .environmentMap(environmentMap(family.getFamilyName(), 0, 0))
-                        .measurementMap(measurementMap(7, layer0Digest))
+                        .environmentMap((family.getFamilyId() >= Family.AGILEX_B.getFamilyId())
+                                        ? environmentMap(MeasurementType.ROM_EXTENSION.getOid(), MeasurementType.ROM_EXTENSION.getLayer())
+                                        : environmentMap(family.getFamilyName(), MeasurementType.ROM_EXTENSION.getLayer(), 0))
+                        .measurementMap(measurementMap(layer0Svn, 7, layer0Digest))
                         .build(),
                     ReferenceTriple.builder()
-                        .environmentMap(environmentMap(family.getFamilyName(), 1, 0))
-                        .measurementMap(measurementMap(7, layer1Digest)).build()))
+                        .environmentMap((family.getFamilyId() >= Family.AGILEX_B.getFamilyId())
+                                        ? environmentMap(MeasurementType.CMF.getOid(), MeasurementType.CMF.getLayer())
+                                        : environmentMap(family.getFamilyName(), MeasurementType.CMF.getLayer(), 0))
+                        .measurementMap(measurementMap(layer1Svn, 7, layer1Digest)).build()))
                 .endorsedTriples(List.of(ReferenceTriple.builder()
                     .environmentMap(environmentMap("6086480186F84D010F048148", 1))
                     .measurementMap(versionMap("release-2023.28.1.1", "3"))
@@ -252,9 +266,9 @@ public class RimGenerator {
 
     private Comid prepareDesignRimComid() {
 
-        final String digest0 = toHex(generateRandomBytes(48));
-        final String digest1 = toHex(generateRandomBytes(48));
-        final String digest2 = toHex(generateRandomBytes(48));
+        final String digest0 = expectedDigest0;
+        final String digest1 = expectedDigest1;
+        final String digest2 = expectedDigest2;
 
         final List<ReferenceTriple> referenceTriples = List.of(
             ReferenceTriple.builder()

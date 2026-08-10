@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -102,9 +102,9 @@ public class SpdmBackgroundService {
         asyncSpdmActions.getVersionThread(MdcHelper.get());
     }
 
-    public void startSetAuthority(List<byte[]> certificateChain, int slotId) {
+    public void startSetAuthority(List<byte[]> certificateChain, int slotId, Boolean isMctpEncapsulateSupported) {
         spdmMessageSenderService.clear();
-        asyncSpdmActions.setAuthorityThread(MdcHelper.get(), certificateChain, slotId);
+        asyncSpdmActions.setAuthorityThread(MdcHelper.get(), certificateChain, slotId, isMctpEncapsulateSupported);
     }
 
     public void startVcaForProvisioningThread() {

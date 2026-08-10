@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -44,10 +44,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AuthorityInformationAccessUtilsTest {
 
-    private static final String CERT_WITH_AIA_EXTENSION = "IPCSSigningCA.cer";
+    private static final String CERT_WITH_AIA_EXTENSION = "IPCS_stratix10.cer";
     private static final String CERT_WITHOUT_AIA_EXTENSION = "root-ca.crt";
 
-    private static final String ISSUER_URL = "https://tsci.intel.com/content/IPCS/certs/IPCS.cer";
+    private static final String ISSUER_URL = "https://tsci.altera.com/content/DICE/certs/DICE_RootCA.cer";
 
     private static X509Certificate certWithAia;
     private static X509Certificate certWithoutAia;

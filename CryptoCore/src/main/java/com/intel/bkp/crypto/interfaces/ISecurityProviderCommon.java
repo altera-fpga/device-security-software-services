@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -32,6 +32,8 @@
 
 package com.intel.bkp.crypto.interfaces;
 
+import java.security.PublicKey;
+
 public interface ISecurityProviderCommon {
 
     void login();
@@ -45,4 +47,6 @@ public interface ISecurityProviderCommon {
     void deleteSecurityObject(String name);
 
     byte[] getPubKeyFromSecurityObject(String name);
+
+    PublicKey getPubKeyObjFromSecurityObject(String name);
 }

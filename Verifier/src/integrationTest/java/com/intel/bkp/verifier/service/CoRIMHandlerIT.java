@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -52,6 +52,7 @@ import com.intel.bkp.fpgacerts.verification.VerificationResult;
 import com.intel.bkp.test.DiceX509GeneratorUtil;
 import com.intel.bkp.test.KeyGenUtils;
 import com.intel.bkp.test.LoggerTestUtil;
+import com.intel.bkp.test.rim.XrimGenerator;
 import com.intel.bkp.verifier.service.certificate.AppContext;
 import com.intel.bkp.verifier.service.measurements.RimHandlersProvider;
 import com.intel.bkp.verifier.service.testutils.DesignRimLayer2TestData;
@@ -114,17 +115,12 @@ public class CoRIMHandlerIT {
     }
 
     private static final String TEST_FOLDER_INTEGRATION = "integration/";
-
     private static final String TEST_FOLDER_PRE_CERTS = "certs/dice/common/pre/";
-
     private static final String BASE_URL_PROD = "https://tsci.intel.com/content/";
     private static final String BASE_URL_PRE = "https://pre1-tsci.intel.com/content/";
-
     private static final String FILENAME_AGILEX_XRIM = "RIM_Signing_agilex_5WL28Ty-Nta3Si1dR3ralQ7jFHw.xrim";
     private static final String FILENAME_AGILEX_CORIM_CERT = "RIM_Signing_agilex_5WL28Ty-Nta3Si1dR3ralQ7jFHw.cer";
-
     private static final String FILENAME_AGILEX_CORIM = "signed_valid.rim";
-
     // Below digest values extracted from CoRIM file parsed with cbor.me website
     private static final String LAYER_0_DIGEST =
         "302E69BA6E3FAC340A57561234E88BFEB2FE373BCE4D4A28C244809CB467C31CA39874CD0D3F346FCA2A9AE874A1D66B";
@@ -194,6 +190,11 @@ public class CoRIMHandlerIT {
         tcbInfoAggregator.add(testData.getDeviceData());
         final var dpConnector = mockDesignDistributionPointData(testData.getDpLinks());
         final var rootFingerprint = mockDiceChain(keyPair, dpConnector, testData.getCerLink());
+        if (testData.getCerLink() != null) {
+            final byte[] xrimResponse = XrimGenerator.instance().keyPair(keyPair).generate();
+            mockTryGetBytes(dpConnector, testData.getCerLink().replace("certs", "crls").replace(".cer", ".xcorim"),
+                xrimResponse);
+        }
 
         final var appContext = prepareAppContext(dpConnector, params.getData().isAllowedUnsigned(), rootFingerprint);
         try (var appContextStaticMock = mockStatic(AppContext.class)) {
@@ -222,6 +223,11 @@ public class CoRIMHandlerIT {
         tcbInfoAggregator.add(testData.getDeviceData());
         final var dpConnector = mockDesignDistributionPointData(testData.getDpLinks());
         final var rootFingerprint = mockDiceChain(keyPair, dpConnector, testData.getCerLink());
+        if (testData.getCerLink() != null) {
+            final byte[] xrimResponse = XrimGenerator.instance().keyPair(keyPair).generate();
+            mockTryGetBytes(dpConnector, testData.getCerLink().replace("certs", "crls").replace(".cer", ".xcorim"),
+                xrimResponse);
+        }
 
         final var appContext = prepareAppContext(dpConnector, data.isAllowedUnsigned(), rootFingerprint);
 
@@ -264,7 +270,9 @@ public class CoRIMHandlerIT {
 
     private static DistributionPointConnector mockDesignDistributionPointData(Map<String, byte[]> inputData) {
         final var dpConnector = mock(DistributionPointConnector.class);
-        inputData.forEach((link, data) -> mockTryGetBytes(dpConnector, link, data));
+        if (inputData != null) {
+            inputData.forEach((link, data) -> mockTryGetBytes(dpConnector, link, data));
+        }
         return dpConnector;
     }
 

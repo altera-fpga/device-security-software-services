@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -41,9 +41,10 @@ import lombok.extern.slf4j.Slf4j;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -69,10 +70,14 @@ public class X509TrustManagerManager {
     }
 
     private TrustManager[] loadTrustManager() throws NoSuchAlgorithmException, KeyStoreException {
-        final var tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-        final var keyStore = KeyStore.getInstance(trustStoreParams.getType());
+        var tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        var keyStore = KeyStore.getInstance(trustStoreParams.getType());
+
         log.debug("Opening trust store file....");
-        try (InputStream inputStream = new FileInputStream(trustStoreParams.getLocation())) {
+
+        Path trustStorePath = Path.of(trustStoreParams.getLocation());
+
+        try (InputStream inputStream = Files.newInputStream(trustStorePath)) {
             keyStore.load(inputStream, trustStoreParams.getPassword().toCharArray());
         } catch (NoSuchAlgorithmException | IOException e) {
             throw new X509TrustManagerRuntimeException("Failed to load trust store", e);
@@ -91,7 +96,7 @@ public class X509TrustManagerManager {
             return false;
         }
 
-        final var file = new File(trustStorePath);
+        final File file = Path.of(trustStorePath).toFile();
         if (!file.exists() || file.isDirectory()) {
             log.info("Trust store file does not exist.");
             return false;

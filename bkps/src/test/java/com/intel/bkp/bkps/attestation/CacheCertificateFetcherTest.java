@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,8 +33,10 @@
 package com.intel.bkp.bkps.attestation;
 
 import com.intel.bkp.bkps.attestation.mapping.CacheCertificateMapper;
+import com.intel.bkp.bkps.config.ApplicationProperties;
 import com.intel.bkp.bkps.connector.DpConnector;
 import com.intel.bkp.bkps.rest.prefetching.service.CertificatePrefetchRepositoryService;
+import com.intel.bkp.core.properties.DistributionPoint;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -68,12 +70,22 @@ class CacheCertificateFetcherTest {
     @Mock
     private DpConnector dpConnector;
 
+    private ApplicationProperties applicationProperties;
+
     private CacheCertificateFetcher sut;
 
     @BeforeEach
     void prepareSut() {
         when(certPrefetchRepositoryService.getMapper()).thenReturn(new CacheCertificateMapper());
-        sut = new CacheCertificateFetcher(certPrefetchRepositoryService, dpConnector);
+        applicationProperties = spy(new ApplicationProperties());
+        applicationProperties.setDistributionPoint(new DistributionPoint(
+            "https://tsci.intel.com/",
+            "content/IPCS/certs/",
+            "content/IPCS/",
+            null,
+            null
+        ));
+        sut = new CacheCertificateFetcher(certPrefetchRepositoryService, dpConnector, applicationProperties);
     }
 
     @Test
@@ -119,7 +131,7 @@ class CacheCertificateFetcherTest {
     @Test
     void fetchCertificate_CallsBaseFetchMethod() {
         // given
-        final String path = "somePath";
+        final String path = "https://somePath";
         final Optional<X509Certificate> expected = Optional.of(x509Cert);
         final var sutSpy = spy(sut);
         when(sutSpy.fetch(path)).thenReturn(expected);

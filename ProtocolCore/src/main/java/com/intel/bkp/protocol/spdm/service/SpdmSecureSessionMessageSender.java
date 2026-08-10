@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -62,10 +62,10 @@ public class SpdmSecureSessionMessageSender {
 
     private final SpdmProtocol spdmProtocol;
 
-    public void startSession(int measurementSlotId)
+    public void startSession(int measurementSlotId, Boolean needMeasurementHash)
         throws SpdmCommandFailedException {
         log.info("*** STARTING SPDM SECURE SESSION ***");
-        spdmProtocol.startSecureSession(measurementSlotId);
+        spdmProtocol.startSecureSession(measurementSlotId, needMeasurementHash);
     }
 
     public byte[] sendData(byte[] payload) throws SpdmCommandFailedException {

@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -41,6 +41,10 @@ public enum FlowStage {
     SIGMA_ENC_ASSET,
     PROV_RESULT,
     SPDM_GET_CHIPID,
-    SPDM_SESSION
+    SPDM_SESSION,
+    SET_AUTHORITY_DECISION,
+    SET_AUTHORITY_PACK,
+    SET_AUTHORITY_SESSION,
+    SET_AUTHORITY_CERTCHAIN
 
 }

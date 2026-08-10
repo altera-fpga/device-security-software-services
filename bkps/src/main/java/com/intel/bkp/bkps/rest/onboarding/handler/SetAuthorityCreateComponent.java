@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -35,11 +35,13 @@ package com.intel.bkp.bkps.rest.onboarding.handler;
 import com.intel.bkp.bkps.crypto.aesgcm.AesGcmContextProviderImpl;
 import com.intel.bkp.bkps.exception.SetAuthorityGenericException;
 import com.intel.bkp.bkps.programmer.model.ProgrammerMessage;
+import com.intel.bkp.bkps.protocol.common.model.FlowStage;
 import com.intel.bkp.bkps.protocol.common.service.GetAttestationCertificateMessageSender;
 import com.intel.bkp.bkps.protocol.common.service.GetChipIdMessageSender;
 import com.intel.bkp.bkps.protocol.common.service.GetIdCodeMessageSender;
 import com.intel.bkp.bkps.rest.onboarding.model.SetAuthorityContext;
 import com.intel.bkp.bkps.rest.onboarding.model.SetAuthorityRequestDTO;
+import com.intel.bkp.bkps.rest.onboarding.model.SetAuthorityRequestDTOReader;
 import com.intel.bkp.bkps.rest.onboarding.model.SetAuthorityResponseDTO;
 import com.intel.bkp.bkps.rest.onboarding.model.SetAuthorityResponseDTOBuilder;
 import com.intel.bkp.bkps.rest.onboarding.model.SetAuthorityTransferObject;
@@ -73,13 +75,14 @@ public class SetAuthorityCreateComponent extends SetAuthorityHandler {
 
     @Override
     public SetAuthorityResponseDTO handle(SetAuthorityTransferObject transferObject) {
-        if (transferObject.getDto().isContextEmpty()) {
-            return perform(transferObject.getDto());
+        final SetAuthorityContext context = transferObject.getDtoReader().getContext();
+        if (context.getFlowStage() == FlowStage.SET_AUTHORITY_PACK) {
+            return perform(transferObject);
         }
         return successor.handle(transferObject);
     }
 
-    private SetAuthorityResponseDTO perform(SetAuthorityRequestDTO dto) {
+    private SetAuthorityResponseDTO perform(SetAuthorityTransferObject transferObject) {
         log.info(prepareLogEntry("create session."));
 
         Failsafe.with(retryPolicy).run(spdmBackgroundService::ensureProcessIsNotRunning);
@@ -96,12 +99,13 @@ public class SetAuthorityCreateComponent extends SetAuthorityHandler {
             final SpdmMessageDTO messageFromQueue = spdmBackgroundService.getMessageFromQueue();
 
             programmerMessages.add(ProgrammerMessage.from(SEND_PACKET, messageFromQueue.getMessage()));
-
-            final SetAuthorityContext context = new SetAuthorityContext();
+            final SetAuthorityRequestDTO dto = transferObject.getDto();
+            final SetAuthorityRequestDTOReader dtoReader = transferObject.getDtoReader();
+            final SetAuthorityContext context = dtoReader.getContext();
             context.setPufType(PufType.fromOrdinal(dto.getPufType()));
             context.setSlotId(dto.getSlotId());
             context.setForceEnrollment(dto.isForceEnrollment());
-
+            context.setFlowStage(FlowStage.SET_AUTHORITY_SESSION);
             return new SetAuthorityResponseDTOBuilder()
                 .context(context)
                 .withMessages(programmerMessages)

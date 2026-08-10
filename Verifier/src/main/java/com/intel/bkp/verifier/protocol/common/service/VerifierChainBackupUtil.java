@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -50,7 +50,7 @@ public class VerifierChainBackupUtil {
     public void backupExistingFile(File chainFile) {
         final String parentDir = getParentDirectory(chainFile);
         final String newFileName = getNewFileName(chainFile);
-        final File newFile = new File(parentDir, newFileName);
+        File newFile = Path.of(parentDir, newFileName).toFile();
         if (!chainFile.renameTo(newFile)) {
             log.error("""
                 Failed to rename existing chain QKY file to: {}.

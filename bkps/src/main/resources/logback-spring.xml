@@ -4,7 +4,7 @@
   ~
   ~ ***************************************************************************
   ~
-  ~ Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+  ~ Copyright 2020-2026 Altera Corporation. All Rights Reserved.
   ~
   ~ Redistribution and use in source and binary forms, with or without
   ~ modification, are permitted provided that the following conditions are met:
@@ -31,9 +31,8 @@
   ~ ***************************************************************************
   -->
 
-<!DOCTYPE configuration>
 
-<configuration scan="true">
+<configuration>
     <!-- Disable logback status on startup - to debug problems comment below line -->
     <statusListener class="ch.qos.logback.core.status.NopStatusListener"/>
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
@@ -42,43 +41,49 @@
     <property name="LOG_ARCHIVE" value="${LOG_PATH}/archive"/>
     <springProperty scope="context" name="appName" source="spring.application.name"/>
 
-    <!-- The FILE and ASYNC appenders are here as examples for a production configuration -->
-    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_PATH}/${appName}.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_ARCHIVE}/${appName}.%d{yyyy-MM-dd}.log</fileNamePattern>
-            <maxHistory>90</maxHistory>
-        </rollingPolicy>
-        <encoder>
-            <charset>utf-8</charset>
-            <Pattern>%d %-5level [%thread] %logger{0}: %msg%n</Pattern>
-        </encoder>
-    </appender>
-    <appender name="ASYNC" class="ch.qos.logback.classic.AsyncAppender">
-        <queueSize>512</queueSize>
-        <appender-ref ref="FILE"/>
-    </appender>
-
     <conversionRule conversionWord="escapedThrowable"
-                    converterClass="com.intel.bkp.bkps.config.EscapingThrowableConverter"/>
+                    class="com.intel.bkp.bkps.config.EscapingThrowableConverter"/>
     <conversionRule conversionWord="escapedMessage"
-                    converterClass="com.intel.bkp.bkps.config.EscapingMessageConverter" />
-    <appender name="JSONCONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>{"date": "%date{yyyy-MM-dd HH:mm:ss.SSS}", "request_id":"%mdc{request-id}", "uri": "%mdc{uri}", "level": "%level", "class": "%logger", "PID": "%clr(${PID})", "TXID": "%clr(%X{TXID})", "thread": "%clr(%t)", "security": "%clr(%X{SECURITY})", "message": "%escapedMessage", "stacktrace": "%escapedThrowable"}%n</pattern>
-            <charset>utf8</charset>
-        </encoder>
-    </appender>
+                    class="com.intel.bkp.bkps.config.EscapingMessageConverter" />
 
-    <springProfile name="jsonlines">
+    <!-- The FILE and ASYNC appenders are here as examples for a production configuration.
+         They are defined inside the "logs" profile so they are only created when referenced,
+         otherwise logback logs a "Appender named [ASYNC] not referenced" warning. -->
+    <springProfile name="logs">
+        <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>${LOG_PATH}/${appName}.log</file>
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <fileNamePattern>${LOG_ARCHIVE}/${appName}.%d{yyyy-MM-dd}.log</fileNamePattern>
+                <maxHistory>90</maxHistory>
+            </rollingPolicy>
+            <encoder>
+                <charset>utf-8</charset>
+                <Pattern>%d %-5level [%thread] %logger{0}: %msg%n</Pattern>
+            </encoder>
+        </appender>
+
+        <appender name="ASYNC" class="ch.qos.logback.classic.AsyncAppender">
+            <queueSize>512</queueSize>
+            <appender-ref ref="FILE"/>
+        </appender>
+
         <root level="${logging.level.root}">
-            <appender-ref ref="JSONCONSOLE"/>
+            <appender-ref ref="ASYNC"/>
         </root>
     </springProfile>
 
-    <springProfile name="logs">
+    <!-- JSONCONSOLE is defined inside the "jsonlines" profile so it is only created when
+         referenced, otherwise logback logs a "Appender named [JSONCONSOLE] not referenced" warning. -->
+    <springProfile name="jsonlines">
+        <appender name="JSONCONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>{"date": "%date{yyyy-MM-dd HH:mm:ss.SSS}", "request_id":"%mdc{request-id}", "uri": "%mdc{uri}", "level": "%level", "class": "%logger", "PID": "%clr(${PID})", "TXID": "%clr(%X{TXID})", "thread": "%clr(%t)", "security": "%clr(%X{SECURITY})", "message": "%escapedMessage", "stacktrace": "%escapedThrowable"}%n</pattern>
+                <charset>utf8</charset>
+            </encoder>
+        </appender>
+
         <root level="${logging.level.root}">
-            <appender-ref ref="ASYNC"/>
+            <appender-ref ref="JSONCONSOLE"/>
         </root>
     </springProfile>
 
@@ -126,7 +131,7 @@
     <logger name="com.intel.bkp.crypto" level="DEBUG"/>
 
     <!-- https://logback.qos.ch/manual/configuration.html#shutdownHook and https://jira.qos.ch/browse/LOGBACK-1090 -->
-    <shutdownHook class="ch.qos.logback.core.hook.DelayingShutdownHook"/>
+    <shutdownHook class="ch.qos.logback.core.hook.DefaultShutdownHook"/>
 
     <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">
         <resetJUL>true</resetJUL>

@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -38,7 +38,7 @@ import com.intel.bkp.fpgacerts.interfaces.ICrlProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.security.cert.X509CRL;
 import java.util.Map;
 
@@ -79,7 +79,8 @@ public class PrePopulatedCrlProvider implements ICrlProvider {
      */
     private String getCachedUrlForCrlWithTheSameFilename(String originalCrlUrl) {
         log.debug("Looking for cached URL to CRL with the same filename: {}", originalCrlUrl);
-        final String crlFilename = Paths.get(originalCrlUrl).getFileName().toString();
+        String crlFilename = Path.of(originalCrlUrl).getFileName().toString();
+
         return cachedCrls.keySet().stream()
             .filter(url -> url.endsWith(crlFilename))
             .findFirst()

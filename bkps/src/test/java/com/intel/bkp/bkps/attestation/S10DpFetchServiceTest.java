@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -103,12 +103,12 @@ class S10DpFetchServiceTest {
 
     @BeforeAll
     static void init() throws Exception {
-        attestationCert = toX509Certificate(getBytesFromFile("attestation_5ADF841DDEAD944E_00000002.cer"));
-        ipcsSigningCaCert = toX509Certificate(getBytesFromFile("IPCSSigningCA.cer"));
-        ipcsRootCert = toX509Certificate(getBytesFromFile("IPCS.cer"));
+        attestationCert = toX509Certificate(getBytesFromFile("attestation_B96D93594B94FD12_00000002.cer"));
+        ipcsSigningCaCert = toX509Certificate(getBytesFromFile("IPCS_stratix10.cer"));
+        ipcsRootCert = toX509Certificate(getBytesFromFile("DICE_RootCA.cer"));
 
-        ipcsSigningCaCrl = toX509Crl(getBytesFromFile("IPCSSigningCA.crl"));
-        ipcsRootCrl = toX509Crl(getBytesFromFile("IPCS.crl"));
+        ipcsSigningCaCrl = toX509Crl(getBytesFromFile("IPCS_stratix10.crl"));
+        ipcsRootCrl = toX509Crl(getBytesFromFile("DICE.crl"));
 
         instantMockStatic = mockStatic(Instant.class, CALLS_REAL_METHODS);
         when(Instant.now()).thenReturn(NOW_INSTANT);
@@ -158,8 +158,8 @@ class S10DpFetchServiceTest {
 
         // then
         verify(certFetcher).fetchCertificate(contains("attestation_8265302622187CD8_00000002.cer"));
-        verify(certFetcher).fetchCertificate(contains("IPCS/certs/IPCSSigningCA.cer"));
-        verify(certFetcher).fetchCertificate(contains("IPCS/certs/IPCS.cer"));
+        verify(certFetcher).fetchCertificate(contains("IPCS/certs/IPCS_stratix10.cer"));
+        verify(certFetcher).fetchCertificate(contains("DICE/certs/DICE_RootCA.cer"));
     }
 
     private static byte[] getBytesFromFile(String filename) throws Exception {
@@ -168,8 +168,8 @@ class S10DpFetchServiceTest {
 
     private void mockCertificates() {
         mockCertificateExistence("attestation_8265302622187CD8_00000002.cer", attestationCert);
-        mockCertificateExistence("IPCS/certs/IPCSSigningCA.cer", ipcsSigningCaCert);
-        mockCertificateExistence("IPCS/certs/IPCS.cer", ipcsRootCert);
+        mockCertificateExistence("IPCS/certs/IPCS_stratix10.cer", ipcsSigningCaCert);
+        mockCertificateExistence("DICE/certs/DICE_RootCA.cer", ipcsRootCert);
     }
 
     @SneakyThrows
@@ -179,8 +179,8 @@ class S10DpFetchServiceTest {
     }
 
     private void mockCrls() {
-        mockCrlExistence("IPCS/crls/IPCSSigningCA.crl", ipcsSigningCaCrl);
-        mockCrlExistence("IPCS/crls/IPCS.crl", ipcsRootCrl);
+        mockCrlExistence("IPCS/crls/IPCS_stratix10.crl", ipcsSigningCaCrl);
+        mockCrlExistence("DICE/crls/DICE.crl", ipcsRootCrl);
     }
 
     @SneakyThrows

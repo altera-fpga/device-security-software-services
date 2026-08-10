@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -38,6 +38,7 @@ import com.intel.bkp.bkps.exception.SetAuthorityGenericException;
 import com.intel.bkp.bkps.programmer.model.ProgrammerMessage;
 import com.intel.bkp.bkps.programmer.model.ProgrammerResponse;
 import com.intel.bkp.bkps.programmer.utils.ProgrammerResponseToDataAdapter;
+import com.intel.bkp.bkps.protocol.common.model.FlowStage;
 import com.intel.bkp.bkps.rest.onboarding.model.SetAuthorityContext;
 import com.intel.bkp.bkps.rest.onboarding.model.SetAuthorityRequestDTOReader;
 import com.intel.bkp.bkps.rest.onboarding.model.SetAuthorityResponseDTO;
@@ -69,19 +70,19 @@ public class SetAuthorityProtocolCommunicationComponent extends SetAuthorityHand
 
     @Override
     public SetAuthorityResponseDTO handle(SetAuthorityTransferObject transferObject) {
-        final SetAuthorityRequestDTOReader dtoReader = transferObject.getDtoReader();
-        if (dtoReader.getJtagResponses().size() == EXPECTED_NUMBER_OF_RESPONSES) {
-            return perform(transferObject, dtoReader);
+        final SetAuthorityContext context = transferObject.getDtoReader().getContext();
+        if (context.getFlowStage() == FlowStage.SET_AUTHORITY_CERTCHAIN) {
+            return perform(transferObject);
         }
         return successor.handle(transferObject);
     }
 
-    private SetAuthorityResponseDTO perform(SetAuthorityTransferObject transferObject,
-                                            SetAuthorityRequestDTOReader dtoReader) {
+    private SetAuthorityResponseDTO perform(SetAuthorityTransferObject transferObject) {
         if (!spdmBackgroundService.isProcessing()) {
             throw new SetAuthorityGenericException("SPDM Service is not working.");
         }
 
+        final SetAuthorityRequestDTOReader dtoReader = transferObject.getDtoReader();
         final SetAuthorityContext context = dtoReader.getContext();
 
         log.info(prepareLogEntry("parsing quartus responses..."));

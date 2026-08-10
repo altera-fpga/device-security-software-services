@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -68,6 +68,7 @@ import com.intel.bkp.protocol.spdm.jna.model.MctpEncapsulationTypeCallback;
 import com.intel.bkp.protocol.spdm.jna.model.SpdmParametersProvider;
 import com.intel.bkp.protocol.spdm.jna.model.SpdmProtocol;
 import com.intel.bkp.protocol.spdm.jna.model.Uint8;
+import com.intel.bkp.protocol.spdm.service.SpdmGetCertificateMessageSender;
 import com.intel.bkp.protocol.spdm.service.SpdmGetVersionMessageSender;
 import com.intel.bkp.protocol.spdm.service.SpdmSecureSessionMessageSender;
 import com.intel.bkp.protocol.spdm.service.SpdmSetAuthorityMessageSender;
@@ -156,17 +157,53 @@ public class AsyncSpdmActions {
     }
 
     @Async("spdmTaskExecutor")
-    public void setAuthorityThread(String mainThreadTxId, List<byte[]> certificateChain, int slotId) {
+    public void setAuthorityThread(String mainThreadTxId, List<byte[]> certificateChain, int slotId, Boolean isMctpEncapsulateSupported) {
         MdcHelper.add(mainThreadTxId);
 
         try (final SpdmProtocol spdmProtocol = initializeLibrary()) {
             processing = true;
 
-            initializeConnectionAndEnsureVersionSupported(spdmProtocol);
+            if (isMctpEncapsulateSupported) {
+                initializeConnectionAndEnsureVersionSupported(spdmProtocol,
+                    () -> MCTP_ENCAPSULATION_FOR_SECURE_SESSION);
+                log.info("SPDM Responder initialized for Set Authority.");
+                // For SDM 1.5 and above, we need to setup secure session to overwrite the slots if the certificate chain is present
+                SpdmSecureSessionMessageSender spdmSecureSessionMessageSender = null;
+                Boolean needSecureSession = false;
+                try {
+                    log.info("Requesting chain from slot {}.", slotId);
+                    SpdmGetCertificateMessageSender spdmGetCertificateMessageSender = new SpdmGetCertificateMessageSender(spdmProtocol);
+                    final var certChain = Optional.ofNullable(spdmGetCertificateMessageSender.send(slotId))
+                        .filter(value -> value.length != 0)
+                        .orElse(null);
 
-            log.info("SPDM Responder initialized for Set Authority.");
+                    log.info("Certificate chain {} in slot {}.", (certChain == null) ? "not found" : "found", slotId);
 
-            new SpdmSetAuthorityMessageSender(spdmProtocol).send(certificateChain, slotId);
+                    needSecureSession = (certChain != null);
+                } catch (Exception e) {
+                    log.info("Skipping secure session set up.");
+                }
+
+                if (needSecureSession) {
+                    log.info("Setting up secure session.");
+                    spdmSecureSessionMessageSender = new SpdmSecureSessionMessageSender(spdmProtocol);
+                    spdmSecureSessionMessageSender.startSession(slotId, false);
+                } else {
+                    log.info("Secure session is not required.");
+                }
+
+                new SpdmSetAuthorityMessageSender(spdmProtocol).send(certificateChain, slotId);
+
+                if (needSecureSession && spdmSecureSessionMessageSender != null) {
+                    spdmSecureSessionMessageSender.endSession();
+                }
+
+            } else {
+                initializeConnectionAndEnsureVersionSupported(spdmProtocol);
+                log.info("SPDM Responder initialized for Set Authority.");
+                new SpdmSetAuthorityMessageSender(spdmProtocol).send(certificateChain, slotId);
+            }
+
             processResult.success();
         } catch (SpdmNotSupportedException e) {
             log.debug("SPDM not supported: ", e);
@@ -227,7 +264,7 @@ public class AsyncSpdmActions {
             final var slotId = attestationService.performAttestationAndGetSlotId(spdmProtocol, uid, attestationParams);
 
             final var spdmSecureSessionMessageSender = new SpdmSecureSessionMessageSender(spdmProtocol);
-            spdmSecureSessionMessageSender.startSession(slotId);
+            spdmSecureSessionMessageSender.startSession(slotId, true);
 
             if (isClearBbramApplicable(cfgId, configuration)) {
                 log.debug("Sending VOLATILE_AES_ERASE ... ");

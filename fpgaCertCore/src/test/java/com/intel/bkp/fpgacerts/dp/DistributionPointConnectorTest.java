@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -32,6 +32,7 @@
 
 package com.intel.bkp.fpgacerts.dp;
 
+import org.apache.hc.client5.http.io.HttpClientConnectionManager;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -41,8 +42,6 @@ import org.mockito.MockedStatic;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import java.security.KeyManagementException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
@@ -54,7 +53,7 @@ import static org.mockito.Mockito.mockStatic;
 class DistributionPointConnectorTest {
 
     private static MockedStatic<SSLContext> SSLContextMockStatic;
-    private static MockedStatic<Executors> executorsMockStatic;
+    private static MockedStatic<HttpClientConnectionManager> HttpClientConnectionManagerMockStatic;
 
     @Mock
     private TrustManager[] managers;
@@ -62,25 +61,23 @@ class DistributionPointConnectorTest {
     @BeforeAll
     static void prepareStaticMock() {
         SSLContextMockStatic = mockStatic(SSLContext.class);
-        executorsMockStatic = mockStatic(Executors.class);
+        HttpClientConnectionManagerMockStatic = mockStatic(HttpClientConnectionManager.class);
     }
 
     @AfterAll
     static void closeStaticMock() {
         SSLContextMockStatic.close();
-        executorsMockStatic.close();
+        HttpClientConnectionManagerMockStatic.close();
     }
 
     @Test
     void constructor_Success() throws KeyManagementException {
         // given
         SSLContext sslContext = mock(SSLContext.class);
-        ExecutorService executor = mock(ExecutorService.class);
         SSLContextMockStatic.when(() -> SSLContext.getInstance(any())).thenReturn(sslContext);
         doNothing().when(sslContext).init(eq(null), eq(managers), any());
-        executorsMockStatic.when(Executors::newSingleThreadExecutor).thenReturn(executor);
 
         // when-then
-        assertDoesNotThrow(() -> new DistributionPointConnector("", 0, managers));
+        assertDoesNotThrow(() -> new DistributionPointConnector("", 0, "", managers));
     }
 }

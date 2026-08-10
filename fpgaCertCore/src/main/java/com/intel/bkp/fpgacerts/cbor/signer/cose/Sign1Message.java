@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -59,13 +59,19 @@ public class Sign1Message extends Message {
     private byte[] signature;
 
     public Sign1Message() {
-        this(true, true);
+        this(true, true, true);
     }
 
-    private Sign1Message(boolean emitTag, boolean emitContent) {
+    public Sign1Message(boolean emitContextField) {
+        this(true, true, emitContextField);
+    }
+
+    private Sign1Message(boolean emitTag, boolean emitContent, boolean emitContextField) {
         setMessageTag(MessageTag.SIGN_1);
         setEmitTag(emitTag);
-        setContextField(CONTEXT_STRING);
+        if (emitContextField) {
+            setContextField(CONTEXT_STRING);
+        }
         setEmitContent(emitContent);
     }
 
@@ -90,14 +96,34 @@ public class Sign1Message extends Message {
     }
 
     public boolean validate(CborKeyPair cborKeyPair) throws CoseException {
-        final var payload = CBORObject.NewArray()
-            .Add(getContextField())
-            .Add(getProtectedMap().size() > 0 ? getProtectedField() : CBORObject.FromObject(new byte[0]))
-            .Add(getExternalDataField())
-            .Add(getContentField())
-            .EncodeToBytes();
+        byte[] payload;
 
-        log.trace("Cbor signature payload: {}", toHex(payload));
+        if (getContextField() == null || getContextField().isEmpty()) {
+            // The payload array must be length of 4
+            byte[] temp = CBORObject.NewArray()
+                .Add(getProtectedMap().size() > 0 ? getProtectedField() : CBORObject.FromObject(new byte[0]))
+                .Add(getUnprotectedMap())
+                .Add(getContentField())
+                .Add(new byte[0])
+                .EncodeToBytes();
+
+            // Need remove the last byte as it was placeholder for b'None' as value for unsigned cbor
+            payload = new byte[temp.length - 1];
+            System.arraycopy(temp, 0, payload, 0, temp.length - 1);
+        } else {
+            payload = CBORObject.NewArray()
+                .Add(getContextField())
+                .Add(getProtectedMap().size() > 0 ? getProtectedField() : CBORObject.FromObject(new byte[0]))
+                .Add(getExternalDataField())
+                .Add(getContentField())
+                .EncodeToBytes();
+        }
+
+        log.trace("Context Field: {}", getContextField());
+        byte[] protectedField = getProtectedMap().size() > 0 ? getProtectedField() : CBORObject.FromObject(new byte[0]).EncodeToBytes();
+        log.trace("Protected Map: {}", toHex(protectedField));
+        log.trace("External Data Field: {}", toHex(getExternalDataField()));
+        log.trace("Content Field: {}", toHex(getContentField()));
 
         final var alg = AlgorithmId.fromCbor(findAttribute(HeaderKeys.ALGORITHM));
         return SignatureVerifier.verify(alg, payload, getSignature(), cborKeyPair);

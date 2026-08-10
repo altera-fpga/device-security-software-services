@@ -80,12 +80,11 @@ service:
 application:
     accept-unsigned-corim: ${ACCEPT_UNSIGNED_CORIM:false}
     distribution-point:
-        main-path: ${AWS_S3_MAIN_PATH:https://tsci.intel.com/}
+        main-path: ${AWS_S3_MAIN_PATH:https://tsci.altera.com/}
         attestation-cert-base-path: ${AWS_S3_ATTESTATION_CERTIFICATES_PATH:content/IPCS/certs/}
         zip-base-path: ${AWS_S3_ZIP_PATH:content/IPCS/}
         trusted-root-hash: >
-            ${DP_TRUSTED_ROOT_HASH_S10:99B174476980A65FC581F499F60295B9DACA5E7DBAEEC25ECF3988049EC9ED5F},
-            ${DP_TRUSTED_ROOT_HASH_DICE:35E08599DD52CB7533764DEE65C915BBAFD0E35E6252BCCD77F3A694390F618B}
+            ${DP_TRUSTED_ROOT_HASH_DICE:99B95D7EF5A42B26758F959C9F7BDC5E473AC5D50A3484BC96E7E587D3C328CC}
         proxy:
             host: ${DP_PROXY_HOST:}
             port: ${DP_PROXY_PORT:0}
@@ -111,8 +110,8 @@ application:
 
         security:
             key-store-name: uber
-            password: donotchange
-            input-stream-param: /tmp/bc-keystore-bkps-static.jks
+            password: ${SECURITY_PROVIDER_PASSWORD}
+            input-stream-param: ${JCEKS_PATH:/etc/bkps/secrets/bc-keystore.jks}
 
         key-types:
             rsa:

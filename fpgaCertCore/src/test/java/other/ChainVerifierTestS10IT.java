@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -52,12 +52,12 @@ class ChainVerifierTestS10IT {
 
     private static final String TEST_FOLDER = "certs/s10/";
 
-    // https://tsci.intel.com/content/IPCS/certs/attestation_5ADF841DDEAD944E_00000002.cer
-    private static final String ATTESTATION_CERT_FILENAME = "attestation_5ADF841DDEAD944E_00000002.cer";
-    // https://tsci.intel.com/content/IPCS/certs/IPCSSigningCA.cer
-    private static final String PARENT_CERT_FILENAME = "IPCSSigningCA.cer";
-    // https://tsci.intel.com/content/IPCS/certs/IPCS.cer
-    private static final String ROOT_CERT_FILENAME = "IPCS.cer";
+    // https://tsci.altera.com/content/IPCS/certs/attestation_B96D93594B94FD12_00000002.cer
+    private static final String ATTESTATION_CERT_FILENAME = "attestation_B96D93594B94FD12_00000002.cer";
+    // https://tsci.altera.com/content/IPCS/certs/IPCS_stratix10.cer
+    private static final String PARENT_CERT_FILENAME = "IPCS_stratix10.cer";
+    // https://tsci.altera.com/content/DICE/certs/DICE_RootCA.cer
+    private static final String ROOT_CERT_FILENAME = "DICE_RootCA.cer";
 
     private static X509Certificate attestationCert;
     private static X509Certificate parentCert;

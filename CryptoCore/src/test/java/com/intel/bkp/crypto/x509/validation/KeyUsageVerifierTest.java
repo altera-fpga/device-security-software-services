@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -49,8 +49,8 @@ public class KeyUsageVerifierTest {
 
     // openssl req -newkey rsa:2048 -nodes -keyout test.pem -x509 -days 365 -out CA.pem
     private static final String INVALID_CERT = "CA.pem";
-    // https://tsci.intel.com/content/IPCS/certs/attestation_5ADF841DDEAD944E_00000002.cer
-    private static final String VALID_CERT = "attestation_5ADF841DDEAD944E_00000002.cer";
+    // https://tsci.altera.com/content/IPCS/certs/attestation_B96D93594B94FD12_00000002.cer
+    private static final String VALID_CERT = "attestation_B96D93594B94FD12_00000002.cer";
 
     private static X509Certificate invalidCert;
     private static X509Certificate validCert;

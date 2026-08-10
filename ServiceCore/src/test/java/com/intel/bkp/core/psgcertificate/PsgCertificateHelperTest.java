@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -32,6 +32,7 @@
 
 package com.intel.bkp.core.psgcertificate;
 
+import com.intel.bkp.core.exceptions.PublicKeyHelperException;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgCertificateChainWrongSizeException;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgInvalidLeafCertificateException;
 import com.intel.bkp.core.psgcertificate.exceptions.PsgInvalidParentCertificatesException;
@@ -304,7 +305,7 @@ class PsgCertificateHelperTest {
 
     @Test
     void verifyRootCertificateInternal_notThrowsAnything()
-        throws PsgCertificateChainWrongSizeException, PsgInvalidRootCertificateException {
+        throws PsgCertificateChainWrongSizeException, PsgInvalidRootCertificateException, PublicKeyHelperException {
         // given
         KeyPair rootKeyPair = KeyGenUtils.genEc384();
         assert rootKeyPair != null;

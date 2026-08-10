@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -39,7 +39,9 @@ import org.junit.jupiter.api.io.TempDir;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.File;
-import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.KeyStore;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -85,14 +87,16 @@ class HsmBasedProviderTest {
 //    }
 
     private File initKeystore() throws Exception {
-        final KeyStore instance = KeyStore.getInstance(KEYSTORE_TYPE);
+        KeyStore instance = KeyStore.getInstance(KEYSTORE_TYPE);
         char[] password = KEYSTORE_PASSWORD.toCharArray();
         instance.load(null, password);
-        final File keystoreFile = new File(tempDir, "tmpKeystore.p12");
 
-        try (FileOutputStream out = new FileOutputStream(keystoreFile)) {
+        Path keystorePath = tempDir.toPath().resolve("tmpKeystore.p12");
+
+        try (OutputStream out = Files.newOutputStream(keystorePath)) {
             instance.store(out, password);
         }
-        return keystoreFile;
+
+        return keystorePath.toFile();
     }
 }

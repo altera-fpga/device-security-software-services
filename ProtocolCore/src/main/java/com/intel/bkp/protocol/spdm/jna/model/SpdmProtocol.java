@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -56,7 +56,7 @@ public interface SpdmProtocol extends AutoCloseable {
 
     void setAuthority(List<byte[]> certificateChain, int slotId) throws SpdmCommandFailedException;
 
-    void startSecureSession(int measurementSlotId) throws SpdmCommandFailedException;
+    void startSecureSession(int measurementSlotId, Boolean needMeasurementHash) throws SpdmCommandFailedException;
 
     void stopSecureSession() throws SpdmCommandFailedException;
 

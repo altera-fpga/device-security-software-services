@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -61,12 +61,16 @@ import static com.intel.bkp.crypto.x509.utils.KeyIdentifierUtils.createAuthority
 public class X509CrlGenerator {
 
     public static X509CRL generateCrl(ICrlParams crlParams) throws CrlGenerationFailed {
-        return generateCrl(crlParams, Optional.of(new Date()));
+        return generateCrl(crlParams, Optional.of(new Date()), crlParams.getIssuer());
     }
 
-    public static X509CRL generateCrl(ICrlParams crlParams, Optional<Date> nowOptional) throws CrlGenerationFailed {
+    public static X509CRL generateCrl(ICrlParams crlParams, X509CrlIssuerDTO issuerDTO) throws CrlGenerationFailed {
+        return generateCrl(crlParams, Optional.of(new Date()), issuerDTO);
+    }
+
+    public static X509CRL generateCrl(ICrlParams crlParams, Optional<Date> nowOptional, X509CrlIssuerDTO issuerDTO) throws CrlGenerationFailed {
         try {
-            final X509Certificate issuerCertificate = crlParams.getIssuer().getIssuerCertificate();
+            final X509Certificate issuerCertificate = issuerDTO.getIssuerCertificate();
             final Date thisUpdate = nowOptional.orElse(new Date());
             final X509v2CRLBuilder crlBuilder = new JcaX509v2CRLBuilder(issuerCertificate, thisUpdate);
 
@@ -77,7 +81,7 @@ public class X509CrlGenerator {
             nowOptional.ifPresent(now -> crlBuilder.setNextUpdate(crlParams.getNextUpdate(now)));
             crlParams.fillEntries(crlBuilder);
 
-            return buildCrl(crlParams.getIssuer(), crlBuilder);
+            return buildCrl(issuerDTO, crlBuilder);
         } catch (IOException | CertificateEncodingException | OperatorCreationException | CRLException
             | NoSuchAlgorithmException e) {
             throw new CrlGenerationFailed("Failed to generate CRL.", e);

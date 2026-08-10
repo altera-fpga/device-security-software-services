@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -32,6 +32,7 @@
 
 package com.intel.bkp.bkps.attestation;
 
+import com.intel.bkp.bkps.config.ApplicationProperties;
 import com.intel.bkp.bkps.connector.DpConnector;
 import com.intel.bkp.bkps.rest.prefetching.service.CertificatePrefetchRepositoryService;
 import com.intel.bkp.fpgacerts.chain.ICertificateFetcher;
@@ -49,8 +50,9 @@ public class CacheCertificateFetcher extends CacheObjectFetcherBase<X509Certific
     implements ICertificateFetcher<X509Certificate> {
 
     public CacheCertificateFetcher(CertificatePrefetchRepositoryService prefetchRepositoryService,
-                                   DpConnector connector) {
-        super(prefetchRepositoryService, connector);
+                                   DpConnector connector,
+                                   ApplicationProperties applicationProperties) {
+        super(prefetchRepositoryService, connector, applicationProperties.getDistributionPoint());
     }
 
     @Override

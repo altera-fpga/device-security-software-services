@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -32,119 +32,146 @@
 
 package com.intel.bkp.fpgacerts.dp;
 
-import com.intel.bkp.fpgacerts.dp.proxy.ProxyCallbackFactory;
 import com.intel.bkp.fpgacerts.exceptions.ConnectionException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.config.ConnectionConfig;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.apache.hc.client5.http.io.HttpClientConnectionManager;
+import org.apache.hc.client5.http.ssl.DefaultClientTlsStrategy;
+import org.apache.hc.client5.http.ssl.TlsSocketStrategy;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.HttpHost;
+import org.apache.hc.core5.http.io.HttpClientResponseHandler;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.util.Timeout;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.KeyManagementException;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.time.Duration;
+import java.security.UnrecoverableKeyException;
 import java.util.Optional;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+
+import static org.apache.hc.client5.http.ssl.HttpsSupport.getDefaultHostnameVerifier;
 
 @Slf4j
 public class DistributionPointConnector implements IDistributionPointConnector, AutoCloseable {
 
-    private static final int CONNECTION_TIMEOUT_SECONDS = 10;
-    private static final int REQUEST_TIMEOUT_SECONDS = 15;
-    private HttpClient client;
-    private ExecutorService executor;
+    private CloseableHttpClient client;
+    private String mainPath;
 
-    public DistributionPointConnector(String proxyHost, Integer proxyPort, TrustManager[] managers) {
+    public DistributionPointConnector(final String proxyHost,
+                                      final Integer proxyPort,
+                                      final String mainPath,
+                                      final TrustManager[] trustStore) {
         try {
-            final SSLContext sslContext = SSLContext.getInstance("TLS");
-            sslContext.init(null, managers, new SecureRandom());
-            setHttpClient(proxyHost, proxyPort, sslContext);
-        } catch (NoSuchAlgorithmException | KeyManagementException e) {
-            throw new ConnectionException("Failed to init SSL context", e);
+            final SSLContext sslcontext = SSLContext.getInstance("TLS");
+            sslcontext.init(null, trustStore, new SecureRandom());
+            this.client = httpClient(proxyHost, proxyPort, sslcontext);
+            this.mainPath = mainPath;
+        } catch (NoSuchAlgorithmException | KeyManagementException | UnrecoverableKeyException | KeyStoreException e) {
+            throw new ConnectionException("Failed to set up distribution point connection", e);
         }
     }
 
-    public DistributionPointConnector(String proxyHost, Integer proxyPort, SSLContext sslContext) {
-        setHttpClient(proxyHost, proxyPort, sslContext);
-    }
-
-    @Override
-    public void close() {
-        log.debug("Closing HTTP client...");
-        executor.shutdownNow();
-        client = null;
-    }
-
-    public byte[] getBytes(String url) {
-        return getHttpResponseBody(url, HttpResponse.BodyHandlers.ofByteArray());
+    public DistributionPointConnector(final String proxyHost,
+                                      final Integer proxyPort,
+                                      final String mainPath,
+                                      final SSLContext sslContext) {
+        try {
+            this.client = httpClient(proxyHost, proxyPort, sslContext);
+            this.mainPath = mainPath;
+        } catch (NoSuchAlgorithmException | KeyManagementException | UnrecoverableKeyException | KeyStoreException e) {
+            throw new ConnectionException("Failed to set up distribution point connection", e);
+        }
     }
 
     public Optional<byte[]> tryGetBytes(String url) {
-        Optional<byte[]> responseBody = Optional.empty();
-        final HttpResponse<byte[]> response;
         try {
-            response = tryGetHttpResponse(url, HttpResponse.BodyHandlers.ofByteArray());
-            if (HttpURLConnection.HTTP_OK == response.statusCode()) {
-                responseBody = Optional.of(response.body());
-            } else {
-                log.error("Received unexpected response: {}", response);
+            URL originalUrl = new URL(url);
+            String originalDomain = originalUrl.getProtocol() + "://" + originalUrl.getAuthority();
+            URL expectedUrl = new URL(mainPath);
+            String expectedDomain = expectedUrl.getProtocol() + "://" + expectedUrl.getAuthority();
+            String validUrl = url;
+            // Replace only if the domains are different
+            if (!originalDomain.equals(expectedDomain)) {
+                validUrl = originalUrl.toString().replaceFirst(originalDomain, expectedDomain);
             }
-        } catch (InterruptedException e) {
-            log.error("Failed to get http response: {}", e.getMessage());
-            log.debug("Stacktrace: ", e);
-            Thread.currentThread().interrupt();
+
+            log.info("Performing request to: {}", validUrl);
+            final HttpGet httpGet = new HttpGet(validUrl);
+
+            // Preferred in HttpClient 5.x: use a response handler so resources are auto-released
+            final HttpClientResponseHandler<Optional<byte[]>> handler = (ClassicHttpResponse response) -> {
+                final int code = response.getCode();
+                if (code == 200) {
+                    if (response.getEntity() == null) {
+                        return Optional.empty();
+                    }
+                    // EntityUtils consumes the entity and releases the connection
+                    return Optional.of(EntityUtils.toByteArray(response.getEntity()));
+                } else {
+                    log.error("Request status code: {}", code);
+                    return Optional.empty();
+                }
+            };
+            return client.execute(httpGet, handler);
+        } catch (MalformedURLException urlException) {
+            log.error("URL path \"%s\" to be fetched is malformed.".formatted(url), urlException);
+            return Optional.empty();
         } catch (Exception e) {
-            log.error("Failed to get http response: {}", e.getMessage());
-            log.debug("Stacktrace: ", e);
-        }
-        return responseBody;
-    }
-
-    private <T> T getHttpResponseBody(String url, HttpResponse.BodyHandler<T> bodyHandler) {
-        try {
-            final HttpResponse<T> response = tryGetHttpResponse(url, bodyHandler);
-            if (HttpURLConnection.HTTP_OK == response.statusCode()) {
-                return response.body();
-            }
-            throw new ConnectionException("Failed to make request to distribution point. Received wrong status code:"
-                    + response.statusCode());
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new ConnectionException("Failed to make request to distribution point.", e);
-        } catch (Exception e) {
-            throw new ConnectionException("Failed to make request to distribution point.", e);
+            log.error("Failed to get http response.", e);
+            return Optional.empty();
         }
     }
 
-    private <T> HttpResponse<T> tryGetHttpResponse(String url, HttpResponse.BodyHandler<T> bodyHandler)
-            throws IOException, InterruptedException {
-        return client
-                .send(getHttpRequest(url), bodyHandler);
+    private CloseableHttpClient httpClient(final String proxyHost,
+                                           final Integer proxyPort,
+                                           final SSLContext sslcontext)
+        throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException, UnrecoverableKeyException {
+
+        final TlsSocketStrategy tlsSocketStrategy = new DefaultClientTlsStrategy(
+            sslcontext,
+            getDefaultHostnameVerifier()
+        );
+
+        final HttpClientConnectionManager cm = PoolingHttpClientConnectionManagerBuilder.create()
+            .setTlsSocketStrategy(tlsSocketStrategy)
+            .setDefaultConnectionConfig(getRequestConfig())
+            .build();
+
+        final HttpClientBuilder clientBuilder = HttpClients.custom();
+
+        if (StringUtils.isNotEmpty(proxyHost) && proxyPort != null && proxyPort != 0) {
+            clientBuilder.setProxy(new HttpHost(proxyHost, proxyPort));
+        }
+
+        return clientBuilder
+            .setConnectionManager(cm)
+            .evictExpiredConnections()
+            .build();
     }
 
-    private HttpRequest getHttpRequest(String url) {
-        log.debug("Performing request to: {}", url);
-        return HttpRequest.newBuilder(URI.create(url))
-                .timeout(Duration.ofSeconds(REQUEST_TIMEOUT_SECONDS))
-                .GET()
-                .build();
+    @Override
+    public void close() throws Exception {
+        log.debug("Closing HTTP client...");
+        client.close();
+        client = null;
     }
 
-    private void setHttpClient(String proxyHost, Integer proxyPort, SSLContext sslContext) {
-        final var proxy = ProxyCallbackFactory.get(proxyHost, proxyPort).get();
-        executor = Executors.newSingleThreadExecutor();
-        this.client = HttpClient.newBuilder()
-                .proxy(proxy)
-                .connectTimeout(Duration.ofSeconds(CONNECTION_TIMEOUT_SECONDS))
-                .sslContext(sslContext)
-                .executor(executor)
-                .build();
-
+    private ConnectionConfig getRequestConfig() {
+        final Timeout timeout = Timeout.ofSeconds(45);
+        return ConnectionConfig.custom()
+            .setConnectTimeout(timeout)
+            .build();
     }
 }

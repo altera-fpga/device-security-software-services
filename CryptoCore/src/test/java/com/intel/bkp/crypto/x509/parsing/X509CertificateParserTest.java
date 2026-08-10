@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -50,15 +50,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class X509CertificateParserTest {
 
-    // https://tsci.intel.com/content/IPCS/certs/IPCS.cer
-    private static final String PEM_CERT_FILENAME = "IPCS.cer";
-    private static final String PEM_CERT_SUBJECT = "CN=IPCS Root Signing,OU=Intel PUF Certificate Service,"
-        + "O=Intel Corporation,L=Santa Clara,ST=CA,C=US";
+    // https://tsci.altera.com/content/DICE/certs/DICE_RootCA.cer
+    private static final String PEM_CERT_FILENAME = "DICE_RootCA.cer";
+    private static final String PEM_CERT_SUBJECT = "CN=Altera DICE Root CA";
 
-    // https://tsci.intel.com/content/IPCS/certs/IPCSSigningCA.cer
-    private static final String DER_CERT_FILENAME = "IPCSSigningCA.cer";
-    private static final String DER_CERT_SUBJECT = "CN=IPCS Signing Cert Test,OU=Intel PUF Certificate Service," +
-        "O=Intel Corporation,L=Santa Clara,ST=CA,C=US";
+    // https://tsci.altera.com/content/IPCS/certs/IPCS_stratix10.cer
+    private static final String DER_CERT_FILENAME = "IPCS_stratix10.cer";
+    private static final String DER_CERT_SUBJECT = "CN=Intel:Stratix10:IPCS";
 
     private static String certPemString;
     private static byte[] certPemEncoded;

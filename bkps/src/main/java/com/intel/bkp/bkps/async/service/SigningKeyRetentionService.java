@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -49,7 +49,6 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -82,10 +81,10 @@ public class SigningKeyRetentionService {
     }
 
     private Specification<SigningKeyEntity> getSpecification(List<Long> lastIds) {
-        return Objects.requireNonNull(
-            Specification.where(signingKeyRepository.findAllNotEnabled())
-                .and(signingKeyRepository.getOlderOrEqualToTime(getTimeWithThreshold())))
-            .and(signingKeyRepository.notIn(lastIds));
+        return Specification.allOf(
+            signingKeyRepository.findAllNotEnabled(),
+            signingKeyRepository.getOlderOrEqualToTime(getTimeWithThreshold()),
+            signingKeyRepository.notIn(lastIds));
     }
 
     private List<Long> getNewest() {

@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -44,6 +44,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.FileSystemResource;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.security.KeyStoreException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
@@ -77,7 +78,10 @@ class KeyStoreWrapperTest {
     @BeforeEach
     void setUp() throws Exception {
         this.certificate = CertificateUtils.generateCertificate();
-        this.keystoreFile = new File(tempDir, KEYSTORE_LOCATION);
+
+        Path keystorePath = tempDir.toPath().resolve(KEYSTORE_LOCATION);
+        this.keystoreFile = keystorePath.toFile();
+
         mockTrustStoreProperties();
         sut = new KeyStoreWrapper(trustStoreProperties);
 

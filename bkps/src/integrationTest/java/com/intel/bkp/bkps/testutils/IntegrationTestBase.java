@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -64,7 +64,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 @Slf4j
 public abstract class IntegrationTestBase {
 
-    private static final String DP_BASE_PATH = "https://pre1-tsci.intel.com/content";
+    private static final String DP_BASE_PATH = "https://pre1-tsci.dev.altera.com/content";
 
     @Autowired
     protected WebApplicationContext webApplicationContext;

@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -39,6 +39,7 @@ import com.intel.bkp.fpgacerts.cbor.rim.comid.Digest;
 import com.intel.bkp.fpgacerts.cbor.rim.comid.EnvironmentMap;
 import com.intel.bkp.fpgacerts.cbor.rim.comid.MeasurementVersion;
 import com.intel.bkp.fpgacerts.cbor.rim.comid.ReferenceTriple;
+import com.intel.bkp.fpgacerts.utils.OidConverter;
 import com.upokecenter.cbor.CBORObject;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -197,15 +198,16 @@ public class RimCoMIDBuilder extends RimBuilderBase<Comid> {
     }
 
     private static CBORObject buildEndorsedTriplesArray(Comid data) {
-        if (data.getClaims().getEndorsedTriples().isEmpty()) {
+        if (data.getClaims().getEndorsedTriples() == null
+            || data.getClaims().getEndorsedTriples().isEmpty()) {
             return null;
         }
         final var mainArray = CBORObject.NewArray();
 
         data.getClaims().getEndorsedTriples()
             .forEach(triple -> mainArray
-                .Add(CBORObject.NewArray().Add(CBORObject.NewOrderedMap().Add(CBOR_ENVIRONMENTS_KEY,
-                        buildEnvironmentNodeMap(triple)))
+                .Add(CBORObject.NewArray()
+                    .Add(CBORObject.NewOrderedMap().Add(CBOR_ENVIRONMENTS_KEY, buildEnvironmentNodeMap(triple)))
                     .Add(CBORObject.NewArray().Add(CBORObject.NewOrderedMap().Add(CBOR_MEASUREMENTS_KEY,
                         CBORObject.NewOrderedMap().Add(0, buildEndorsedMeasurementNodeMap(triple)))))));
 
@@ -240,7 +242,16 @@ public class RimCoMIDBuilder extends RimBuilderBase<Comid> {
         final var mapObject = CBORObject.NewMap();
 
         ofNullable(environmentMap.getClassId())
-            .map(val -> CBORObject.FromObjectAndTag(fromHex(val), EnvironmentMap.CBOR_CLASS_ID_TAG))
+            .map(val -> {
+                String classIdHex;
+                try {
+                    classIdHex = OidConverter.decimalToHexNotation(val);
+                } catch (Exception e) {
+                    classIdHex = val;
+                }
+                var result = CBORObject.FromObjectAndTag(fromHex(classIdHex), EnvironmentMap.CBOR_CLASS_ID_TAG);
+                return result;
+            })
             .ifPresent(val -> mapObject.Add(EnvironmentMap.CBOR_CLASS_ID_KEY, val));
         ofNullable(environmentMap.getVendor())
             .ifPresent(val -> mapObject.Add(EnvironmentMap.CBOR_VENDOR_KEY, val));

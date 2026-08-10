@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -167,6 +167,6 @@ class X509DateBuilderHelperTest {
         String actualDateString = X509DateBuilderHelper.notAfterDate();
 
         // then
-        assertEquals(INFINITE_DATE, actualDateString);
+        assertEquals(INFINITE_DATE + " 23:59:59", actualDateString);
     }
 }

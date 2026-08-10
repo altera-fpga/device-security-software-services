@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -30,6 +30,10 @@
  * **************************************************************************
  */
 
+dependencies {
+    implementation libs.h2
+}
+
 def profiles = 'prod'
 
 if (project.hasProperty('aws')) {
@@ -40,7 +44,13 @@ if (project.hasProperty('ci')) {
     profiles += ',ci'
 }
 
-if (project.hasProperty('luna')) {
+if (project.hasProperty('logs')) {
+    profiles += ',logs'
+}
+
+if (project.hasProperty('garantir')) {
+    profiles += ',garantir'
+} else if (project.hasProperty('luna')) {
     profiles += ',luna'
 } else if (project.hasProperty('bouncycastle')) {
     profiles += ',bouncycastle'

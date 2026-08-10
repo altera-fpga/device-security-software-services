@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -52,10 +52,8 @@ import com.intel.bkp.core.manufacturing.model.PufType;
 import com.intel.bkp.core.psgcertificate.IPsgAesKeyBuilder;
 import com.intel.bkp.core.psgcertificate.PsgAesKeyBuilderFactory;
 import com.intel.bkp.core.psgcertificate.PsgAesKeyBuilderSDM12;
-import com.intel.bkp.core.psgcertificate.PsgAesKeyBuilderSDM15;
 import com.intel.bkp.core.psgcertificate.enumerations.StorageType;
 import com.intel.bkp.crypto.exceptions.EncryptionProviderException;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -68,6 +66,8 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -380,8 +380,10 @@ public class ServiceConfigurationServiceTest {
     }
 
     private byte[] loadExampleAesKey(String filename) throws IOException {
-        return IOUtils.toByteArray(
-            Objects.requireNonNull(ServiceConfigurationServiceTest.class
-                .getResourceAsStream("/testdata/" + filename)));
+        Path path = Path.of("testdata", filename);
+        try (InputStream inputStream = Objects.requireNonNull(
+            ServiceConfigurationServiceTest.class.getResourceAsStream("/" + path))) {
+            return inputStream.readAllBytes();
+        }
     }
 }

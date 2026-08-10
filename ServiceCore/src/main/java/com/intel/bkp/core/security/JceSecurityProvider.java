@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -313,6 +313,16 @@ public class JceSecurityProvider implements ISecurityProvider {
             .map(certificates1 -> certificates1[0])
             .map(Certificate::getPublicKey)
             .map(Key::getEncoded)
+            .orElseThrow(() -> new JceSecurityProviderException(
+                String.format("Failed to retrieve public key for key '%1s'.", name)));
+    }
+
+    public PublicKey getPubKeyObjFromSecurityObject(String name) {
+        log.debug("Getting public key from security object with name {}.", name);
+        return Optional.ofNullable(getCertificates(name))
+            .filter(certs -> certs.length != 0)
+            .map(certificates1 -> certificates1[0])
+            .map(Certificate::getPublicKey)
             .orElseThrow(() -> new JceSecurityProviderException(
                 String.format("Failed to retrieve public key for key '%1s'.", name)));
     }

@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -38,8 +38,10 @@ plugins {
     id 'idea'
 }
 
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
 
 defaultTasks 'bootRun'
 
@@ -82,13 +84,13 @@ jar {
     from {
         configurations.fatjar.collect { it.isDirectory() ? it : zipTree(it) }
     }
-    duplicatesStrategy DuplicatesStrategy.INCLUDE
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
 }
 
 tasks.register('testReport', TestReport) {
-    destinationDir = file("$buildDir/reports/tests")
-    reportOn test
+    destinationDirectory = layout.buildDirectory.dir("reports/tests")
+    testResults.from(test)
 }
 
 
@@ -124,6 +126,11 @@ dependencies {
     testImplementation platform(libs.junit.bom)
     testImplementation libs.junit.jupiter
     testImplementation libs.bundles.mockito
+    testRuntimeOnly libs.junit.platform.engine
+    testRuntimeOnly libs.junit.platform.launcher
+
+    sealingTestRuntimeOnly libs.junit.platform.engine
+    sealingTestRuntimeOnly libs.junit.platform.launcher
 }
 
 tasks.register('cleanResources', Delete) {
@@ -132,7 +139,7 @@ tasks.register('cleanResources', Delete) {
 
 tasks.register('deploy', Copy) {
     dependsOn jar
-    from layout.buildDirectory.dir("${buildDir}/libs")
+    from layout.buildDirectory.dir("libs")
     include "*.jar"
     into "${projectDir}/../out"
 }

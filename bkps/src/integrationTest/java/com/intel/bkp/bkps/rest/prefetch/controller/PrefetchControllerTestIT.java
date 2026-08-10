@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -96,10 +96,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class PrefetchControllerTestIT extends IntegrationTestBase {
 
+    private static final int MAX_RETRIES = 3;
     private static final String ENDPOINT = PrefetchResource.PREFETCH_DEVICES_NODE;
     private static final String STATUS_ENDPOINT = OnboardingResource.PREFETCH_STATUS;
 
-    private static final String TEST_URL_BASE = "https://pre1-tsci.intel.com/";
+    private static final String TEST_URL_BASE = "https://pre1-tsci.dev.altera.com/";
 
     private static final String DEVICEIDER_NAME = "deviceider_22d4ef4bd6a4d748";
     private static final int PDI_LENGTH = 48;
@@ -114,7 +115,7 @@ public class PrefetchControllerTestIT extends IntegrationTestBase {
     void prefetch_WithSingleS10Device_Success() throws Exception {
         // given
         mockServerWithExpectedOrder();
-        final var deviceId = "5ADF841DDEAD944E";
+        final var deviceId = "F63601AA73E7584C";
         mockS10RequestResponses();
         verifyStatusNotFound(Family.S10.getAsHex(), deviceId);
 
@@ -194,11 +195,11 @@ public class PrefetchControllerTestIT extends IntegrationTestBase {
 
     private void mockS10RequestResponses() throws Exception {
         mockDpResponse(
-            "/IPCS/certs/attestation_5ADF841DDEAD944E_00000002.cer",
-            "/IPCS/certs/IPCSSigningCA.cer",
-            "/IPCS/certs/IPCS.cer",
-            "/IPCS/crls/IPCSSigningCA.crl",
-            "/IPCS/crls/IPCS.crl"
+            "/IPCS/certs/attestation_F63601AA73E7584C_00000002.cer",
+            "/IPCS/certs/IPCS_stratix10.cer",
+            "/DICE/certs/DICE_RootCA.cer",
+            "/IPCS/crls/IPCS_stratix10.crl",
+            "/DICE/crls/DICE.crl"
         );
     }
 
@@ -240,13 +241,26 @@ public class PrefetchControllerTestIT extends IntegrationTestBase {
 
     @SneakyThrows
     private void verifyStatusDone(String family, String deviceId) {
-        mockMvc.perform(get(STATUS_ENDPOINT)
+        boolean success = false;
+        int attempts = 0;
+
+        while (attempts < MAX_RETRIES && !success) {
+            try {
+                mockMvc.perform(get(STATUS_ENDPOINT)
                         .contentType(RestUtil.APPLICATION_JSON_UTF8)
                         .param("familyId", family)
                         .param("uid", deviceId))
-                .andDo(MockMvcResultHandlers.print())
-                .andExpect(status().isOk())
-                .andExpect(content().string("{\"status\":\"DONE\"}"));
+                    .andDo(MockMvcResultHandlers.print())
+                    .andExpect(status().isOk())
+                    .andExpect(content().string("{\"status\":\"DONE\"}"));
+                success = true; // If no exception is thrown, mark as success
+            } catch (AssertionError e) {
+                attempts++;
+                if (attempts >= MAX_RETRIES) {
+                    throw e; // Rethrow the exception if max retries reached
+                }
+            }
+        }
     }
 
     @SneakyThrows

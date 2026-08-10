@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -32,29 +32,40 @@
 
 package com.intel.bkp.bkps.connector;
 
+import com.intel.bkp.bkps.config.ApplicationProperties;
 import com.intel.bkp.fpgacerts.dp.IDistributionPointConnector;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import java.util.Optional;
 
-import static lombok.AccessLevel.PUBLIC;
-
 @Service
-@AllArgsConstructor(access = PUBLIC)
+@RequiredArgsConstructor
 @Slf4j
 public class DpConnector implements IDistributionPointConnector {
 
     private final RestTemplate distributionPointRestTemplate;
+    private final ApplicationProperties applicationProperties;
 
     public Optional<byte[]> tryGetBytes(String url) {
-        log.info("Performing request to: {}", url);
         Optional<byte[]> responseBody = Optional.empty();
         try {
-            final ResponseEntity<byte[]> response = distributionPointRestTemplate.getForEntity(url, byte[].class);
+            URL originalUrl = new URL(url);
+            String originalDomain = originalUrl.getProtocol() + "://" + originalUrl.getAuthority();
+            URL expectedUrl = new URL(applicationProperties.getDistributionPoint().getMainPath());
+            String expectedDomain = expectedUrl.getProtocol() + "://" + expectedUrl.getAuthority();
+            String validUrl = url;
+            // Replace only if the domains are different
+            if (!originalDomain.equals(expectedDomain)) {
+                validUrl = originalUrl.toString().replaceFirst(originalDomain, expectedDomain);
+            }
+            log.info("Performing request to: {}", validUrl);
+            final ResponseEntity<byte[]> response = distributionPointRestTemplate.getForEntity(validUrl, byte[].class);
 
             if (response.getStatusCode().is2xxSuccessful()) {
                 log.debug("Request status code: {}", response.getStatusCode());
@@ -62,6 +73,9 @@ public class DpConnector implements IDistributionPointConnector {
             } else {
                 log.error("Request status code: {}", response.getStatusCode());
             }
+        } catch (MalformedURLException urlException) {
+            log.error("URL path \"%s\" to be fetched is malformed.".formatted(url), urlException);
+            return Optional.empty();
         } catch (Exception e) {
             log.error("Failed to get http response.", e);
         }

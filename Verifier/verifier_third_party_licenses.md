@@ -1,15 +1,15 @@
 
 # VERIFIER dependency list
 ## Dependency License Report
-_2025-07-11 03:38:33 UTC_
+_2026-08-10 02:29:58 UTC_
 ## Apache License 2.0
 
-**1** **Group:** `io.swagger.core.v3` **Name:** `swagger-annotations` **Version:** `2.2.28` 
+**1** **Group:** `io.swagger.core.v3` **Name:** `swagger-annotations` **Version:** `2.2.52` 
 > - **Manifest Project URL**: [https://github.com/swagger-api/swagger-core/modules/swagger-annotations](https://github.com/swagger-api/swagger-core/modules/swagger-annotations)
 > - **Manifest License**: "Apache License 2.0";link="http://www.apache.org/licenses/LICENSE-2.0.html" (Not Packaged)
 > - **POM License**: Apache License 2.0 - [http://www.apache.org/licenses/LICENSE-2.0.html](http://www.apache.org/licenses/LICENSE-2.0.html)
-> - **Embedded license files**: [swagger-annotations-2.2.28.jar/META-INF/LICENSE](swagger-annotations-2.2.28.jar/META-INF/LICENSE) 
-    - [swagger-annotations-2.2.28.jar/META-INF/NOTICE](swagger-annotations-2.2.28.jar/META-INF/NOTICE)
+> - **Embedded license files**: [swagger-annotations-2.2.52.jar/META-INF/LICENSE](swagger-annotations-2.2.52.jar/META-INF/LICENSE) 
+    - [swagger-annotations-2.2.52.jar/META-INF/NOTICE](swagger-annotations-2.2.52.jar/META-INF/NOTICE)
 
 **2** **Group:** `jakarta.validation` **Name:** `jakarta.validation-api` **Version:** `3.1.0` 
 > - **Manifest Project URL**: [https://www.eclipse.org](https://www.eclipse.org)
@@ -20,84 +20,105 @@ _2025-07-11 03:38:33 UTC_
 
 ## Apache License, Version 2.0
 
-**3** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-core` **Version:** `2.18.2` 
+**3** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-core` **Version:** `2.22.1` 
 > - **Project URL**: [https://github.com/FasterXML/jackson-core](https://github.com/FasterXML/jackson-core)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0.txt](http://www.apache.org/licenses/LICENSE-2.0.txt)
 > - **POM License**: The Apache Software License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0.txt](https://www.apache.org/licenses/LICENSE-2.0.txt)
-> - **Embedded license files**: [jackson-core-2.18.2.jar/META-INF/LICENSE](jackson-core-2.18.2.jar/META-INF/LICENSE) 
-    - [jackson-core-2.18.2.jar/META-INF/NOTICE](jackson-core-2.18.2.jar/META-INF/NOTICE)
+> - **Embedded license files**: [jackson-core-2.22.1.jar/META-INF/LICENSE](jackson-core-2.22.1.jar/META-INF/LICENSE) 
+    - [jackson-core-2.22.1.jar/META-INF/NOTICE](jackson-core-2.22.1.jar/META-INF/NOTICE)
 
-**4** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-databind` **Version:** `2.18.2` 
+**4** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-databind` **Version:** `2.22.1` 
 > - **Project URL**: [https://github.com/FasterXML/jackson](https://github.com/FasterXML/jackson)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0.txt](http://www.apache.org/licenses/LICENSE-2.0.txt)
 > - **POM License**: The Apache Software License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0.txt](https://www.apache.org/licenses/LICENSE-2.0.txt)
-> - **Embedded license files**: [jackson-databind-2.18.2.jar/META-INF/LICENSE](jackson-databind-2.18.2.jar/META-INF/LICENSE) 
-    - [jackson-databind-2.18.2.jar/META-INF/NOTICE](jackson-databind-2.18.2.jar/META-INF/NOTICE)
+> - **Embedded license files**: [jackson-databind-2.22.1.jar/META-INF/LICENSE](jackson-databind-2.22.1.jar/META-INF/LICENSE) 
+    - [jackson-databind-2.22.1.jar/META-INF/NOTICE](jackson-databind-2.22.1.jar/META-INF/NOTICE)
 
 **5** **Group:** `dev.failsafe` **Name:** `failsafe` **Version:** `3.3.2` 
 > - **POM License**: Apache License, Version 2.0 - [http://apache.org/licenses/LICENSE-2.0](http://apache.org/licenses/LICENSE-2.0)
 
+**6** **Group:** `org.apache.httpcomponents.client5` **Name:** `httpclient5` **Version:** `5.6.2` 
+> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0.txt](https://www.apache.org/licenses/LICENSE-2.0.txt)
+> - **Embedded license files**: [httpclient5-5.6.2.jar/META-INF/LICENSE](httpclient5-5.6.2.jar/META-INF/LICENSE) 
+    - [httpclient5-5.6.2.jar/META-INF/NOTICE](httpclient5-5.6.2.jar/META-INF/NOTICE)
+
+**7** **Group:** `org.apache.httpcomponents.core5` **Name:** `httpcore5` **Version:** `5.4.3` 
+> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0.txt](https://www.apache.org/licenses/LICENSE-2.0.txt)
+> - **Embedded license files**: [httpcore5-5.4.3.jar/META-INF/LICENSE](httpcore5-5.4.3.jar/META-INF/LICENSE) 
+    - [httpcore5-5.4.3.jar/META-INF/NOTICE](httpcore5-5.4.3.jar/META-INF/NOTICE)
+
+**8** **Group:** `org.apache.httpcomponents.core5` **Name:** `httpcore5-h2` **Version:** `5.4.3` 
+> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0.txt](https://www.apache.org/licenses/LICENSE-2.0.txt)
+> - **Embedded license files**: [httpcore5-h2-5.4.3.jar/META-INF/LICENSE](httpcore5-h2-5.4.3.jar/META-INF/LICENSE) 
+    - [httpcore5-h2-5.4.3.jar/META-INF/NOTICE](httpcore5-h2-5.4.3.jar/META-INF/NOTICE)
+
 ## Apache-2.0
 
-**6** **Group:** `commons-codec` **Name:** `commons-codec` **Version:** `1.17.1` 
+**9** **Group:** `commons-codec` **Name:** `commons-codec` **Version:** `1.22.0` 
 > - **Project URL**: [https://commons.apache.org/proper/commons-codec/](https://commons.apache.org/proper/commons-codec/)
 > - **POM License**: Apache-2.0 - [https://www.apache.org/licenses/LICENSE-2.0.txt](https://www.apache.org/licenses/LICENSE-2.0.txt)
-> - **Embedded license files**: [commons-codec-1.17.1.jar/META-INF/LICENSE.txt](commons-codec-1.17.1.jar/META-INF/LICENSE.txt) 
-    - [commons-codec-1.17.1.jar/META-INF/NOTICE.txt](commons-codec-1.17.1.jar/META-INF/NOTICE.txt)
+> - **Embedded license files**: [commons-codec-1.22.0.jar/META-INF/LICENSE.txt](commons-codec-1.22.0.jar/META-INF/LICENSE.txt) 
+    - [commons-codec-1.22.0.jar/META-INF/NOTICE.txt](commons-codec-1.22.0.jar/META-INF/NOTICE.txt)
 
-**7** **Group:** `commons-dbutils` **Name:** `commons-dbutils` **Version:** `1.8.1` 
+**10** **Group:** `commons-dbutils` **Name:** `commons-dbutils` **Version:** `1.8.1` 
 > - **Project URL**: [https://commons.apache.org/proper/commons-dbutils/](https://commons.apache.org/proper/commons-dbutils/)
 > - **POM License**: Apache-2.0 - [https://www.apache.org/licenses/LICENSE-2.0.txt](https://www.apache.org/licenses/LICENSE-2.0.txt)
 > - **Embedded license files**: [commons-dbutils-1.8.1.jar/META-INF/LICENSE.txt](commons-dbutils-1.8.1.jar/META-INF/LICENSE.txt) 
     - [commons-dbutils-1.8.1.jar/META-INF/NOTICE.txt](commons-dbutils-1.8.1.jar/META-INF/NOTICE.txt)
 
-**8** **Group:** `commons-io` **Name:** `commons-io` **Version:** `2.18.0` 
+**11** **Group:** `commons-io` **Name:** `commons-io` **Version:** `2.22.0` 
 > - **Project URL**: [https://commons.apache.org/proper/commons-io/](https://commons.apache.org/proper/commons-io/)
 > - **POM License**: Apache-2.0 - [https://www.apache.org/licenses/LICENSE-2.0.txt](https://www.apache.org/licenses/LICENSE-2.0.txt)
-> - **Embedded license files**: [commons-io-2.18.0.jar/META-INF/LICENSE.txt](commons-io-2.18.0.jar/META-INF/LICENSE.txt) 
-    - [commons-io-2.18.0.jar/META-INF/NOTICE.txt](commons-io-2.18.0.jar/META-INF/NOTICE.txt)
+> - **Embedded license files**: [commons-io-2.22.0.jar/META-INF/LICENSE.txt](commons-io-2.22.0.jar/META-INF/LICENSE.txt) 
+    - [commons-io-2.22.0.jar/META-INF/NOTICE.txt](commons-io-2.22.0.jar/META-INF/NOTICE.txt)
 
-**9** **Group:** `net.java.dev.jna` **Name:** `jna` **Version:** `5.16.0` 
+**12** **Group:** `net.java.dev.jna` **Name:** `jna` **Version:** `5.19.1` 
 > - **POM Project URL**: [https://github.com/java-native-access/jna](https://github.com/java-native-access/jna)
 > - **POM License**: Apache-2.0 - [https://www.apache.org/licenses/LICENSE-2.0.txt](https://www.apache.org/licenses/LICENSE-2.0.txt)
 > - **POM License**: LGPL-2.1-or-later - [https://www.gnu.org/licenses/old-licenses/lgpl-2.1](https://www.gnu.org/licenses/old-licenses/lgpl-2.1)
-> - **Embedded license files**: [jna-5.16.0.jar/META-INF/LICENSE](jna-5.16.0.jar/META-INF/LICENSE)
+> - **Embedded license files**: [jna-5.19.1.jar/META-INF/LICENSE](jna-5.19.1.jar/META-INF/LICENSE)
 
-**10** **Group:** `org.apache.commons` **Name:** `commons-lang3` **Version:** `3.17.0` 
+**13** **Group:** `org.apache.commons` **Name:** `commons-lang3` **Version:** `3.20.0` 
 > - **Project URL**: [https://commons.apache.org/proper/commons-lang/](https://commons.apache.org/proper/commons-lang/)
 > - **POM License**: Apache-2.0 - [https://www.apache.org/licenses/LICENSE-2.0.txt](https://www.apache.org/licenses/LICENSE-2.0.txt)
-> - **Embedded license files**: [commons-lang3-3.17.0.jar/META-INF/LICENSE.txt](commons-lang3-3.17.0.jar/META-INF/LICENSE.txt) 
-    - [commons-lang3-3.17.0.jar/META-INF/NOTICE.txt](commons-lang3-3.17.0.jar/META-INF/NOTICE.txt)
+> - **Embedded license files**: [commons-lang3-3.20.0.jar/META-INF/LICENSE.txt](commons-lang3-3.20.0.jar/META-INF/LICENSE.txt) 
+    - [commons-lang3-3.20.0.jar/META-INF/NOTICE.txt](commons-lang3-3.20.0.jar/META-INF/NOTICE.txt)
+
+**14** **Group:** `org.apache.commons` **Name:** `commons-text` **Version:** `1.15.0` 
+> - **Project URL**: [https://commons.apache.org/proper/commons-text](https://commons.apache.org/proper/commons-text)
+> - **POM License**: Apache-2.0 - [https://www.apache.org/licenses/LICENSE-2.0.txt](https://www.apache.org/licenses/LICENSE-2.0.txt)
+> - **Embedded license files**: [commons-text-1.15.0.jar/META-INF/LICENSE.txt](commons-text-1.15.0.jar/META-INF/LICENSE.txt) 
+    - [commons-text-1.15.0.jar/META-INF/NOTICE.txt](commons-text-1.15.0.jar/META-INF/NOTICE.txt)
 
 ## Bouncy Castle Licence
 
-**11** **Group:** `org.bouncycastle` **Name:** `bcpkix-jdk18on` **Version:** `1.77` 
+**15** **Group:** `org.bouncycastle` **Name:** `bcpkix-jdk18on` **Version:** `1.77` 
 > - **POM Project URL**: [https://www.bouncycastle.org/java.html](https://www.bouncycastle.org/java.html)
 > - **POM License**: Bouncy Castle Licence - [https://www.bouncycastle.org/licence.html](https://www.bouncycastle.org/licence.html)
 
-**12** **Group:** `org.bouncycastle` **Name:** `bcprov-jdk18on` **Version:** `1.77` 
+**16** **Group:** `org.bouncycastle` **Name:** `bcprov-jdk18on` **Version:** `1.77` 
 > - **POM Project URL**: [https://www.bouncycastle.org/java.html](https://www.bouncycastle.org/java.html)
 > - **POM License**: Bouncy Castle Licence - [https://www.bouncycastle.org/licence.html](https://www.bouncycastle.org/licence.html)
 
-**13** **Group:** `org.bouncycastle` **Name:** `bcutil-jdk18on` **Version:** `1.77` 
+**17** **Group:** `org.bouncycastle` **Name:** `bcutil-jdk18on` **Version:** `1.77` 
 > - **POM Project URL**: [https://www.bouncycastle.org/java.html](https://www.bouncycastle.org/java.html)
 > - **POM License**: Bouncy Castle Licence - [https://www.bouncycastle.org/licence.html](https://www.bouncycastle.org/licence.html)
 
 ## CC0 Universal
 
-**14** **Group:** `com.github.peteroupc` **Name:** `datautilities` **Version:** `1.1.0` 
+**18** **Group:** `com.github.peteroupc` **Name:** `datautilities` **Version:** `1.1.0` 
 > - **POM Project URL**: [https://github.com/peteroupc/DataUtilities](https://github.com/peteroupc/DataUtilities)
 > - **POM License**: CC0 Universal - [http://www.creativecommons.org/publicdomain/zero/1.0/](http://www.creativecommons.org/publicdomain/zero/1.0/)
 
 ## CC0-1.0
 
-**15** **Group:** `com.github.peteroupc` **Name:** `numbers` **Version:** `1.8.2` 
+**19** **Group:** `com.github.peteroupc` **Name:** `numbers` **Version:** `1.8.2` 
 > - **POM Project URL**: [https://github.com/peteroupc/Numbers-Java](https://github.com/peteroupc/Numbers-Java)
 > - **POM License**: CC0-1.0 - [http://www.creativecommons.org/publicdomain/zero/1.0/](http://www.creativecommons.org/publicdomain/zero/1.0/)
 
 ## Eclipse Public License v. 2.0
 
-**16** **Group:** `jakarta.validation` **Name:** `jakarta.validation-api` **Version:** `3.1.0` 
+**20** **Group:** `jakarta.validation` **Name:** `jakarta.validation-api` **Version:** `3.1.0` 
 > - **Manifest Project URL**: [https://www.eclipse.org](https://www.eclipse.org)
 > - **POM Project URL**: [https://beanvalidation.org](https://beanvalidation.org)
 > - **POM License**: Apache License 2.0 - [http://www.apache.org/licenses/LICENSE-2.0.txt](http://www.apache.org/licenses/LICENSE-2.0.txt)
@@ -106,7 +127,7 @@ _2025-07-11 03:38:33 UTC_
 
 ## GNU General Public License, version 2 with the GNU Classpath Exception
 
-**17** **Group:** `jakarta.validation` **Name:** `jakarta.validation-api` **Version:** `3.1.0` 
+**21** **Group:** `jakarta.validation` **Name:** `jakarta.validation-api` **Version:** `3.1.0` 
 > - **Manifest Project URL**: [https://www.eclipse.org](https://www.eclipse.org)
 > - **POM Project URL**: [https://beanvalidation.org](https://beanvalidation.org)
 > - **POM License**: Apache License 2.0 - [http://www.apache.org/licenses/LICENSE-2.0.txt](http://www.apache.org/licenses/LICENSE-2.0.txt)
@@ -115,64 +136,64 @@ _2025-07-11 03:38:33 UTC_
 
 ## LGPL-2.1-or-later
 
-**18** **Group:** `net.java.dev.jna` **Name:** `jna` **Version:** `5.16.0` 
+**22** **Group:** `net.java.dev.jna` **Name:** `jna` **Version:** `5.19.1` 
 > - **POM Project URL**: [https://github.com/java-native-access/jna](https://github.com/java-native-access/jna)
 > - **POM License**: Apache-2.0 - [https://www.apache.org/licenses/LICENSE-2.0.txt](https://www.apache.org/licenses/LICENSE-2.0.txt)
 > - **POM License**: LGPL-2.1-or-later - [https://www.gnu.org/licenses/old-licenses/lgpl-2.1](https://www.gnu.org/licenses/old-licenses/lgpl-2.1)
-> - **Embedded license files**: [jna-5.16.0.jar/META-INF/LICENSE](jna-5.16.0.jar/META-INF/LICENSE)
+> - **Embedded license files**: [jna-5.19.1.jar/META-INF/LICENSE](jna-5.19.1.jar/META-INF/LICENSE)
 
-## MIT License
+## MIT
 
-**19** **Group:** `org.slf4j` **Name:** `slf4j-api` **Version:** `2.0.16` 
+**23** **Group:** `org.slf4j` **Name:** `slf4j-api` **Version:** `2.0.18` 
 > - **Project URL**: [http://www.slf4j.org](http://www.slf4j.org)
-> - **POM License**: MIT License - [http://www.opensource.org/licenses/mit-license.php](http://www.opensource.org/licenses/mit-license.php)
-> - **Embedded license files**: [slf4j-api-2.0.16.jar/META-INF/LICENSE.txt](slf4j-api-2.0.16.jar/META-INF/LICENSE.txt)
+> - **POM License**: MIT - [https://opensource.org/license/mit](https://opensource.org/license/mit)
+> - **Embedded license files**: [slf4j-api-2.0.18.jar/META-INF/LICENSE.txt](slf4j-api-2.0.18.jar/META-INF/LICENSE.txt)
 
 ## The Apache Software License, Version 2.0
 
-**20** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.18.2` 
+**24** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.22` 
 > - **Project URL**: [https://github.com/FasterXML/jackson](https://github.com/FasterXML/jackson)
 > - **POM License**: The Apache Software License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0.txt](https://www.apache.org/licenses/LICENSE-2.0.txt)
-> - **Embedded license files**: [jackson-annotations-2.18.2.jar/META-INF/LICENSE](jackson-annotations-2.18.2.jar/META-INF/LICENSE) 
-    - [jackson-annotations-2.18.2.jar/META-INF/NOTICE](jackson-annotations-2.18.2.jar/META-INF/NOTICE)
+> - **Embedded license files**: [jackson-annotations-2.22.jar/META-INF/LICENSE](jackson-annotations-2.22.jar/META-INF/LICENSE) 
+    - [jackson-annotations-2.22.jar/META-INF/NOTICE](jackson-annotations-2.22.jar/META-INF/NOTICE)
 
-**21** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-core` **Version:** `2.18.2` 
+**25** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-core` **Version:** `2.22.1` 
 > - **Project URL**: [https://github.com/FasterXML/jackson-core](https://github.com/FasterXML/jackson-core)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0.txt](http://www.apache.org/licenses/LICENSE-2.0.txt)
 > - **POM License**: The Apache Software License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0.txt](https://www.apache.org/licenses/LICENSE-2.0.txt)
-> - **Embedded license files**: [jackson-core-2.18.2.jar/META-INF/LICENSE](jackson-core-2.18.2.jar/META-INF/LICENSE) 
-    - [jackson-core-2.18.2.jar/META-INF/NOTICE](jackson-core-2.18.2.jar/META-INF/NOTICE)
+> - **Embedded license files**: [jackson-core-2.22.1.jar/META-INF/LICENSE](jackson-core-2.22.1.jar/META-INF/LICENSE) 
+    - [jackson-core-2.22.1.jar/META-INF/NOTICE](jackson-core-2.22.1.jar/META-INF/NOTICE)
 
-**22** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-databind` **Version:** `2.18.2` 
+**26** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-databind` **Version:** `2.22.1` 
 > - **Project URL**: [https://github.com/FasterXML/jackson](https://github.com/FasterXML/jackson)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0.txt](http://www.apache.org/licenses/LICENSE-2.0.txt)
 > - **POM License**: The Apache Software License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0.txt](https://www.apache.org/licenses/LICENSE-2.0.txt)
-> - **Embedded license files**: [jackson-databind-2.18.2.jar/META-INF/LICENSE](jackson-databind-2.18.2.jar/META-INF/LICENSE) 
-    - [jackson-databind-2.18.2.jar/META-INF/NOTICE](jackson-databind-2.18.2.jar/META-INF/NOTICE)
+> - **Embedded license files**: [jackson-databind-2.22.1.jar/META-INF/LICENSE](jackson-databind-2.22.1.jar/META-INF/LICENSE) 
+    - [jackson-databind-2.22.1.jar/META-INF/NOTICE](jackson-databind-2.22.1.jar/META-INF/NOTICE)
 
-**23** **Group:** `org.xerial` **Name:** `sqlite-jdbc` **Version:** `3.49.0.0` 
+**27** **Group:** `org.xerial` **Name:** `sqlite-jdbc` **Version:** `3.53.2.0` 
 > - **POM Project URL**: [https://github.com/xerial/sqlite-jdbc](https://github.com/xerial/sqlite-jdbc)
 > - **POM License**: The Apache Software License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0.txt](https://www.apache.org/licenses/LICENSE-2.0.txt)
-> - **Embedded license files**: [sqlite-jdbc-3.49.0.0.jar/META-INF/maven/org.xerial/sqlite-jdbc/LICENSE](sqlite-jdbc-3.49.0.0.jar/META-INF/maven/org.xerial/sqlite-jdbc/LICENSE) 
-    - [sqlite-jdbc-3.49.0.0.jar/META-INF/maven/org.xerial/sqlite-jdbc/LICENSE.zentus](sqlite-jdbc-3.49.0.0.jar/META-INF/maven/org.xerial/sqlite-jdbc/LICENSE.zentus)
+> - **Embedded license files**: [sqlite-jdbc-3.53.2.0.jar/META-INF/maven/org.xerial/sqlite-jdbc/LICENSE](sqlite-jdbc-3.53.2.0.jar/META-INF/maven/org.xerial/sqlite-jdbc/LICENSE) 
+    - [sqlite-jdbc-3.53.2.0.jar/META-INF/maven/org.xerial/sqlite-jdbc/LICENSE.zentus](sqlite-jdbc-3.53.2.0.jar/META-INF/maven/org.xerial/sqlite-jdbc/LICENSE.zentus)
 
 ## Unknown
 
-**24** **Group:** `com.intel.bkp.command` **Name:** `CommandCore` **Version:** `unspecified` 
+**28** **Group:** `com.intel.bkp.command` **Name:** `CommandCore` **Version:** `unspecified` 
 
-**25** **Group:** `com.intel.bkp.core` **Name:** `ServiceCore` **Version:** `unspecified` 
+**29** **Group:** `com.intel.bkp.core` **Name:** `ServiceCore` **Version:** `unspecified` 
 
-**26** **Group:** `com.intel.bkp.crypto` **Name:** `CryptoCore` **Version:** `unspecified` 
+**30** **Group:** `com.intel.bkp.crypto` **Name:** `CryptoCore` **Version:** `unspecified` 
 
-**27** **Group:** `com.intel.bkp.fpgacerts` **Name:** `fpgaCertCore` **Version:** `unspecified` 
+**31** **Group:** `com.intel.bkp.fpgacerts` **Name:** `fpgaCertCore` **Version:** `unspecified` 
 
-**28** **Group:** `com.intel.bkp.protocol` **Name:** `ProtocolCore` **Version:** `unspecified` 
+**32** **Group:** `com.intel.bkp.protocol` **Name:** `ProtocolCore` **Version:** `unspecified` 
 
-**29** **Group:** `com.intel.bkp.utils` **Name:** `Utils` **Version:** `unspecified` 
+**33** **Group:** `com.intel.bkp.utils` **Name:** `Utils` **Version:** `unspecified` 
 
 ## Unlicense
 
-**30** **Group:** `com.upokecenter` **Name:** `cbor` **Version:** `4.5.6` 
+**34** **Group:** `com.upokecenter` **Name:** `cbor` **Version:** `4.5.6` 
 > - **POM Project URL**: [https://github.com/peteroupc/CBOR-Java](https://github.com/peteroupc/CBOR-Java)
 > - **POM License**: Unlicense - [https://unlicense.org/](https://unlicense.org/)
 

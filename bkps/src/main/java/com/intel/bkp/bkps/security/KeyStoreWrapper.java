@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -40,6 +40,9 @@ import javax.net.ssl.TrustManagerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermission;
 import java.security.Key;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -47,6 +50,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.Enumeration;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class KeyStoreWrapper implements ICustomKeyStore {
@@ -79,6 +85,10 @@ public class KeyStoreWrapper implements ICustomKeyStore {
     public void store() throws IOException, CertificateException, KeyStoreException, NoSuchAlgorithmException {
         try (OutputStream outputStream = this.trustStoreProperties.getLocation().getOutputStream()) {
             this.keyStore.store(outputStream, this.trustStoreProperties.getPassword().toCharArray());
+            Set<PosixFilePermission> permissions = Stream
+                .of(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE)
+                .collect(Collectors.toSet());
+            Files.setPosixFilePermissions(Path.of(this.trustStoreProperties.getLocation().getPath()), permissions);
         }
     }
 

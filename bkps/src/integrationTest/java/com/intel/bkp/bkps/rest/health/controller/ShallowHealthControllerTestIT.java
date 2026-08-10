@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -37,7 +37,8 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
 import org.apache.hc.client5.http.io.HttpClientConnectionManager;
-import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
+import org.apache.hc.client5.http.ssl.DefaultClientTlsStrategy;
+import org.apache.hc.client5.http.ssl.TlsSocketStrategy;
 import org.apache.hc.core5.ssl.SSLContexts;
 import org.apache.hc.core5.ssl.TrustStrategy;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,7 +46,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.test.annotation.DirtiesContext;
@@ -69,7 +70,7 @@ public class ShallowHealthControllerTestIT {
     @Value("${info.project.version}")
     private String version;
 
-    @MockBean
+    @MockitoBean
     private ISecurityProvider securityService;
 
     @BeforeEach
@@ -80,10 +81,10 @@ public class ShallowHealthControllerTestIT {
             .loadTrustMaterial(null, acceptingTrustStrategy)
             .build();
 
-        final SSLConnectionSocketFactory csf = new SSLConnectionSocketFactory(sslContext);
+        final TlsSocketStrategy tlsSocketStrategy = new DefaultClientTlsStrategy(sslContext);
 
         final HttpClientConnectionManager cm = PoolingHttpClientConnectionManagerBuilder.create()
-            .setSSLSocketFactory(csf)
+            .setTlsSocketStrategy(tlsSocketStrategy)
             .build();
 
 

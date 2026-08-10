@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -38,10 +38,11 @@ import com.intel.bkp.utils.PathUtils;
 import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
 
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 
@@ -56,7 +57,7 @@ public class FileUtils {
     public static byte[] loadBinary(IResourceDir callback, String fileName) {
         final InputStream stream = FileUtils.class.getResourceAsStream(callback.buildPath(fileName));
         assert stream != null;
-        return IOUtils.toByteArray(stream);
+        return stream.readAllBytes();
     }
 
     @SneakyThrows
@@ -104,15 +105,9 @@ public class FileUtils {
 
         assert fileUrl != null : "File in resources is not found: %s".formatted(fullFilePath);
 
-        try (FileInputStream fis = new FileInputStream(fileUrl.getPath())) {
-            int available = fis.available();
-            if (available > 0) {
-                byte[] dst = new byte[available];
-                fis.read(dst);
-                return dst;
-            } else {
-                throw new RuntimeException("No test data available.");
-            }
+        Path path = Path.of(fileUrl.toURI());
+        try (InputStream inputStream = Files.newInputStream(path)) {
+            return inputStream.readAllBytes();
         }
     }
 

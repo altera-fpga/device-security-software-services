@@ -15,12 +15,13 @@ service:
 
 application:
     distribution-point:
-        main-path: http://awsmock:9090/
+        main-path: http://cs-service-app:8000/
         attestation-cert-base-path: content/IPCS/certs/
         zip-base-path: content/IPCS/
         trusted-root-hash: >
-            A1B5D25D0C2F991EB5B3CBD408717B3A9296BE6E90D60997E29FEB3694F60D80,
-            9DB7D8D004D650B40ED993F2B665E19DA65BD065D7BBD35D6C1439C4B4201259
+            8F19C3380BA92615344ADF2C583DCFCD995844CF8C837FE2AEC8BB53CB43A800,
+            A11BB90D6F9F4F2E5BE018699E4F75C37016458D4910398FF5F052B7120C678E,
+            8C17A32952D42FE6FD2C3BF3D2C621E3CBA6DF2401E47713FEA645435BE3CC31
         proxy:
             host: ''
             port: 0

@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -51,7 +51,7 @@ class ValidityVerifierTest {
     // openssl req -new -newkey rsa:2048 -nodes -keyout invalid.key -out invalid.csr
     // openssl x509 -req -days 0 -in invalid.csr -CA CA.pem -CAkey CAkey.pem -CAcreateserial -out invalid.pem -sha256
     private static final String INVALID_CERT = "invalid.pem";
-    private static final String ROOT_CERT_FILENAME = "IPCS.cer";
+    private static final String ROOT_CERT_FILENAME = "DICE_RootCA.cer";
 
     private static X509Certificate invalidCert;
     private static X509Certificate rootCert;

@@ -3,7 +3,7 @@
  *
  * **************************************************************************
  *
- * Copyright 2020-2025 Altera Corporation. All Rights Reserved.
+ * Copyright 2020-2026 Altera Corporation. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -40,9 +40,10 @@ import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
 import org.apache.hc.client5.http.io.HttpClientConnectionManager;
-import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
-import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactoryBuilder;
+import org.apache.hc.client5.http.ssl.DefaultClientTlsStrategy;
 import org.apache.hc.client5.http.ssl.TrustAllStrategy;
+import org.apache.hc.client5.http.ssl.TlsSocketStrategy;
+import org.apache.hc.core5.reactor.ssl.SSLBufferMode;
 import org.apache.hc.core5.http.HttpHost;
 import org.apache.hc.core5.ssl.SSLContexts;
 import org.apache.hc.core5.util.Timeout;
@@ -119,15 +120,16 @@ public class RestTemplateFactory {
 
         sslcontext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), new SecureRandom());
 
-        final SSLConnectionSocketFactory sslSocketFactory = SSLConnectionSocketFactoryBuilder.create()
-            .setSslContext(sslcontext)
-            .setCiphers(ciphers)
-            .setTlsVersions(supportedProtocols)
-            .setHostnameVerifier(getDefaultHostnameVerifier())
-            .build();
+        final TlsSocketStrategy tlsSocketStrategy = new DefaultClientTlsStrategy(
+            sslcontext,
+            supportedProtocols,
+            ciphers,
+            SSLBufferMode.STATIC,
+            getDefaultHostnameVerifier()
+        );
 
         final HttpClientConnectionManager cm = PoolingHttpClientConnectionManagerBuilder.create()
-            .setSSLSocketFactory(sslSocketFactory)
+            .setTlsSocketStrategy(tlsSocketStrategy)
             .setDefaultConnectionConfig(getRequestConfig())
             .build();
 
