@@ -110,8 +110,8 @@ application:
 
         security:
             key-store-name: uber
-            password: donotchange
-            input-stream-param: /tmp/bc-keystore-bkps-static.jks
+            password: ${SECURITY_PROVIDER_PASSWORD}
+            input-stream-param: ${JCEKS_PATH:/etc/bkps/secrets/bc-keystore.jks}
 
         key-types:
             rsa:

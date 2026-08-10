@@ -89,8 +89,8 @@ jar {
 }
 
 tasks.register('testReport', TestReport) {
-    destinationDir = file("$buildDir/reports/tests")
-    reportOn test
+    destinationDirectory = layout.buildDirectory.dir("reports/tests")
+    testResults.from(test)
 }
 
 
@@ -139,7 +139,7 @@ tasks.register('cleanResources', Delete) {
 
 tasks.register('deploy', Copy) {
     dependsOn jar
-    from layout.buildDirectory.dir("${buildDir}/libs")
+    from layout.buildDirectory.dir("libs")
     include "*.jar"
     into "${projectDir}/../out"
 }

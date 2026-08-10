@@ -43,6 +43,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.task.TaskExecutor;
 
 import javax.sql.DataSource;
+import java.util.List;
 
 @Configuration
 @Slf4j
@@ -62,7 +63,10 @@ public class LiquibaseConfiguration {
         SpringLiquibase liquibase = new AsyncSpringLiquibase(taskExecutor, env);
         liquibase.setDataSource(dataSource);
         liquibase.setChangeLog("classpath:config/liquibase/master.yaml");
-        liquibase.setContexts(liquibaseProperties.getContexts());
+        final List<String> contexts = liquibaseProperties.getContexts();
+        if (contexts != null) {
+            liquibase.setContexts(String.join(",", contexts));
+        }
         liquibase.setDefaultSchema(liquibaseProperties.getDefaultSchema());
         liquibase.setDropFirst(liquibaseProperties.isDropFirst());
         liquibase.setShouldRun(liquibaseProperties.isEnabled());

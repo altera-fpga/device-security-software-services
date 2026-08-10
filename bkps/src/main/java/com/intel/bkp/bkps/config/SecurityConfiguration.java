@@ -62,8 +62,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 
-import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
+import static org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.withDefaults;
 
 @Configuration
 @Import(SecurityProblemHandler.class)
@@ -71,6 +72,8 @@ import static org.springframework.security.web.util.matcher.AntPathRequestMatche
 @EnableMethodSecurity(securedEnabled = true)
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 public class SecurityConfiguration {
+
+    private static final PathPatternRequestMatcher.Builder PATH = withDefaults();
 
     private final UserDetailsService userDetailsService;
     private final SecurityProblemHandler problemHandler;
@@ -82,58 +85,58 @@ public class SecurityConfiguration {
         // @formatter:off
         http
             .cors(Customizer.withDefaults())
-            .csrf(csrf -> csrf.ignoringRequestMatchers(antMatcher("/h2-console/**")).disable())
+            .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**").disable())
             .exceptionHandling(cfg -> cfg.accessDeniedHandler(problemHandler).authenticationEntryPoint(problemHandler))
             .headers(cfg -> cfg.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
             .sessionManagement(cfg -> cfg.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authenticationManager(authenticationManager)
             .authorizeHttpRequests(authz ->
                 authz
-                .requestMatchers(antMatcher("/*.ico"))
+                .requestMatchers(PATH.matcher("/*.ico"))
                     .permitAll()
-                .requestMatchers(antMatcher("/"))
+                .requestMatchers(PATH.matcher("/"))
                     .permitAll()
-                .requestMatchers(antMatcher("/index.html"))
+                .requestMatchers(PATH.matcher("/index.html"))
                     .permitAll()
-                .requestMatchers(antMatcher("/h2-console/**"))
+                .requestMatchers(PATH.matcher("/h2-console/**"))
                     .permitAll()
-                .requestMatchers(antMatcher("/api-docs.yaml"))
+                .requestMatchers(PATH.matcher("/api-docs.yaml"))
                     .permitAll()
-                .requestMatchers(antMatcher(HealthResource.HEALTH))
+                .requestMatchers(PATH.matcher(HealthResource.HEALTH))
                     .permitAll()
-                .requestMatchers(antMatcher(HealthResource.SLA_HEALTH))
+                .requestMatchers(PATH.matcher(HealthResource.SLA_HEALTH))
                     .permitAll()
-                .requestMatchers(antMatcher(HealthResource.STATUS_HEALTH))
+                .requestMatchers(PATH.matcher(HealthResource.STATUS_HEALTH))
                     .permitAll()
-                .requestMatchers(antMatcher(UserResource.CREATE_USER))
+                .requestMatchers(PATH.matcher(UserResource.CREATE_USER))
                     .permitAll()
-                .requestMatchers(antMatcher(InitializationResource.INIT_NODE + "/**"))
+                .requestMatchers(PATH.matcher(InitializationResource.INIT_NODE + "/**"))
                     .hasAuthority(AuthoritiesConstants.SUPER_ADMIN)
-                .requestMatchers(antMatcher(ConfigurationResource.CONFIG_NODE + "/**"))
+                .requestMatchers(PATH.matcher(ConfigurationResource.CONFIG_NODE + "/**"))
                     .hasAnyAuthority(AuthoritiesConstants.ADMIN, AuthoritiesConstants.SUPER_ADMIN)
-                .requestMatchers(antMatcher(UserResource.USER_NODE + UserResource.CERTIFICATE_NODE + "/**"))
+                .requestMatchers(PATH.matcher(UserResource.USER_NODE + UserResource.CERTIFICATE_NODE + "/**"))
                     .hasAnyAuthority(AuthoritiesConstants.ADMIN, AuthoritiesConstants.SUPER_ADMIN)
-                .requestMatchers(antMatcher(UserResource.USER_NODE + UserResource.SET_ROLE))
+                .requestMatchers(PATH.matcher(UserResource.USER_NODE + UserResource.SET_ROLE))
                     .hasAnyAuthority(AuthoritiesConstants.ADMIN, AuthoritiesConstants.SUPER_ADMIN)
-                .requestMatchers(antMatcher(HttpMethod.POST, UserResource.USER_NODE + UserResource.MANAGE_NODE))
+                .requestMatchers(PATH.matcher(HttpMethod.POST, UserResource.USER_NODE + UserResource.MANAGE_NODE))
                     .hasAnyAuthority(AuthoritiesConstants.ADMIN, AuthoritiesConstants.SUPER_ADMIN)
-                .requestMatchers(antMatcher(HttpMethod.GET, UserResource.USER_NODE + UserResource.MANAGE_NODE))
+                .requestMatchers(PATH.matcher(HttpMethod.GET, UserResource.USER_NODE + UserResource.MANAGE_NODE))
                     .hasAnyAuthority(AuthoritiesConstants.ADMIN, AuthoritiesConstants.SUPER_ADMIN)
-                .requestMatchers(antMatcher(UserResource.USER_NODE + "/**"))
+                .requestMatchers(PATH.matcher(UserResource.USER_NODE + "/**"))
                     .hasAuthority(AuthoritiesConstants.SUPER_ADMIN)
-                .requestMatchers(antMatcher(HttpMethod.POST, OnboardingResource.PREFETCH_NEXT))
+                .requestMatchers(PATH.matcher(HttpMethod.POST, OnboardingResource.PREFETCH_NEXT))
                     .hasAuthority(AuthoritiesConstants.PROGRAMMER)
-                .requestMatchers(antMatcher(HttpMethod.POST, PrefetchResource.PREFETCH_NODE
+                .requestMatchers(PATH.matcher(HttpMethod.POST, PrefetchResource.PREFETCH_NODE
                     + PrefetchResource.PREFETCH_DEVICES))
                     .hasAnyAuthority(AuthoritiesConstants.ADMIN, AuthoritiesConstants.SUPER_ADMIN)
-                .requestMatchers(antMatcher(HttpMethod.GET, OnboardingResource.PREFETCH_STATUS))
+                .requestMatchers(PATH.matcher(HttpMethod.GET, OnboardingResource.PREFETCH_STATUS))
                     .hasAnyAuthority(AuthoritiesConstants.ADMIN, AuthoritiesConstants.SUPER_ADMIN,
                         AuthoritiesConstants.PROGRAMMER)
-                .requestMatchers(antMatcher(HttpMethod.POST, OnboardingResource.SET_AUTHORITY))
+                .requestMatchers(PATH.matcher(HttpMethod.POST, OnboardingResource.SET_AUTHORITY))
                     .hasAuthority(AuthoritiesConstants.PROGRAMMER)
-                .requestMatchers(antMatcher(HttpMethod.POST, OnboardingResource.PUF_ACTIVATE))
+                .requestMatchers(PATH.matcher(HttpMethod.POST, OnboardingResource.PUF_ACTIVATE))
                     .hasAuthority(AuthoritiesConstants.PROGRAMMER)
-                .requestMatchers(antMatcher(HttpMethod.POST, ProvisioningResource.PROVISIONING_NODE + "/**"))
+                .requestMatchers(PATH.matcher(HttpMethod.POST, ProvisioningResource.PROVISIONING_NODE + "/**"))
                     .hasAuthority(AuthoritiesConstants.PROGRAMMER))
             .x509(cfg -> cfg.x509AuthenticationFilter(x509AuthenticationFilter(authenticationManager)))
             .authorizeHttpRequests(cfg -> cfg.anyRequest().denyAll());

@@ -50,7 +50,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -85,7 +85,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class ProvisioningControllerTestIT {
 
-    @MockBean
+    @MockitoBean
     private ProvisioningService provisioningService;
 
     @Autowired
@@ -97,7 +97,7 @@ public class ProvisioningControllerTestIT {
     @Autowired
     private ApplicationExceptionHandler exceptionTranslator;
 
-    @MockBean
+    @MockitoBean
     ISecurityProvider securityProvider;
 
     private MockMvc restMockMvc;

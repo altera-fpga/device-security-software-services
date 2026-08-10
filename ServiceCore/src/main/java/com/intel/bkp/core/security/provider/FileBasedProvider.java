@@ -80,6 +80,9 @@ public class FileBasedProvider implements IKeystoreManager {
     public void store(KeyStore keyStore, String inputStreamParam, String password)
         throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException {
         storeInternal(keyStore, inputStreamParam, password);
+        if (!SystemUtils.IS_OS_WINDOWS) {
+            setOnlyOwnerPermissionsOnFile(inputStreamParam);
+        }
     }
 
     private void storeInternal(KeyStore keyStore, String inputStreamParam, String password)

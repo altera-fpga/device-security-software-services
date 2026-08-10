@@ -112,6 +112,7 @@ springdoc:
         - /health/**
     api-docs:
         path: /api-docs
+        version: OPENAPI_3_0
     default-consumes-media-type: application/json
     default-produces-media-type: application/json
 

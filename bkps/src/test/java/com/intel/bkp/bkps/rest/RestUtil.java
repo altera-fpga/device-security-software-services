@@ -34,6 +34,7 @@ package com.intel.bkp.bkps.rest;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.intel.bkp.bkps.programmer.model.ProgrammerResponse;
 import com.intel.bkp.bkps.programmer.model.ResponseStatus;
 import org.springframework.format.datetime.standard.DateTimeFormatterRegistrar;
@@ -65,8 +66,10 @@ public class RestUtil {
      */
     public static byte[] convertObjectToJsonBytes(Object object)
         throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        ObjectMapper mapper = JsonMapper.builder()
+            .defaultPropertyInclusion(
+                JsonInclude.Value.construct(JsonInclude.Include.NON_NULL, JsonInclude.Include.NON_NULL))
+            .build();
         return mapper.writeValueAsBytes(object);
     }
 

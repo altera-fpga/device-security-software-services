@@ -55,6 +55,9 @@ java {
 }
 
 ext['commons-lang3.version'] = "${libs.versions.apache.commons.lang.get()}"
+// Override the httpcore5 version managed by the Spring Boot BOM so it matches the one required by
+// apache-httpclient5 (older httpcore5 is missing org.apache.hc.core5.io.IOFunction).
+ext['httpcore5.version'] = "${libs.versions.apache.httpcore5.get()}"
 
 dependencyManagement {
     imports {
@@ -128,8 +131,8 @@ test {
 }
 
 tasks.register('testReport', TestReport) {
-    destinationDir = file("$buildDir/reports/tests")
-    reportOn test
+    destinationDirectory = layout.buildDirectory.dir("reports/tests")
+    testResults.from(test)
 }
 
 if (project.hasProperty('prod')) {
@@ -147,6 +150,8 @@ if (project.hasProperty('prod')) {
 configurations {
     providedRuntime
     implementation.exclude module: "spring-boot-starter-tomcat"
+    // spring-jcl already provides the commons-logging API; drop the standalone jar to avoid the discovery conflict
+    all*.exclude group: "commons-logging", module: "commons-logging"
 }
 
 repositories {
@@ -164,6 +169,8 @@ dependencies {
 
     implementation libs.jna
     implementation libs.logstash.logback.encoder
+    implementation libs.jackson.tools.core
+    implementation libs.jackson.tools.databind
     implementation libs.liquibase.core
     implementation libs.apache.commons.text
     implementation libs.apache.httpclient5

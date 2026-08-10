@@ -42,8 +42,8 @@ import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
 import org.apache.hc.client5.http.io.HttpClientConnectionManager;
-import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
-import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactoryBuilder;
+import org.apache.hc.client5.http.ssl.DefaultClientTlsStrategy;
+import org.apache.hc.client5.http.ssl.TlsSocketStrategy;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.HttpHost;
 import org.apache.hc.core5.http.io.HttpClientResponseHandler;
@@ -139,13 +139,13 @@ public class DistributionPointConnector implements IDistributionPointConnector, 
                                            final SSLContext sslcontext)
         throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException, UnrecoverableKeyException {
 
-        final SSLConnectionSocketFactory sslSocketFactory = SSLConnectionSocketFactoryBuilder.create()
-            .setSslContext(sslcontext)
-            .setHostnameVerifier(getDefaultHostnameVerifier())
-            .build();
+        final TlsSocketStrategy tlsSocketStrategy = new DefaultClientTlsStrategy(
+            sslcontext,
+            getDefaultHostnameVerifier()
+        );
 
         final HttpClientConnectionManager cm = PoolingHttpClientConnectionManagerBuilder.create()
-            .setSSLSocketFactory(sslSocketFactory)
+            .setTlsSocketStrategy(tlsSocketStrategy)
             .setDefaultConnectionConfig(getRequestConfig())
             .build();
 

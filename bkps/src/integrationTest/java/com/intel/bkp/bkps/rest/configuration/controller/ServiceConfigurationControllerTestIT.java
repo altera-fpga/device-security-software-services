@@ -61,7 +61,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -133,10 +133,10 @@ public class ServiceConfigurationControllerTestIT {
     @Autowired
     private EntityManager em;
 
-    @MockBean
+    @MockitoBean
     private ISecurityProvider securityService;
 
-    @MockBean
+    @MockitoBean
     private AesGcmSealingKeyProviderImpl aesGcmSealingKeyProvider;
 
     private MockMvc restMockMvc;

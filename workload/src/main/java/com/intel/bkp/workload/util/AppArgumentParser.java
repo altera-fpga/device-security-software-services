@@ -38,10 +38,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.help.HelpFormatter;
+
+import java.io.IOException;
 
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -55,7 +57,7 @@ public class AppArgumentParser {
         Options options = getOptions();
 
         CommandLineParser parser = new DefaultParser();
-        HelpFormatter formatter = new HelpFormatter();
+        HelpFormatter formatter = HelpFormatter.builder().get();
         CommandLine cmd = null;
 
         try {
@@ -63,7 +65,7 @@ public class AppArgumentParser {
         } catch (ParseException e) {
             log.error("[WORKLOAD] Failed to parse arguments: {}", e.getMessage());
             log.debug("Stacktrace: ", e);
-            formatter.printHelp(WORKLOAD_APP_DESC, options);
+            printHelp(formatter, options);
             System.exit(1);
         }
 
@@ -75,6 +77,15 @@ public class AppArgumentParser {
             .command(cmd.getOptionValue("command").trim())
             .logLevel(cmd.getOptionValue("log-level"))
             .build();
+    }
+
+    private static void printHelp(HelpFormatter formatter, Options options) {
+        try {
+            formatter.printHelp(WORKLOAD_APP_DESC, null, options, null, true);
+        } catch (IOException e) {
+            log.error("[WORKLOAD] Failed to print help: {}", e.getMessage());
+            log.debug("Stacktrace: ", e);
+        }
     }
 
     private static Options getOptions() {

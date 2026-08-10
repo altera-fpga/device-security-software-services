@@ -36,11 +36,11 @@ spring:
             jks:
                 web-server:
                     truststore:
-                        location: /tmp/bkps-nonprod.p12
+                        location: ${KEYSTORE_TRUSTSTORE_PATH:/tmp/bkps-nonprod.p12}
                         password: donotchange
                         type: PKCS12
                     keystore:
-                        location: /tmp/bkps-nonprod.p12
+                        location: ${KEYSTORE_TRUSTSTORE_PATH:/tmp/bkps-nonprod.p12}
                         password: donotchange
                         type: PKCS12
                     key:

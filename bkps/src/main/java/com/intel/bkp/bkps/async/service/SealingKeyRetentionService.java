@@ -49,7 +49,6 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -82,10 +81,10 @@ public class SealingKeyRetentionService {
     }
 
     private Specification<SealingKey> getSpecification(List<Long> lastIds) {
-        return Objects.requireNonNull(
-            Specification.where(sealingKeyRepository.findAllNotEnabled())
-                .and(sealingKeyRepository.getOlderOrEqualToTime(getTimeWithThreshold())))
-            .and(sealingKeyRepository.notIn(lastIds));
+        return Specification.allOf(
+            sealingKeyRepository.findAllNotEnabled(),
+            sealingKeyRepository.getOlderOrEqualToTime(getTimeWithThreshold()),
+            sealingKeyRepository.notIn(lastIds));
     }
 
     private List<Long> getNewest() {
