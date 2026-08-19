@@ -104,6 +104,8 @@ if (WIN32)
     copy_result_to_release(${TARGET_NAME} dll)
     copy_result_to_release(${TARGET_NAME} lib)
     copy_result_to_release(${TARGET_NAME} exp)
+    copy_result_to_release(${TARGET_NAME} pdb)
+    copy_result_to_release(${TARGET_NAME} ilk)
 else ()
     copy_result_to_release(${TARGET_NAME} so)
     file(GLOB SO_FILES

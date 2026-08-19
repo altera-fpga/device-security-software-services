@@ -91,7 +91,7 @@ class VerifierExchangeImplSpdmTest {
         mockAppContext();
         String refMeasurement = "some reference measurements";
         mockInitSessionComponent();
-        when(getAttestationComponentSpdm.perform(refMeasurement, deviceId))
+        when(getAttestationComponentSpdm.perform(refMeasurement, null, deviceId))
             .thenThrow(TransportLayerException.class);
 
         try (MockedStatic<AppContext> app = mockStatic(AppContext.class)) {
@@ -99,7 +99,7 @@ class VerifierExchangeImplSpdmTest {
             doReturn(true).when(verifierExchangeImpl).spdmSupported();
 
             // when
-            VerifierExchangeResponseDTO result = verifierExchangeImpl.getDeviceAttestation(TRANSPORT_ID, refMeasurement);
+            VerifierExchangeResponseDTO result = verifierExchangeImpl.getDeviceAttestation(TRANSPORT_ID, refMeasurement, null);
 
             // then
             app.verify(AppContext::instance, times(1));
@@ -116,7 +116,7 @@ class VerifierExchangeImplSpdmTest {
         mockAppContext();
         String refMeasurement = "some reference measurements";
         mockInitSessionComponent();
-        when(getAttestationComponentSpdm.perform(refMeasurement, deviceId))
+        when(getAttestationComponentSpdm.perform(refMeasurement, null, deviceId))
             .thenReturn(VerifierExchangeResponse.OK);
 
         try (MockedStatic<AppContext> app = mockStatic(AppContext.class)) {
@@ -124,7 +124,7 @@ class VerifierExchangeImplSpdmTest {
             doReturn(true).when(verifierExchangeImpl).spdmSupported();
 
             //when
-            VerifierExchangeResponseDTO result = verifierExchangeImpl.getDeviceAttestation(TRANSPORT_ID, refMeasurement);
+            VerifierExchangeResponseDTO result = verifierExchangeImpl.getDeviceAttestation(TRANSPORT_ID, refMeasurement, null);
 
             // then
             app.verify(AppContext::instance, times(1));
@@ -141,7 +141,7 @@ class VerifierExchangeImplSpdmTest {
         mockAppContext();
         String refMeasurement = "some reference measurements";
         mockInitSessionComponent();
-        when(getAttestationComponentSpdm.perform(refMeasurement, deviceId))
+        when(getAttestationComponentSpdm.perform(refMeasurement, null, deviceId))
             .thenReturn(VerifierExchangeResponse.OK);
 
         try (MockedStatic<AppContext> app = mockStatic(AppContext.class)) {
@@ -149,7 +149,7 @@ class VerifierExchangeImplSpdmTest {
             doReturn(true).when(verifierExchangeImpl).spdmSupported();
 
             // when
-            verifierExchangeImpl.getDeviceAttestation(TRANSPORT_ID, refMeasurement);
+            verifierExchangeImpl.getDeviceAttestation(TRANSPORT_ID, refMeasurement, null);
 
             // then
             app.verify(AppContext::instance, times(1));

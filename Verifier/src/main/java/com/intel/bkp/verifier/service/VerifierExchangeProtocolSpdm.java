@@ -56,7 +56,7 @@ public class VerifierExchangeProtocolSpdm extends VerifierExchangeProtocol {
     }
 
     @Override
-    public VerifierExchangeResponseDTO getAttestationInternal(String refMeasurementHex) {
+    public VerifierExchangeResponseDTO getAttestationInternal(String refMeasurementHex, String appraisalPolicy) {
         final VerifierExchangeResponseDTO response = new VerifierExchangeResponseDTO();
 
         try {
@@ -64,7 +64,7 @@ public class VerifierExchangeProtocolSpdm extends VerifierExchangeProtocol {
             response.setDeviceId(toHex(deviceId));
             log.info("Platform attestation will be performed for device of id: {}", toHex(deviceId));
 
-            response.setStatus(getDeviceAttestationComponent.perform(refMeasurementHex, deviceId).getCode());
+            response.setStatus(getDeviceAttestationComponent.perform(refMeasurementHex, appraisalPolicy, deviceId).getCode());
         } catch (Exception e) {
             log.error("Failed to perform platform attestation: {}", e.getMessage());
             log.debug("Stacktrace: ", e);

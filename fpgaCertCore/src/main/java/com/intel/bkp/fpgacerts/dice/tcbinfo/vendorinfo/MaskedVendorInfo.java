@@ -34,6 +34,7 @@ package com.intel.bkp.fpgacerts.dice.tcbinfo.vendorinfo;
 
 import com.intel.bkp.utils.MaskHelper;
 import lombok.Data;
+import lombok.Getter;
 
 import java.util.Locale;
 import java.util.Objects;
@@ -43,6 +44,7 @@ import static java.util.Objects.nonNull;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.upperCase;
 
+@Getter
 @Data
 public class MaskedVendorInfo {
 

@@ -57,7 +57,7 @@ public class RimHandlersProvider implements IRimHandlersProvider {
             new CoRimHandler(appContext.getDpConnector(),
                 appContext.getDpTrustedRootHashes(),
                 appContext.getLibConfig().isAcceptUnsignedCorim()),
-            new JsonRimHandler()
+            new JsonRimHandler(appContext.getDpTrustedRootHashes())
         );
     }
 }

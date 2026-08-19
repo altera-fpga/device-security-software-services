@@ -79,7 +79,7 @@ class DpConnectorTest {
     void setUp() {
         when(restTemplateService.getRestTemplate()).thenReturn(restTemplate);
         ApplicationProperties properties = new ApplicationProperties();
-        properties.setDistributionPoint(new DistributionPoint(NEW_TEST_URL, "", "", null, null));
+        properties.setDistributionPoint(new DistributionPoint(NEW_TEST_URL, "", "", "", "", null, null));
         sut = new DpConnector(restTemplate, properties);
     }
 

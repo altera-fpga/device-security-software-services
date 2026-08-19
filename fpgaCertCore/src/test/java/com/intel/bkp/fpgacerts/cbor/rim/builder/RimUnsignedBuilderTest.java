@@ -32,95 +32,126 @@
 
 package com.intel.bkp.fpgacerts.cbor.rim.builder;
 
-import com.intel.bkp.fpgacerts.cbor.LocatorItem;
-import com.intel.bkp.fpgacerts.cbor.LocatorType;
-import com.intel.bkp.fpgacerts.cbor.rim.RimUnsigned;
-import com.intel.bkp.fpgacerts.cbor.rim.parser.RimCoMIDParser;
+import com.intel.bkp.crypto.CryptoUtils;
+import com.intel.bkp.crypto.constants.CryptoConstants;
+import com.intel.bkp.crypto.impl.EcUtils;
+import com.intel.bkp.fpgacerts.cbor.exception.CborParserException;
+import com.intel.bkp.fpgacerts.cbor.rim.parser.RimUnsignedParser;
+import com.intel.bkp.fpgacerts.cbor.signer.cose.CborKeyPair;
 import com.intel.bkp.test.FileUtils;
+import com.intel.bkp.test.rim.RimGenerator;
+import com.upokecenter.cbor.CBORObject;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static com.intel.bkp.test.FileUtils.TEST_FOLDER;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import static com.intel.bkp.utils.HexConverter.fromHex;
 import static com.intel.bkp.utils.HexConverter.toHex;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class RimUnsignedBuilderTest {
 
-    private static final RimCoMIDParser RIM_CO_MID_CONVERTER = RimCoMIDParser.instance();
-
-    private static final String MANIFEST_ID = "51AC25B8DC58405CB4C94772120BA68A";
-    private static final String COM_ID = "A301A100504714D26D0E044CD8BEE14EB53541B8830281A200714669726D77617265206D616E"
-        + "696665737402810004A2008282A100A40169696E74656C2E636F6D02664167696C65780300040081A101A201D902280002818207583"
-        + "0302E69BA6E3FAC340A57561234E88BFEB2FE373BCE4D4A28C244809CB467C31CA39874CD0D3F346FCA2A9AE874A1D66B82A100A401"
-        + "69696E74656C2E636F6D02664167696C65780301040081A101A201D902280002818207583032883E2526F54EA21FBF99642A8F56E78"
-        + "7A0319D1D0E2AF84C36352E9A760EE80EA6C427098D17D26F65723C0C1C66EA018182A100A300D86F4C6086480186F84D010F048148"
-        + "0169696E74656C2E636F6D030181A101A100A2007372656C656173652D323032332E32382E312E310103";
-
-    private static final String DESIGN_COM_ID = "A301A100507154E6756A064C95A2E5AD61CBF7B0C00281A2006D44657369676E20417"
-        + "574686F7202810004A2008582A100A300D86F4B6086480186F84D010F04010169696E74656C2E636F6D030281A101A204D902304800"
-        + "000000030000000548FFFFFFFF000000FF82A100A300D86F4B6086480186F84D010F04020169696E74656C2E636F6D030281A101A10"
-        + "28182075830AB822974FAD8A6E3AD95916AF199AC189015CAD15613CD161EC33090E9D13EBD9C21B952CAC8F856411F42238FFAA8C4"
-        + "82A100A300D86F4B6086480186F84D010F04030169696E74656C2E636F6D030281A101A1028182075830C0AA77F5D2214BA0A8AE297"
-        + "6418A1ECC4424C996AB5EEA8FE9B75E0B9D167EF8ADDA90D97DE60C241F70D4AE8E52FF1F82A100A300D86F4B6086480186F84D010F"
-        + "04050169696E74656C2E636F6D030281A101A1028182075830B581557A36836ABA4BA69D9B2C4252CF29281A996C92202DDA2E9112F"
-        + "A458CBB1522367EE54E82B026E61C0B62DADF7682A100A300D86F4C6086480186F84D010F0481480169696E74656C2E636F6D030181"
-        + "A101A100A2007272656C656173652D323032312E332E342E320103018182A100A200D86F4C6086480186F84D010F0481490169696E7"
-        + "4656C2E636F6D81A101A100A10060";
-
-    private static final String LINK_CER =
-        "https://tsci.intel.com/content/IPCS/certs/RIM_Signing_agilex_5WL28Ty-Nta3Si1dR3ralQ7jFHw.cer";
-    private static final String LINK_XRIM =
-        "https://tsci.intel.com/content/IPCS/crls/RIM_Signing_agilex_5WL28Ty-Nta3Si1dR3ralQ7jFHw.xrim";
-    private static final String LINK_RIM =
-        "https://tsci.intel.com/content/IPCS/rims/agilex_L1_c3jAnhF5MTYncnRlDh_Ggr-T7lvK.rim";
-    private static final String PROFILE = "6086480186F84D010F06";
-
     private final RimUnsignedBuilder sut = RimUnsignedBuilder.instance().standalone();
+    private static final String digest0 = "E5D8D432075437126D1A06E54B3FB71D3059716245084419A0CF227E571AA26F5F47B943D2D7DC7082B0459A806E33B9";
+    private static final String digest1 = "C574AB3419977535175D4353C64702544FDB54834F2E03FA33C74D2769501000DC2D70BE80876BE53BFB0D73C01CC669";
+    private static final String digest2 = "16DA52155780DC488AE41B2122C59ABD6A65DA10DD1015345BB2178DC144FF1A64AE2E27ECF17C022A30DCA951F4CA77";
+    private static final String layer0Digest = "26B15D3C904B4FA7EB51D9CA40C06D6228B30E37C11BED342F62BEE3CAC0D7C059E33F0BDB21F930AB84F2BDB4F587C1";
+    private static final String layer1Digest = "F2C9F87762366BF2E36ABDAFAD03A6BAECF2E2BF3C20BF00DB24106C6289475AA85B8B1A1197577B96CAE7CDE55FA88C";
+    private static byte[] generateUnsignedRim(boolean designRim,
+                                              boolean newCorimFormat,
+                                              boolean includeProfile) throws Exception {
+        String privateKey = "008B3C43AC7741D04C6CE68B8B9DB555A5CBAF9DE4F8D9B73C0779396D748069AA7621100A7F34EA4C779FC8A306E94491";
+        String publicKey = "9CC1A8B89D5F8BBCF8A81B5E352CA7EA41F4D90FCD6DAE3634DD2EDAEF7AD63B1B153D853112EEE9B532E3E84A8" +
+            "CB11DE3F93D7BEDF37CB2DC44E3851428483BC31A04935E497C5D29AA5F0A7160000CDBAE5AB7B0DCE2070D0466B25EE27247";
+        var priv = EcUtils.toPrivate(fromHex(privateKey), CryptoConstants.EC_KEY,
+            CryptoConstants.EC_CURVE_SPEC_384, CryptoUtils.getBouncyCastleProvider());
+        var pub = EcUtils.toPublic(fromHex(publicKey), CryptoConstants.EC_KEY,
+            CryptoConstants.EC_CURVE_SPEC_384, CryptoUtils.getBouncyCastleProvider());
+        var signingKey = CborKeyPair.fromKeyPair(pub, priv);
+        final byte[] unsigned = RimGenerator.instance()
+            .signed(false)
+            .design(designRim)
+            .publicKey(signingKey.getPublicKey())
+            .newCorimFormat(newCorimFormat)
+            .expectedDigest0(digest0)
+            .expectedDigest1(digest1)
+            .expectedDigest2(digest2)
+            .layer0Digest(layer0Digest)
+            .layer1Digest(layer1Digest)
+            .includeProfile(includeProfile)
+            .generate();
+        return unsigned;
+    }
 
-    @Test
-    void build_WithFwCoRim_Success() throws Exception {
-        // given
-        final byte[] cborData = FileUtils.readFromResources(TEST_FOLDER, "fw_rim_unsigned.rim");
-        final String cborDataHex = toHex(cborData);
-        final List<LocatorItem> locators = new ArrayList<>();
-        locators.add(new LocatorItem(LocatorType.CER, LINK_CER));
-        locators.add(new LocatorItem(LocatorType.XCORIM, LINK_XRIM));
-
-        final var entity = RimUnsigned.builder()
-            .manifestId(MANIFEST_ID)
-            .comIds(List.of(RIM_CO_MID_CONVERTER.parse(fromHex(COM_ID))))
-            .locators(locators)
-            .profile(List.of(PROFILE))
-            .build();
-
-        // when
-        final byte[] actual = sut.designRim(false).build(entity);
-
-        // then
-        assertEquals(cborDataHex, toHex(actual));
+    public CBORObject parse(byte[] cborData) {
+        try (InputStream stream = new ByteArrayInputStream(cborData)) {
+            final var cbor = CBORObject.Read(stream);
+            if (cbor == null) {
+                throw new CborParserException("No data to parse");
+            }
+            return cbor;
+        } catch (Exception e) {
+            throw new CborParserException("Failed to parse cbor binary data", e);
+        }
     }
 
     @Test
-    void build_WithDesignCoRim_Success() throws Exception {
+    void build_WithFwCoRim_WithNewCoRimFormat_Success() throws Exception {
         // given
-        final byte[] cborData = FileUtils.readFromResources(TEST_FOLDER, "design_rim_unsigned.rim");
-        final String cborDataHex = toHex(cborData);
-        final List<LocatorItem> locators = List.of(new LocatorItem(LocatorType.CORIM, LINK_RIM));
-
-        final var entity = RimUnsigned.builder()
-            .manifestId("73A635A8F5614D8CB8BAC8B5B8B42472")
-            .comIds(List.of(RIM_CO_MID_CONVERTER.parse(fromHex(DESIGN_COM_ID))))
-            .locators(locators)
-            .profile(List.of(PROFILE))
-            .build();
+        final byte[] expectedCorim = FileUtils.readFromResources(FileUtils.TEST_FOLDER, "new_fw_rim_unsigned.rim");
 
         // when
-        final byte[] actual = sut.designRim(true).build(entity);
+        final byte[] corim = generateUnsignedRim(false, true, false);
+        final var entity = RimUnsignedParser.instance().parse(corim);
+        final byte[] buildFromParsed = sut.designRim(false).build(entity);
 
         // then
-        assertEquals(cborDataHex, toHex(actual));
+        assertEquals(toHex(expectedCorim), toHex(buildFromParsed));
+        assertEquals(toHex(expectedCorim), toHex(corim));
+    }
+
+    @Test
+    void build_WithDesignCoRim_WithNewCoRimFormat_Success() throws Exception {
+        // given
+        final byte[] expectedCorim = FileUtils.readFromResources(FileUtils.TEST_FOLDER, "new_design_rim_unsigned.rim");
+
+        // when
+        final byte[] corim = generateUnsignedRim(true, true, false);
+        final var entity = RimUnsignedParser.instance().parse(corim);
+        final byte[] buildFromParsed = sut.designRim(true).build(entity);
+
+        // then
+        assertEquals(toHex(expectedCorim), toHex(buildFromParsed));
+        assertEquals(toHex(expectedCorim), toHex(corim));
+    }
+
+    @Test
+    void build_WithFwCoRim_WithOldCoRimFormat_Success() throws Exception {
+        // given
+        final byte[] expectedCorim = FileUtils.readFromResources(FileUtils.TEST_FOLDER, "fw_rim_unsigned.rim");
+
+        // when
+        final byte[] corim = generateUnsignedRim(false, false, true);
+        final var entity = RimUnsignedParser.instance().parse(corim);
+        final byte[] buildFromParsed = sut.designRim(false).build(entity);
+
+        // then
+        assertEquals(toHex(expectedCorim), toHex(buildFromParsed));
+        assertEquals(toHex(expectedCorim), toHex(corim));
+    }
+
+    @Test
+    void build_WithDesignCoRim_WithOldCoRimFormat_Success() throws Exception {
+        // given
+        final byte[] expectedCorim = FileUtils.readFromResources(FileUtils.TEST_FOLDER, "design_rim_unsigned.rim");
+
+        // when
+        final byte[] corim = generateUnsignedRim(true, false, true);
+        final var entity = RimUnsignedParser.instance().parse(corim);
+        final byte[] buildFromParsed = sut.designRim(true).build(entity);
+
+        // then
+        assertEquals(toHex(expectedCorim), toHex(buildFromParsed));
+        assertEquals(toHex(expectedCorim), toHex(corim));
     }
 }

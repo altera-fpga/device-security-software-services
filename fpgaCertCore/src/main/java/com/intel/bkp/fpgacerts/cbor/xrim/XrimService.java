@@ -62,12 +62,18 @@ public class XrimService {
     private final CborSignatureVerifier cborSignatureVerifier;
 
     public void verifyXRimAndEnsureRimIsNotRevoked(RimUnsigned coRim, PublicKey rimSigPubkey, boolean acceptUnsigned) {
-        log.info("Verifying XCoRIM with accept unsigned flag set to: {}", acceptUnsigned);
-        findXCoRimUrl(coRim)
-            .ifPresentOrElse(
-                url -> handlePresentLocator(coRim, rimSigPubkey, acceptUnsigned, url),
-                () -> handleEmptyLocator(acceptUnsigned)
-            );
+        boolean hasProfile = Optional.ofNullable(coRim.getProfile())
+            .map(profiles -> !profiles.isEmpty())
+            .orElse(false);
+
+        if (hasProfile) {
+            log.info("Verifying XCoRIM with accept unsigned flag set to: {}", acceptUnsigned);
+            findXCoRimUrl(coRim)
+                .ifPresentOrElse(
+                    url -> handlePresentLocator(coRim, rimSigPubkey, acceptUnsigned, url),
+                    () -> handleEmptyLocator(acceptUnsigned)
+                );
+        }
     }
 
     private void handlePresentLocator(RimUnsigned coRim, PublicKey rimSigPubkey, boolean acceptUnsigned, String url) {

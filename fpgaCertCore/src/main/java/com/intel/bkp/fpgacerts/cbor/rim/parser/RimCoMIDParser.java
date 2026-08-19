@@ -37,6 +37,7 @@ import com.intel.bkp.fpgacerts.cbor.rim.Comid;
 import com.intel.bkp.fpgacerts.cbor.rim.comid.Claims;
 import com.intel.bkp.fpgacerts.cbor.rim.comid.ComidEntity;
 import com.intel.bkp.fpgacerts.cbor.rim.comid.ComidId;
+import com.intel.bkp.fpgacerts.cbor.rim.comid.ConditionalEndorsedTriple;
 import com.intel.bkp.fpgacerts.cbor.rim.comid.Digest;
 import com.intel.bkp.fpgacerts.cbor.rim.comid.EnvironmentMap;
 import com.intel.bkp.fpgacerts.cbor.rim.comid.LinkedTag;
@@ -48,11 +49,13 @@ import com.upokecenter.cbor.CBORObject;
 import com.upokecenter.cbor.CBORType;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static com.intel.bkp.fpgacerts.cbor.rim.comid.Claims.CBOR_CONDITIONAL_ENDORSED_TRIPLES_KEY;
 import static com.intel.bkp.fpgacerts.cbor.rim.comid.Claims.CBOR_ENDORSED_TRIPLES_KEY;
 import static com.intel.bkp.fpgacerts.cbor.rim.comid.Claims.CBOR_REFERENCE_TRIPLES_KEY;
 import static com.intel.bkp.fpgacerts.cbor.rim.comid.Digest.CBOR_DIGEST_ALG_KEY;
@@ -68,10 +71,11 @@ import static com.intel.bkp.fpgacerts.cbor.rim.comid.MeasurementVersion.CBOR_VER
 import static com.intel.bkp.fpgacerts.cbor.rim.comid.ReferenceTriple.CBOR_ENVIRONMENTS_KEY;
 import static com.intel.bkp.fpgacerts.cbor.rim.comid.ReferenceTriple.CBOR_MEASUREMENTS_KEY;
 import static com.intel.bkp.utils.HexConverter.toHex;
-import static java.util.Optional.ofNullable;
 
+@Setter
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class RimCoMIDParser extends CborParserBase<Comid> {
+    private boolean hasProfile = false;
 
     public static RimCoMIDParser instance() {
         return new RimCoMIDParser();
@@ -82,7 +86,7 @@ public class RimCoMIDParser extends CborParserBase<Comid> {
         final var comidId = parseComidId(cbor);
         final var comidEntity = parseComidEntity(cbor);
         final var linkedTags = parseLinkedTags(cbor);
-        final Claims claims = parseClaims(cbor);
+        final Claims claims = parseClaims(cbor, hasProfile);
 
         return Comid.builder()
             .id(comidId)
@@ -101,7 +105,7 @@ public class RimCoMIDParser extends CborParserBase<Comid> {
         final CBORObject cborObject = cbor.get(Comid.CBOR_ENTITIES_KEY).get(0);
         final var entityName = cborObject.get(0).AsString();
 
-        final var regId = ofNullable(cborObject.get(1))
+        final var regId = Optional.ofNullable(cborObject.get(1))
             .map(CBORObject::AsString)
             .orElse(null);
 
@@ -133,12 +137,33 @@ public class RimCoMIDParser extends CborParserBase<Comid> {
         }
     }
 
-    private static Claims parseClaims(CBORObject cbor) {
+    private static Claims parseClaims(CBORObject cbor, boolean hasProfile) {
         final var claims = cbor.get(Comid.CBOR_CLAIMS_KEY);
+        List<ReferenceTriple> referenceTriples = parseTriples(claims.get(CBOR_REFERENCE_TRIPLES_KEY));
+        ConditionalEndorsedTriple triple = null;
+
+        if (hasProfile) {
+            var endorsedTriples = claims.get(CBOR_ENDORSED_TRIPLES_KEY);
+            return Claims.builder()
+                .referenceTriples(referenceTriples)
+                .endorsedTriples(parseTriples(endorsedTriples))
+                .build();
+        }
+
+        triple = Optional.ofNullable(claims.get(CBOR_CONDITIONAL_ENDORSED_TRIPLES_KEY))
+            .map(condEndorsedTriples -> parseConditionalEndorsedTriples(condEndorsedTriples)
+                .map(parsedCondTriple -> ConditionalEndorsedTriple.builder()
+                    .conditions(parsedCondTriple.getConditions())
+                    .endorsements(parsedCondTriple.getEndorsements())
+                    .build())
+                .orElse(null)
+            )
+            .orElse(null);
+
         return Claims.builder()
-            .referenceTriples(parseTriples(claims.get(CBOR_REFERENCE_TRIPLES_KEY)))
-            .endorsedTriples(parseTriples(claims.get(CBOR_ENDORSED_TRIPLES_KEY)))
-            .build();
+                .referenceTriples(referenceTriples)
+                .conditionalEndorsedTriples(triple)
+                .build();
     }
 
     private static List<ReferenceTriple> parseTriples(CBORObject cborTriplesData) {
@@ -153,30 +178,45 @@ public class RimCoMIDParser extends CborParserBase<Comid> {
             .toList();
     }
 
+    private static Optional<ConditionalEndorsedTriple> parseConditionalEndorsedTriples(CBORObject cborTriplesData) {
+        return Optional.ofNullable(cborTriplesData)
+                .map(e -> {
+                    if (e.size() == 1) {
+                        return ConditionalEndorsedTriple.builder()
+                        .conditions(parseTriples(e.get(ConditionalEndorsedTriple.CBOR_CONDITIONS_INDEX)))
+                        .build();
+                    }
+                    return ConditionalEndorsedTriple.builder()
+                        .conditions(parseTriples(e.get(ConditionalEndorsedTriple.CBOR_CONDITIONS_INDEX)))
+                        .endorsements(parseTriples(e.get(ConditionalEndorsedTriple.CBOR_ENDORSEMENTS_INDEX)))
+                        .build();
+                });
+    }
+
     private static MeasurementMap parseMeasurementMap(CBORObject arrItem) {
         final CBORObject cborObject = arrItem.get(1);
 
         final var builder = MeasurementMap.builder();
 
-        ofNullable(cborObject.get(CBOR_SVN_KEY))
+        Optional.ofNullable(cborObject.get(CBOR_SVN_KEY))
             .map(RimCoMIDParser::parseSvnField)
             .ifPresent(builder::svn);
 
-        ofNullable(cborObject.get(CBOR_DIGESTS_KEY))
+        Optional.ofNullable(cborObject.get(CBOR_DIGESTS_KEY))
             .map(RimCoMIDParser::parseDigest)
             .ifPresent(builder::digests);
 
-        ofNullable(cborObject.get(CBOR_RAW_VALUE_KEY))
+        Optional.ofNullable(cborObject.get(CBOR_RAW_VALUE_KEY))
             .map(CBORObject::GetByteString)
             .map(HexConverter::toHex)
             .ifPresent(builder::rawValue);
 
-        ofNullable(cborObject.get(CBOR_RAW_VALUE_MASK_KEY))
+        Optional.ofNullable(cborObject.get(CBOR_RAW_VALUE_MASK_KEY))
             .map(CBORObject::GetByteString)
             .map(HexConverter::toHex)
             .ifPresent(builder::rawValueMask);
 
-        ofNullable(cborObject.get(CBOR_MEAS_VERSION_KEY))
+        Optional.ofNullable(cborObject.get(CBOR_MEAS_VERSION_KEY))
             .map(RimCoMIDParser::getMeasurementVersion)
             .ifPresent(builder::version);
 
@@ -203,7 +243,7 @@ public class RimCoMIDParser extends CborParserBase<Comid> {
     private static MeasurementVersion getMeasurementVersion(CBORObject obj) {
         final var builder = MeasurementVersion.builder();
 
-        ofNullable(obj.get(CBOR_VERSION_SCHEME_KEY))
+        Optional.ofNullable(obj.get(CBOR_VERSION_SCHEME_KEY))
             .map(item -> {
                 if (item.getType() != CBORType.TextString) {
                     return String.valueOf(item.AsInt32());
@@ -213,7 +253,7 @@ public class RimCoMIDParser extends CborParserBase<Comid> {
             })
             .ifPresent(builder::versionScheme);
 
-        ofNullable(obj.get(CBOR_VERSION_KEY))
+        Optional.ofNullable(obj.get(CBOR_VERSION_KEY))
             .map(CBORObject::AsString)
             .ifPresent(builder::version);
 
@@ -223,24 +263,24 @@ public class RimCoMIDParser extends CborParserBase<Comid> {
     private static EnvironmentMap parseEnvironmentMap(CBORObject item) {
         final var builder = EnvironmentMap.builder();
 
-        ofNullable(item.get(EnvironmentMap.CBOR_CLASS_ID_KEY))
+        Optional.ofNullable(item.get(EnvironmentMap.CBOR_CLASS_ID_KEY))
             .map(CBORObject::GetByteString)
             .map(HexConverter::toHex)
             .ifPresent(builder::classId);
 
-        ofNullable(item.get(EnvironmentMap.CBOR_VENDOR_KEY))
+        Optional.ofNullable(item.get(EnvironmentMap.CBOR_VENDOR_KEY))
             .map(CBORObject::AsString)
             .ifPresent(builder::vendor);
 
-        ofNullable(item.get(EnvironmentMap.CBOR_MODEL_KEY))
+        Optional.ofNullable(item.get(EnvironmentMap.CBOR_MODEL_KEY))
             .map(CBORObject::AsString)
             .ifPresent(builder::model);
 
-        ofNullable(item.get(EnvironmentMap.CBOR_LAYER_KEY))
+        Optional.ofNullable(item.get(EnvironmentMap.CBOR_LAYER_KEY))
             .map(CBORObject::AsInt32)
             .ifPresent(builder::layer);
 
-        ofNullable(item.get(EnvironmentMap.CBOR_INDEX_KEY))
+        Optional.ofNullable(item.get(EnvironmentMap.CBOR_INDEX_KEY))
             .map(CBORObject::AsInt32)
             .ifPresent(builder::index);
 

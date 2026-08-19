@@ -50,7 +50,7 @@ using testing::Matcher;
 
 class MockNetwork : public NetworkWrapper {
 public:
-    MOCK_METHOD(void, init, (Config config, std::string endpoint), (override));
+    MOCK_METHOD(void, init, (const Config& config, const std::string& endpoint), (override));
     MOCK_METHOD(void, perform, (const std::string &postData, std::string &receivedData), (override));
 };
 

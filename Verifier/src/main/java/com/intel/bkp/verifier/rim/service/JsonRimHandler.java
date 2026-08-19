@@ -34,12 +34,16 @@ package com.intel.bkp.verifier.rim.service;
 
 import com.intel.bkp.fpgacerts.dice.tcbinfo.MeasurementHolder;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurement;
+import com.intel.bkp.fpgacerts.ect.ECTMap;
+import com.intel.bkp.fpgacerts.ect.IECTMapStorage;
 import com.intel.bkp.fpgacerts.rim.IRimHandler;
 import com.intel.bkp.verifier.rim.model.Rim;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -51,6 +55,11 @@ public class JsonRimHandler implements IRimHandler<String> {
 
     private final RimParser rimParser = new RimParser();
     private final RimToTcbInfoMeasurementsMapper rimMapper = new RimToTcbInfoMeasurementsMapper();
+    private final List<String> trustedRootsList = new ArrayList<>();
+
+    public JsonRimHandler(String[] trustedRootsList) {
+        this.trustedRootsList.addAll(Arrays.asList(trustedRootsList));
+    }
 
     @Override
     public String getFormatName() {
@@ -64,8 +73,10 @@ public class JsonRimHandler implements IRimHandler<String> {
 
     public MeasurementHolder getMeasurements(String json) {
         final Rim referenceMeasurement = rimParser.parse(json);
+        List<TcbInfoMeasurement> refTcbInfoMeasurements = getReferenceMeasurements(referenceMeasurement);
+        List<IECTMapStorage> ectMapStorages = ECTMap.createRvECTMap(refTcbInfoMeasurements, trustedRootsList);
         final var holder = new MeasurementHolder();
-        holder.setReferenceMeasurements(getReferenceMeasurements(referenceMeasurement));
+        holder.setReferenceMeasurements(ectMapStorages);
         return holder;
     }
 

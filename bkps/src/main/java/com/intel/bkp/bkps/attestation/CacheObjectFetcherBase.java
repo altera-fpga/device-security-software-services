@@ -65,7 +65,13 @@ public abstract class CacheObjectFetcherBase<T> {
     public Optional<T> fetch(String url) {
         String validUrl = validate(url);
         return findValidInCache(validUrl)
-            .or(() -> downloadAndSaveInCache(validUrl));
+            .or(() -> {
+                if (validUrl.toLowerCase().startsWith("file://")) {
+                    log.info("Local file path is not supported, skipping download: {}", validUrl);
+                    return Optional.empty();
+                }
+                return downloadAndSaveInCache(validUrl);
+            });
     }
 
     public Optional<T> fetchSkipCache(String url) {
@@ -78,6 +84,9 @@ public abstract class CacheObjectFetcherBase<T> {
     private String validate(String url) {
         try {
             URL originalUrl = new URL(url);
+            if (originalUrl.getProtocol().equals("file")) {
+                return url;
+            }
             String originalDomain = originalUrl.getProtocol() + "://" + originalUrl.getAuthority();
             URL expectedUrl = new URL(distributionPoint.getMainPath());
             String expectedDomain = expectedUrl.getProtocol() + "://" + expectedUrl.getAuthority();

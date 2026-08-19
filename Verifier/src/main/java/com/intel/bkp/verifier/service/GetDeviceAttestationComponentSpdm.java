@@ -69,14 +69,14 @@ public class GetDeviceAttestationComponentSpdm extends GetDeviceAttestationCompo
         this.spdmVersionVerifier = new SpdmVersionVerifier(SPDM_SUPPORTED_VERSION);
     }
 
-    public VerifierExchangeResponse perform(String refMeasurementHex, byte[] deviceId) {
-        return perform(AppContext.instance(), refMeasurementHex, deviceId);
+    public VerifierExchangeResponse perform(String refMeasurementHex, String appraisalPolicy, byte[] deviceId) {
+        return perform(AppContext.instance(), refMeasurementHex, appraisalPolicy, deviceId);
     }
 
-    VerifierExchangeResponse perform(AppContext appContext, String refMeasurementHex, byte[] deviceId) {
+    VerifierExchangeResponse perform(AppContext appContext, String refMeasurementHex, String appraisalPolicy, byte[] deviceId) {
         var response = VerifierExchangeResponse.ERROR;
         if (spdmSupported()) {
-            response = runSpdmAttestation(refMeasurementHex, deviceId);
+            response = runSpdmAttestation(refMeasurementHex, appraisalPolicy, deviceId);
         }
         return response;
     }
@@ -100,10 +100,10 @@ public class GetDeviceAttestationComponentSpdm extends GetDeviceAttestationCompo
         }
     }
 
-    private VerifierExchangeResponse runSpdmAttestation(String refMeasurementHex, byte[] deviceId) {
+    private VerifierExchangeResponse runSpdmAttestation(String refMeasurementHex, String appraisalPolicy, byte[] deviceId) {
         log.debug("Running SPDM Attestation.");
         initializeSpdmConnection();
-        final var attestationResult = spdmDiceAttestationComponent.perform(refMeasurementHex, deviceId);
+        final var attestationResult = spdmDiceAttestationComponent.perform(refMeasurementHex, appraisalPolicy, deviceId);
         return VerifierExchangeResponse.from(attestationResult);
     }
 

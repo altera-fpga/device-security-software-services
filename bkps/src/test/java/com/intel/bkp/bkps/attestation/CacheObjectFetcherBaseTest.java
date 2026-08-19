@@ -65,6 +65,7 @@ class CacheObjectFetcherBaseTest {
     private static final String PATH = "https://tsci.intel.com/content/IPCS/path";
     private static final String ALTERA_HOST = "https://tsci.altera.com/";
     private static final String UPDATED_PATH = "https://tsci.altera.com/content/IPCS/path";
+    private static final String LOCAL_PATH = "file://content/IPCS/path";
 
     private static class CacheObjectFetcherBaseTestImpl extends CacheObjectFetcherBase<Integer> {
 
@@ -100,6 +101,8 @@ class CacheObjectFetcherBaseTest {
         applicationProperties.setDistributionPoint(new DistributionPoint(
             "https://tsci.intel.com/",
             "content/IPCS/certs/",
+            "content/IPCS/rims/",
+            "content/IPCS/rims_v2/",
             "content/IPCS/",
             null,
             null
@@ -142,6 +145,19 @@ class CacheObjectFetcherBaseTest {
     }
 
     @Test
+    void fetch_WhenNoObjCached_SkipsDownloadsAndSavesInCache_WithLocalPath() {
+        // given
+        when(prefetchRepositoryService.find(LOCAL_PATH)).thenReturn(Optional.empty());
+        sut = new CacheObjectFetcherBaseTestImpl(prefetchRepositoryService, dpConnector, applicationProperties);
+
+        // when
+        final var result = sut.fetch(LOCAL_PATH);
+
+        // then
+        verify(prefetchRepositoryService, never()).save(any(), any());
+    }
+
+    @Test
     void fetch_WhenObjCachedButNotValid_DownloadsAndSavesInCache() {
         // given
         when(prefetchRepositoryService.find(PATH)).thenReturn(Optional.of(INVALID_OBJ));
@@ -176,6 +192,19 @@ class CacheObjectFetcherBaseTest {
     }
 
     @Test
+    void fetch_WhenObjCachedButNotValid_SkipsDownloadsAndSavesInCache_WithLocalPath() {
+        // given
+        when(prefetchRepositoryService.find(LOCAL_PATH)).thenReturn(Optional.of(INVALID_OBJ));
+        sut = new CacheObjectFetcherBaseTestImpl(prefetchRepositoryService, dpConnector, applicationProperties);
+
+        // when
+        final var result = sut.fetch(LOCAL_PATH);
+
+        // then
+        verify(prefetchRepositoryService, never()).save(any(), any());
+    }
+
+    @Test
     void fetch_WhenObjCachedAndValid_ReturnsCachedWithoutDownloading() {
         // given
         final Optional<Integer> expected = Optional.of(VALID_OBJ);
@@ -183,6 +212,21 @@ class CacheObjectFetcherBaseTest {
 
         // when
         final var result = sut.fetch(PATH);
+
+        // then
+        assertEquals(expected, result);
+        verifyNoInteractions(dpConnector);
+        verify(prefetchRepositoryService, never()).save(any(), any());
+    }
+
+    @Test
+    void fetch_WhenObjCachedAndValid_ReturnsCachedWithoutDownloading_WithLocalPath() {
+        // given
+        final Optional<Integer> expected = Optional.of(VALID_OBJ);
+        when(prefetchRepositoryService.find(LOCAL_PATH)).thenReturn(expected);
+
+        // when
+        final var result = sut.fetch(LOCAL_PATH);
 
         // then
         assertEquals(expected, result);

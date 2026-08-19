@@ -82,7 +82,7 @@ public class SkiHelper {
             .getBytes();
     }
 
-    private static String getMSBytesOfSkiInBase64Url(int bytesCount, byte[] data) {
+    public static String getMSBytesOfSkiInBase64Url(int bytesCount, byte[] data) {
         final byte[] leadingBytes = getMSBytesForSha384(data, bytesCount);
         return Base64Url.encodeWithoutPadding(leadingBytes);
     }

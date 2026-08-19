@@ -30,30 +30,23 @@
  * **************************************************************************
  */
 
-package com.intel.bkp.fpgacerts.url.filename;
+package com.intel.bkp.fpgacerts.cbor.rim.comid;
 
-import com.intel.bkp.fpgacerts.model.Family;
-import com.intel.bkp.fpgacerts.url.params.RimParams;
-import org.junit.jupiter.api.Test;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.util.List;
 
-class XrimDataNameProviderTest {
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class ConditionalEndorsedTriple {
+    public static final Integer CBOR_CONDITIONS_INDEX = 0;
+    public static final Integer CBOR_ENDORSEMENTS_INDEX = 1;
+    private List<ReferenceTriple> conditions;
+    private List<ReferenceTriple> endorsements;
 
-    private static final String EXPECTED_SKI = "41SSZwl66ctC-wuR6nz5ggpzhTY";
-    private static final String EXPECTED_FAMILY_NAME = "agilex";
-    private static final RimParams DATA_PARAMS = new RimParams(EXPECTED_SKI, Family.AGILEX.getFamilyName());
-
-    private static final XrimDataNameProvider sut = new XrimDataNameProvider(DATA_PARAMS);
-
-    @Test
-    void getFileNameParameters_Success() {
-        // when
-        final Object[] params = sut.getFileNameParameters();
-
-        // then
-        assertEquals(2, params.length);
-        assertEquals(EXPECTED_FAMILY_NAME, params[0]);
-        assertEquals(EXPECTED_SKI, params[1]);
-    }
 }

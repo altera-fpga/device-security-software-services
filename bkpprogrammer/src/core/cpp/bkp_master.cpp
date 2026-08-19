@@ -110,7 +110,7 @@ Status_t BkpMaster::perform_message_exchange(NetworkMessage &networkMessage) con
                 LOG(L_DEBUG, "Received data from BKPS: " + receivedData);
                 try
                 {
-                    networkMessage.parseFromResponseJson(receivedData);
+                    networkMessage.parseFromResponseJson(std::move(receivedData));
                 }
                 catch (const std::exception &ex)
                 {
@@ -175,7 +175,7 @@ std::vector<Response> BkpMaster::send_commands_to_quartus(std::vector<Command> j
         // :TODO - pass bkpsResponse.api_version to jtag->exchange_jtag_cmd
         std::string quartusResponse;
         Status_t quartusStatus = jtag->exchange_jtag_cmd(command, quartusResponse);
-        Response resp = { quartusResponse, quartusStatus };
+        Response resp = { std::move(quartusResponse), quartusStatus };
         quartusResponses.emplace_back(resp);
     }
     logReceivedQuartus();

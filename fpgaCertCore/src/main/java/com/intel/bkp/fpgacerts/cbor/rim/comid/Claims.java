@@ -47,7 +47,9 @@ public class Claims {
 
     public static final int CBOR_REFERENCE_TRIPLES_KEY = 0;
     public static final int CBOR_ENDORSED_TRIPLES_KEY = 1;
+    public static final int CBOR_CONDITIONAL_ENDORSED_TRIPLES_KEY = 10;
 
     private List<ReferenceTriple> referenceTriples;
     private List<ReferenceTriple> endorsedTriples;
+    private ConditionalEndorsedTriple conditionalEndorsedTriples;
 }

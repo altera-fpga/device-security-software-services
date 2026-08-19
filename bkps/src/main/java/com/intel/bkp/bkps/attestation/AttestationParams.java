@@ -36,13 +36,17 @@ import com.intel.bkp.bkps.domain.ServiceConfiguration;
 
 public record AttestationParams(boolean testModeSecrets,
                                 boolean requireIidUds,
-                                String corimUrl) {
+                                String corimUrl,
+                                boolean autoFetchFirmwareCorim,
+                                Long appraisalPolicyId) {
 
     public static AttestationParams from(ServiceConfiguration configuration) {
         return new AttestationParams(
             configuration.isTestModeSecrets(),
             configuration.isRequireIidUds(),
-            configuration.getCorimUrl()
+            configuration.getCorimUrl(),
+            configuration.isAutoFetchFirmwareCorim(),
+            configuration.getAppraisalPolicyId()
         );
     }
 

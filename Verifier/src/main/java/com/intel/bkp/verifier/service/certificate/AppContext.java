@@ -174,6 +174,16 @@ public class AppContext implements AutoCloseable {
         return PathUtils.buildPath(dp.getMainPath(), dp.getAttestationCertBasePath());
     }
 
+    public String getDpPathRim() {
+        final DistributionPoint dp = libConfig.getDistributionPoint();
+        return PathUtils.buildPath(dp.getMainPath(), dp.getRimDataBasePath());
+    }
+
+    public String getDpPathRimV2() {
+        final DistributionPoint dp = libConfig.getDistributionPoint();
+        return PathUtils.buildPath(dp.getMainPath(), dp.getRimDataBasePathV2());
+    }
+
     @Override
     public void close() {
         sqLiteHelper.close();

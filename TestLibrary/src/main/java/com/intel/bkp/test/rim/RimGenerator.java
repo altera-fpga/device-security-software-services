@@ -45,6 +45,7 @@ import com.intel.bkp.fpgacerts.cbor.rim.builder.RimUnsignedBuilder;
 import com.intel.bkp.fpgacerts.cbor.rim.comid.Claims;
 import com.intel.bkp.fpgacerts.cbor.rim.comid.ComidEntity;
 import com.intel.bkp.fpgacerts.cbor.rim.comid.ComidId;
+import com.intel.bkp.fpgacerts.cbor.rim.comid.ConditionalEndorsedTriple;
 import com.intel.bkp.fpgacerts.cbor.rim.comid.ReferenceTriple;
 import com.intel.bkp.fpgacerts.cbor.signer.CborSignatureVerifier;
 import com.intel.bkp.fpgacerts.cbor.signer.CoseMessage1Signer;
@@ -61,6 +62,7 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 
+import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -107,6 +109,7 @@ public class RimGenerator {
     private Comid fwComid;
     private Comid designComid;
     private List<LocatorItem> locators = new ArrayList<>();
+    private boolean newCorimFormat = false;
     private String expectedDigest0 = generateRandomHex(48);
     private String expectedDigest1 = generateRandomHex(48);
     private String expectedDigest2 = generateRandomHex(48);
@@ -143,26 +146,31 @@ public class RimGenerator {
 
         if (signed) {
             final String ski = SkiHelper.getSkiInBase64UrlForUrl(CurvePoint.from(publicKey).getAlignedDataToSize());
-            locators.add(new LocatorItem(CER, prepareURL(CER, ski)));
-            locators.add(new LocatorItem(XCORIM, prepareURL(XCORIM, ski)));
+            locators.add(new LocatorItem(CER, prepareURL(CER, fwVersion, ski)));
+            locators.add(new LocatorItem(XCORIM, prepareURL(XCORIM, fwVersion, ski)));
         }
 
         if (design) {
             final String fwId = SkiHelper.getFwIdInBase64UrlForUrl(fromHex(layer1Digest()));
-            locators.add(new LocatorItem(CORIM, prepareURL(CORIM, fwId)));
-        }
-
-        if (design) {
-            comid = Optional.ofNullable(designComid).orElseGet(this::prepareDesignRimComid);
+            locators.add(new LocatorItem(CORIM, prepareURL(CORIM, fwVersion, fwId)));
+            if (newCorimFormat) {
+                comid = Optional.ofNullable(designComid).orElseGet(this::prepareDesignRimComidInNewFormat);
+            } else {
+                comid = Optional.ofNullable(designComid).orElseGet(this::prepareDesignRimComid);
+            }
         } else {
-            comid = Optional.ofNullable(fwComid).orElseGet(this::prepareFirmwareComid);
+            if (newCorimFormat) {
+                comid = Optional.ofNullable(fwComid).orElseGet(this::prepareFirmwareComidInNewFormat);
+            } else {
+                comid = Optional.ofNullable(fwComid).orElseGet(this::prepareFirmwareComid);
+            }
         }
 
         return RimUnsigned.builder()
             .manifestId(manifestId)
             .comIds(List.of(comid))
             .locators(locators)
-            .profile(List.of(PROFILE))
+            .profile((includeProfile || !newCorimFormat) ? List.of(PROFILE) : List.of())
             .build();
     }
 
@@ -214,21 +222,31 @@ public class RimGenerator {
         return RimUnsignedBuilder.instance().build(rimUnsignedGeneric);
     }
 
-    private String prepareURL(LocatorType locatorType, String uniquePart) {
+    private String prepareURL(LocatorType locatorType, String fwVersion, String uniquePart) {
         final String folder = switch (locatorType) {
             case CER -> "certs";
             case XCORIM -> "crls";
             case CORIM -> "rims";
             case NONE -> "";
         };
-        return PathUtils.buildPath(distributionPointUrl, folder, prepareFileName(locatorType, uniquePart));
+        return PathUtils.buildPath(distributionPointUrl, folder, prepareFileName(locatorType, fwVersion, uniquePart));
     }
 
-    private String prepareFileName(LocatorType locatorType, String uniquePart) {
+    private String prepareFileName(LocatorType locatorType, String fwVersion, String uniquePart) {
         final String familyName = family.getFamilyName().toLowerCase(Locale.ROOT);
         final String extension = locatorType.name().toLowerCase(Locale.ROOT);
         if (List.of(XCORIM, CER).contains(locatorType)) {
-            return "RIM_Signing_%s_%s.%s".formatted(familyName, uniquePart, extension);
+            if (newCorimFormat) {
+                final int fwVersionBytes = 12;
+                final String fwVersionBase64 = SkiHelper.getMSBytesOfSkiInBase64Url(
+                    fwVersionBytes,
+                    Optional.ofNullable(fwVersion)
+                        .map(version -> version.getBytes(StandardCharsets.UTF_8))
+                        .orElseThrow());
+                return "RIM_Signing_%s_%s_%s.%s".formatted(familyName, fwVersionBase64, uniquePart, extension);
+            } else {
+                return "RIM_Signing_%s_%s.%s".formatted(familyName, uniquePart, extension);
+            }
         } else if (CORIM == locatorType) {
             return "%s_L1_%s.%s".formatted(familyName, uniquePart, extension);
         } else {
@@ -305,6 +323,86 @@ public class RimGenerator {
                     .environmentMap(environmentMap("6086480186F84D010F048149", null))
                     .measurementMap(versionMap("", null))
                     .build()))
+                .build())
+            .build();
+    }
+
+    private Comid prepareFirmwareComidInNewFormat() {
+        var referenceTriples = List.of(
+                                ReferenceTriple.builder()
+                                    .environmentMap((family.getFamilyId() >= Family.AGILEX_B.getFamilyId())
+                                                    ? environmentMap(MeasurementType.ROM_EXTENSION.getOid(), MeasurementType.ROM_EXTENSION.getLayer())
+                                                    : environmentMap(family.getFamilyName(), MeasurementType.ROM_EXTENSION.getLayer(), 0))
+                                    .measurementMap(measurementMap(0, 7, layer0Digest))
+                                    .build(),
+                                ReferenceTriple.builder()
+                                    .environmentMap((family.getFamilyId() >= Family.AGILEX_B.getFamilyId())
+                                                    ? environmentMap(MeasurementType.CMF.getOid(), MeasurementType.CMF.getLayer())
+                                                    : environmentMap(family.getFamilyName(), MeasurementType.CMF.getLayer(), 0))
+                                    .measurementMap(measurementMap(0, 7, layer1Digest)).build());
+        return Comid.builder()
+            .id(ComidId.builder().value("51F505F82911480B9F44B8A614FF2B18").build())
+            .entities(List.of(ComidEntity.builder()
+                .entityName("Firmware manifest")
+                .roles(List.of(0))
+                .build()))
+            .claims(Claims.builder()
+                .referenceTriples(referenceTriples)
+                .conditionalEndorsedTriples(ConditionalEndorsedTriple.builder()
+                    .conditions(referenceTriples)
+                    .endorsements(List.of(ReferenceTriple.builder()
+                                .environmentMap(environmentMap("6086480186F84D010F048148", 1))
+                                .measurementMap(versionMap("release-2023.28.1.1", "3"))
+                                .build()))
+                    .build())
+                .build())
+            .build();
+    }
+
+    private Comid prepareDesignRimComidInNewFormat() {
+
+        final String digest0 = expectedDigest0;
+        final String digest1 = expectedDigest1;
+        final String digest2 = expectedDigest2;
+
+        final List<ReferenceTriple> referenceTriples = List.of(
+            ReferenceTriple.builder()
+                .environmentMap(environmentMap("6086480186F84D010F0401", 2))
+                .measurementMap(measurementMap("0000000003000000", "FFFFFFFF000000FF"))
+                .build(),
+            ReferenceTriple.builder()
+                .environmentMap(environmentMap("6086480186F84D010F0402", 2))
+                .measurementMap(measurementMap(7, digest0)).build(),
+            ReferenceTriple.builder()
+                .environmentMap(environmentMap("6086480186F84D010F0403", 2))
+                .measurementMap(measurementMap(7, digest1)).build(),
+            ReferenceTriple.builder()
+                .environmentMap(environmentMap("6086480186F84D010F0405", 2))
+                .measurementMap(measurementMap(7, digest2)).build(),
+            ReferenceTriple.builder()
+                .environmentMap(environmentMap("6086480186F84D010F048148", 1))
+                .measurementMap(versionMap("release-2021.3.4.2", "3"))
+                .build()
+        );
+
+        return Comid.builder()
+            .id(ComidId.builder().value("5CC21C1EDC37453D8FF559AFB335371C").build())
+            .entities(List.of(
+                ComidEntity.builder()
+                    .entityName("Design Author")
+                    .regId("")
+                    .roles(List.of(0))
+                    .build()
+            ))
+            .claims(Claims.builder()
+                .referenceTriples(referenceTriples)
+                .conditionalEndorsedTriples(ConditionalEndorsedTriple.builder()
+                    .conditions(referenceTriples)
+                    .endorsements(List.of(ReferenceTriple.builder()
+                                .environmentMap(environmentMap("6086480186F84D010F048149", null))
+                                .measurementMap(versionMap("", null))
+                                .build()))
+                    .build())
                 .build())
             .build();
     }

@@ -55,6 +55,7 @@ public class AppArgument {
     private String context;
     private String pufType;
     private String refMeasurement;
+    private String appraisalPolicy;
     private String logLevel;
 
     public static class AppArgumentBuilder {

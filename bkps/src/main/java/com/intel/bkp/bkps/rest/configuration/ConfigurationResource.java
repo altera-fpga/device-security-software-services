@@ -42,4 +42,7 @@ public final class ConfigurationResource {
     public static final String CONFIG_NODE = "/config" + VERSION;
     public static final String CONFIGURATION = "/configuration";
     public static final String CONFIGURATION_DETAIL = CONFIGURATION + "/{id}";
+    public static final String APPRAISAL_POLICY = "/appraisalPolicy";
+    public static final String APPRAISAL_POLICY_DETAIL = APPRAISAL_POLICY + "/{id}";
+    public static final String ATTESTATION_FILE = "/attestationFile";
 }

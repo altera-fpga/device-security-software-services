@@ -35,8 +35,11 @@ import logging
 import pkg_resources
 import requests
 from Modules.Utilities import check_file, show_output, read_file
-from os import environ
+from os import environ, walk, path
 from packaging import version
+import zipfile
+import shutil
+from pathlib import Path
 
 
 class PassPhraseError(Exception):
@@ -170,6 +173,13 @@ class Requester:
         return {
             'Cache-Control': "no-cache",
             'Content-Type': "application/json"
+        }
+
+    @staticmethod
+    def get_multipart_headers():
+        return {
+            'Cache-Control': "no-cache",
+            'Content-Type': "multipart/form-data"
         }
 
     @staticmethod
@@ -312,3 +322,66 @@ class Requester:
                                  % (str(family_id), str(device_id)), None, headers=None)
         else:
             self.perform_request('GET', '/prov/v1/prefetch/status', None, headers=None)
+
+    def create_appraisal_policy(self, data):
+        parsed = json.loads(data)
+        payload = {"name": parsed['name'], "content": data}
+        self.perform_request('POST', '/config/v1/appraisalPolicy', json.dumps(payload).encode('utf-8'), self.get_json_headers())
+
+    def list_appraisal_policies(self):
+        self.perform_request('GET', '/config/v1/appraisalPolicy', None, self.get_json_headers())
+
+    def get_appraisal_policy(self, id):
+        self.perform_request('GET', '/config/v1/appraisalPolicy/{}'.format(id), None, self.get_json_headers())
+
+    def update_appraisal_policy(self, data, id):
+        parsed = json.loads(data)
+        payload = {"id": id, "name": parsed['name'], "content": data}
+        self.perform_request('PUT', '/config/v1/appraisalPolicy/{}'.format(id), json.dumps(payload).encode('utf-8'), self.get_json_headers())
+
+    def delete_appraisal_policy(self, id):
+        self.perform_request('DELETE', '/config/v1/appraisalPolicy/{}'.format(id))
+
+    def upload_attestation_file(self, input_file):
+        extract_path_abs = Path('output_zip').resolve()
+        # Remove old directory if exists
+        if path.exists(extract_path_abs):
+            shutil.rmtree(extract_path_abs)
+        zip_file_name_abs = Path(input_file).resolve()
+
+        print(f"Extracting '{zip_file_name_abs.name}' to: {extract_path_abs}")
+        try:
+            with zipfile.ZipFile(zip_file_name_abs, 'r') as zip_ref:
+                extract_path_abs.mkdir(parents=True, exist_ok=True)
+                zip_ref.extractall(extract_path_abs)
+            print("Extraction complete.")
+        except FileNotFoundError:
+            print(f"Error: Zip file not found at {zip_file_name_abs}")
+            sys.exit()
+        except zipfile.BadZipFile:
+            print(f"Error: {zip_file_name_abs} is not a valid zip file")
+            sys.exit()
+
+        # Step 2: Loop through all subdirectories and files using os.walk()
+        for root_abs, dirs, files in walk(extract_path_abs):
+            # Calculate the relative path from the base extraction directory
+            root_rel = Path(root_abs).relative_to(extract_path_abs)
+
+            # Loop through all files in the current directory
+            for file in files:
+                if file.endswith((".corim", ".cer", ".cert", ".crl")):
+                    # Calculate the full relative file path
+                    file_fullpath_rel = extract_path_abs / root_rel / file
+                    file_path_rel = root_rel / file
+
+                    print(f"  Found file (Relative Path): {file_path_rel}")
+                    payload = {"path": str(file_path_rel)}
+                    files = {
+                        'path': "%s" % str(file_path_rel),
+                        'file': self.prepare_binary_payload_from_file(file_fullpath_rel)
+                    }
+                    self.perform_request('POST', '/config/v1/attestationFile', files=files)
+
+    def delete_attestation_file(self, path):
+        payload = {"path": "%s" % path }
+        self.perform_request('DELETE', '/config/v1/attestationFile', self.get_multipart_headers(), files=payload)

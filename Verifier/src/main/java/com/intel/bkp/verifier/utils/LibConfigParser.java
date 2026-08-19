@@ -69,8 +69,10 @@ import static com.intel.bkp.verifier.config.Properties.DATABASE_CONFIGURATION_GR
 import static com.intel.bkp.verifier.config.Properties.DISTRIBUTION_POINT_ATT_CERT_PATH;
 import static com.intel.bkp.verifier.config.Properties.DISTRIBUTION_POINT_GROUP;
 import static com.intel.bkp.verifier.config.Properties.DISTRIBUTION_POINT_MAIN_PATH;
+import static com.intel.bkp.verifier.config.Properties.DISTRIBUTION_POINT_RIM_DATA_PATH_V2;
 import static com.intel.bkp.verifier.config.Properties.DISTRIBUTION_POINT_PROXY_HOST;
 import static com.intel.bkp.verifier.config.Properties.DISTRIBUTION_POINT_PROXY_PORT;
+import static com.intel.bkp.verifier.config.Properties.DISTRIBUTION_POINT_RIM_DATA_PATH;
 import static com.intel.bkp.verifier.config.Properties.EC_GROUP;
 import static com.intel.bkp.verifier.config.Properties.KEY_TYPES_GROUP;
 import static com.intel.bkp.verifier.config.Properties.LIB_SPDM_CT_EXPONENT;
@@ -189,9 +191,19 @@ public class LibConfigParser {
             prop.getPropertyGroup(DISTRIBUTION_POINT_ATT_CERT_PATH, DISTRIBUTION_POINT_GROUP))
             .orElseThrow(() -> new IllegalArgumentException(
                 "Invalid configuration file - missing parameter: " + DISTRIBUTION_POINT_ATT_CERT_PATH));
+        final String rimsPath = Optional.ofNullable(
+                prop.getPropertyGroup(DISTRIBUTION_POINT_RIM_DATA_PATH, DISTRIBUTION_POINT_GROUP))
+            .orElseThrow(() -> new IllegalArgumentException(
+                "Invalid configuration file - missing parameter: " + DISTRIBUTION_POINT_RIM_DATA_PATH));
+        final String rimsV2Path = Optional.ofNullable(
+                prop.getPropertyGroup(DISTRIBUTION_POINT_RIM_DATA_PATH_V2, DISTRIBUTION_POINT_GROUP))
+            .orElseThrow(() -> new IllegalArgumentException(
+                "Invalid configuration file - missing parameter: " + DISTRIBUTION_POINT_RIM_DATA_PATH_V2));
         return new DistributionPoint(
             mainPath,
             attCertPath,
+            rimsPath,
+            rimsV2Path,
             "",
             trustedRootHash,
             proxy

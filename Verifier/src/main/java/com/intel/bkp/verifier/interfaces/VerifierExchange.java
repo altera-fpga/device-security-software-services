@@ -57,10 +57,11 @@ public interface VerifierExchange {
      *     i.e. "host:127.0.0.1; port:50001"
      * @param refMeasurementHex hex content of Reference Integrity Manifest (RIM) file,
      *     which describes which part of evidence received from device should match with provided reference evidence
-     *
+     * @param appraisalPolicy content of appraisal policy,
+     *      which is used to verify the result Appraisal Claim Set(ACS)
      * @return DTO with result where 0 is SUCCESS, 1 is FAIL, -1 is ERROR along with deviceId of the platform attested
      */
-    VerifierExchangeResponseDTO getDeviceAttestation(String transportId, String refMeasurementHex);
+    VerifierExchangeResponseDTO getDeviceAttestation(String transportId, String refMeasurementHex, String appraisalPolicy);
 
     /**
      * Perform health check to test chosen transfer layer implementation.

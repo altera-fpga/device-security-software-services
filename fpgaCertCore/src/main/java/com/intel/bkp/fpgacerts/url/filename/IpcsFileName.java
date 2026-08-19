@@ -45,6 +45,7 @@ public enum IpcsFileName {
     NIC_MEV_DEVICE_ID("%s_%s.cer"), // <familyId>_<uid>.cer
     NIC_DEVICE_ID("%s_%s_%s.cer"), // <familyId>_<uid>_<ski>.cer
     RIM_SIGNING("RIM_Signing_%s_%s.cer"), // RIM_Signing_<familyName>_<ski>.cer
+    FW_RIM_SIGNING("RIM_Signing_%s_%s_%s.cer"), // RIM_Signing_<familyName>_<version>_<ski>.cer
     XRIM_SIGNED_DATA("RIM_Signing_%s_%s.xcorim"), // RIM_Signing_<familyName>_<ski>.xcorim
     RIM_SIGNED_DATA("%s_%s_%s.corim"), // <family>_<layer>_<fwid>.corim
     ZIP_DICE("%s_%s_%s.zip"); // <family>_<uid>_<ski or pdi>.zip

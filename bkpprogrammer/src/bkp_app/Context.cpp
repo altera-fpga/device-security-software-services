@@ -166,7 +166,7 @@ Status_t Context::send_message(Message_t messageType,
             status = writePufHelpDataToFlash(messageVector, UDS_IID);
             break;
         case Message_t::PUSH_HELPER_DATA_UDS_INTEL:
-            status = writePufHelpDataToFlash(messageVector, UDS_INTEL);
+            status = writePufHelpDataToFlash(std::move(messageVector), UDS_INTEL);
             break;
         default:
             return ST_GENERIC_ERROR;

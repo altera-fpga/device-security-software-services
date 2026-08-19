@@ -43,6 +43,9 @@ import com.intel.bkp.fpgacerts.cbor.rim.Comid;
 import com.intel.bkp.fpgacerts.cbor.rim.RimSigned;
 import com.intel.bkp.fpgacerts.cbor.rim.RimUnsigned;
 import com.intel.bkp.fpgacerts.cbor.rim.comid.Claims;
+import com.intel.bkp.fpgacerts.cbor.rim.comid.EnvironmentMap;
+import com.intel.bkp.fpgacerts.cbor.rim.comid.MeasurementMap;
+import com.intel.bkp.fpgacerts.cbor.rim.comid.MeasurementVersion;
 import com.intel.bkp.fpgacerts.cbor.rim.comid.ReferenceTriple;
 import com.intel.bkp.fpgacerts.cbor.rim.comid.mapping.ReferenceTripleToTcbInfoMeasurementMapper;
 import com.intel.bkp.fpgacerts.cbor.rim.parser.RimSignedParser;
@@ -56,6 +59,9 @@ import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoKey;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurement;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoValue;
 import com.intel.bkp.fpgacerts.dp.DistributionPointConnector;
+import com.intel.bkp.fpgacerts.ect.ECTMap;
+import com.intel.bkp.fpgacerts.ect.ElementMap;
+import com.intel.bkp.fpgacerts.ect.IECTMapStorage;
 import com.intel.bkp.fpgacerts.url.FetchDataSchemeBroker;
 import com.intel.bkp.test.rim.OneKeyGenerator;
 import com.intel.bkp.test.rim.RimGenerator;
@@ -76,7 +82,10 @@ import java.util.stream.Stream;
 
 import static com.intel.bkp.fpgacerts.cbor.service.CoRimHandler.MAX_NESTED_LOCATORS_DEPTH;
 import static com.intel.bkp.fpgacerts.cbor.signer.cose.model.AlgorithmId.ECDSA_384;
+import static com.intel.bkp.test.RandomUtils.generateRandomHex;
+import static com.intel.bkp.utils.HexConverter.toHex;
 import static java.util.Collections.emptyList;
+import static java.util.Optional.ofNullable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
@@ -84,9 +93,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.matches;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -94,17 +105,21 @@ import static org.mockito.Mockito.when;
 class CoRimHandlerTest {
 
     private static final String CERTIFICATE_PATH_REGEX = "http://localhost:9090/content/IPCS/rims/agilex_L1_.*\\.corim";
-
+    private final List<String> trustedRootHash = List.of("35E08599DD52CB7533764DEE65C915BBAFD0E35E6252BCCD77F3A694390F618B");
     private static CborKeyPair signingKey;
+    private ReferenceTripleToTcbInfoMeasurementMapper measurementMapper = spy(new ReferenceTripleToTcbInfoMeasurementMapper());
+    private static final String issuerKeyId = generateRandomHex(RimGenerator.ISSUER_KEY_LEN);
+    private static final String digest0 = generateRandomHex(48);
+    private static final String digest1 = generateRandomHex(48);
+    private static final String digest2 = generateRandomHex(48);
+    private static final String layer0Digest = generateRandomHex(96);
+    private static final String layer1Digest = generateRandomHex(48);
 
     @Mock
     private TcbInfoMeasurement tcbInfoMeasurement;
 
     @Mock
     private DistributionPointConnector distributionPointConnector;
-
-    @Mock
-    private ReferenceTripleToTcbInfoMeasurementMapper measurementMapper;
 
     @Mock
     private RimSigningChainService chainService;
@@ -129,34 +144,29 @@ class CoRimHandlerTest {
 
     private CoRimHandler sut;
 
-    private static CBORObject generateSignedRim(boolean designRim) {
-        final byte[] signed = RimGenerator.instance()
+    private static CBORObject generateRim(boolean signing,
+                                          boolean designRim,
+                                          boolean newCorimFormat) {
+        final byte[] rim = RimGenerator.instance()
+            .signed(signing)
             .design(designRim)
             .privateKey(signingKey.getPrivateKey())
             .publicKey(signingKey.getPublicKey())
+            .newCorimFormat(newCorimFormat)
+            .issuerKeyId(issuerKeyId)
+            .expectedDigest0(digest0)
+            .expectedDigest1(digest1)
+            .expectedDigest2(digest2)
+            .layer0Digest(layer0Digest)
+            .layer1Digest(layer1Digest)
             .generate();
-        return CborObjectParser.instance().parse(signed);
-    }
-
-    private static byte[] generateSignedRim() {
-        return RimGenerator.instance()
-            .privateKey(signingKey.getPrivateKey())
-            .publicKey(signingKey.getPublicKey())
-            .generate();
-    }
-
-    private static CBORObject generateUnsignedRim() {
-        final byte[] signed = RimGenerator.instance()
-            .signed(false)
-            .publicKey(signingKey.getPublicKey())
-            .generate();
-        return CborObjectParser.instance().parse(signed);
+        return CborObjectParser.instance().parse(rim);
     }
 
     @BeforeEach
     void setUp() throws Exception {
         sut = new CoRimHandler(measurementMapper, chainService, cborSignatureVerifier, xrimService, false,
-            distributionPointConnector);
+            distributionPointConnector, trustedRootHash);
         signingKey = OneKeyGenerator.generate(ECDSA_384);
     }
 
@@ -167,41 +177,154 @@ class CoRimHandlerTest {
     }
 
     @Test
-    void getMeasurements_Success() {
+    void getMeasurements_WithNewCorimFormat_Success() {
         // given
-        final var cbor = generateSignedRim(false);
+        final var signedFirmwareNewCorim = generateRim(true, false, true);
         when(chainService.verifyRimSigningChainAndGetRimSigningKey(any(String.class)))
             .thenReturn(signingKey.getPublicKey());
-        when(cborSignatureVerifier.verify(signingKey.getPublicKey(), cbor)).thenReturn(true);
-        when(measurementMapper.map(any())).thenReturn(tcbInfoMeasurement).thenReturn(tcbInfoMeasurement)
-            .thenReturn(tcbInfoMeasurement);
-        mockTcbInfoMeasurement();
+        when(cborSignatureVerifier.verify(signingKey.getPublicKey(), signedFirmwareNewCorim)).thenReturn(true);
+
 
         // when
-        final var result = sut.getMeasurements(cbor);
+        var result = sut.getMeasurements(signedFirmwareNewCorim);
 
         // then
-        assertIterableEquals(List.of(tcbInfoMeasurement, tcbInfoMeasurement), result.getReferenceMeasurements());
-        assertIterableEquals(List.of(tcbInfoMeasurement), result.getEndorsedMeasurements());
+        verifyRvList(result.getReferenceMeasurements().get(0),
+                    "",
+                    "intel.com",
+                    "Agilex",
+                    0,
+                    0,
+                    layer0Digest,
+                    ECTMap.CMType.REFERENCE_VALUES.name());
+        verifyRvList(result.getReferenceMeasurements().get(1),
+                    "",
+                    "intel.com",
+                    "Agilex",
+                    1,
+                    0,
+                    layer1Digest,
+                    ECTMap.CMType.REFERENCE_VALUES.name());
+        assertEquals(2, result.getConditionalEndorsedMeasurements().get(0).getCondition().toArray().length);
+        verifyCondition(result.getConditionalEndorsedMeasurements().get(0).getCondition().get(0),
+            "",
+            "intel.com",
+            "Agilex",
+            0,
+            0,
+            layer0Digest);
+        verifyCondition(result.getConditionalEndorsedMeasurements().get(0).getCondition().get(1),
+            "",
+            "intel.com",
+            "Agilex",
+            1,
+            0,
+            layer1Digest);
+        assertEquals(1, result.getConditionalEndorsedMeasurements().get(0).getAddition().toArray().length);
+        verifyAddition(result.getConditionalEndorsedMeasurements().get(0).getAddition().get(0),
+            "111(h'6086480186F84D010F048148')",
+            "intel.com",
+            "Agilex",
+            1,
+            0,
+            layer1Digest,
+            ECTMap.CMType.ENDORSEMENTS.name());
+
+    }
+
+    @Test
+    void getMeasurements_Success() {
+        // given
+        final var signedFirmwareOldCorim = generateRim(true, false, false);
+        when(chainService.verifyRimSigningChainAndGetRimSigningKey(any(String.class)))
+            .thenReturn(signingKey.getPublicKey());
+        when(cborSignatureVerifier.verify(signingKey.getPublicKey(), signedFirmwareOldCorim)).thenReturn(true);
+
+
+        // when
+        var result = sut.getMeasurements(signedFirmwareOldCorim);
+
+        // then
+        assertEquals(2, result.getReferenceMeasurements().toArray().length);
+        verifyRvList(result.getReferenceMeasurements().get(0),
+            "",
+            "intel.com",
+            "Agilex",
+            0,
+            0,
+            layer0Digest,
+            ECTMap.CMType.REFERENCE_VALUES.name());
+        verifyRvList(result.getReferenceMeasurements().get(1),
+            "",
+            "intel.com",
+            "Agilex",
+            1,
+            0,
+            layer1Digest,
+            ECTMap.CMType.REFERENCE_VALUES.name());
+        assertEquals(1, result.getConditionalEndorsedMeasurements().toArray().length);
+        assertEquals(2, result.getConditionalEndorsedMeasurements().get(0).getCondition().toArray().length);
+        verifyCondition(result.getConditionalEndorsedMeasurements().get(0).getCondition().get(0),
+            "",
+            "intel.com",
+            "Agilex",
+            0,
+            0,
+            layer0Digest);
+        verifyCondition(result.getConditionalEndorsedMeasurements().get(0).getCondition().get(1),
+            "",
+            "intel.com",
+            "Agilex",
+            1,
+            0,
+            layer1Digest);
+        assertEquals(1, result.getConditionalEndorsedMeasurements().get(0).getAddition().toArray().length);
+        verifyAddition(result.getConditionalEndorsedMeasurements().get(0).getAddition().get(0),
+            "111(h'6086480186F84D010F048148')",
+            "intel.com",
+            "Agilex",
+            1,
+            0,
+            layer1Digest,
+            ECTMap.CMType.ENDORSEMENTS.name());
+
+    }
+
+    @Test
+    void getMeasurements_WithDesignRim_WithNewCorimFormat_Success() {
+        // given
+        final var signedDesignNewCorim = generateRim(true, true, true);
+        final var signedFirmwareNewCorim = generateRim(true, false, true);
+        when(chainService.verifyRimSigningChainAndGetRimSigningKey(any(String.class)))
+            .thenReturn(signingKey.getPublicKey());
+        when(cborSignatureVerifier.verify(signingKey.getPublicKey(), signedDesignNewCorim)).thenReturn(true);
+        when(cborSignatureVerifier.verify(signingKey.getPublicKey(), CborObjectParser.instance().parse(signedFirmwareNewCorim)))
+            .thenReturn(true);
+        when(distributionPointConnector.tryGetBytes(matches(CERTIFICATE_PATH_REGEX)))
+            .thenReturn(Optional.of(signedFirmwareNewCorim.EncodeToBytes()));
+
+        // when
+        var result = toOneList(sut.getMeasurements(signedDesignNewCorim));
+
+        // then
+        assertEquals(9, result.size());
     }
 
     @Test
     void getMeasurements_WithDesignRim_Success() {
         // given
-        final var designRimCbor = generateSignedRim(true);
-        final var signedRimCbor = generateSignedRim();
+        final var signedDesignOldCorim = generateRim(true, true, false);
+        final var signedFirmwareOldCorim = generateRim(true, false, false);
         when(chainService.verifyRimSigningChainAndGetRimSigningKey(any(String.class)))
             .thenReturn(signingKey.getPublicKey());
-        when(cborSignatureVerifier.verify(signingKey.getPublicKey(), designRimCbor)).thenReturn(true);
-        when(cborSignatureVerifier.verify(signingKey.getPublicKey(), CborObjectParser.instance().parse(signedRimCbor)))
+        when(cborSignatureVerifier.verify(signingKey.getPublicKey(), signedDesignOldCorim)).thenReturn(true);
+        when(cborSignatureVerifier.verify(signingKey.getPublicKey(), CborObjectParser.instance().parse(signedFirmwareOldCorim)))
             .thenReturn(true);
-        when(measurementMapper.map(any())).thenReturn(tcbInfoMeasurement).thenReturn(tcbInfoMeasurement);
-        mockTcbInfoMeasurement();
         when(distributionPointConnector.tryGetBytes(matches(CERTIFICATE_PATH_REGEX)))
-            .thenReturn(Optional.of(signedRimCbor));
+            .thenReturn(Optional.of(signedFirmwareOldCorim.EncodeToBytes()));
 
         // when
-        final var result = toOneList(sut.getMeasurements(designRimCbor));
+        var result = toOneList(sut.getMeasurements(signedDesignOldCorim));
 
         // then
         assertEquals(9, result.size());
@@ -210,15 +333,15 @@ class CoRimHandlerTest {
     @Test
     void getMeasurements_WithDesignRim_WithMissingRimOnDp_ThrowsException() {
         // given
-        final var designRimCbor = generateSignedRim(true);
+        final var signedDesignOldCorim = generateRim(true, true, false);
         when(chainService.verifyRimSigningChainAndGetRimSigningKey(any(String.class)))
             .thenReturn(signingKey.getPublicKey());
-        when(cborSignatureVerifier.verify(signingKey.getPublicKey(), designRimCbor)).thenReturn(true);
+        when(cborSignatureVerifier.verify(signingKey.getPublicKey(), signedDesignOldCorim)).thenReturn(true);
         when(distributionPointConnector.tryGetBytes(matches(CERTIFICATE_PATH_REGEX)))
             .thenReturn(Optional.empty());
 
         // when-then
-        final var ex = assertThrows(RimVerificationException.class, () -> sut.getMeasurements(designRimCbor));
+        final var ex = assertThrows(RimVerificationException.class, () -> sut.getMeasurements(signedDesignOldCorim));
 
         // then
         assertTrue(ex.getMessage().contains("CoRIM verification failed: failed to download data from path:"));
@@ -227,30 +350,67 @@ class CoRimHandlerTest {
     @Test
     void getMeasurements_WithUnsignedRim_IsUnsignedSupportedTrue_Success() {
         // given
-        final var cbor = generateUnsignedRim();
-        when(measurementMapper.map(any())).thenReturn(tcbInfoMeasurement).thenReturn(tcbInfoMeasurement)
-            .thenReturn(tcbInfoMeasurement);
-        mockTcbInfoMeasurement();
+        final var unsignedFirmwareOldCorim = generateRim(false, false, false);
 
         // when
         final var sutWithUnsignedSupport =
             sut = new CoRimHandler(measurementMapper, chainService, cborSignatureVerifier, xrimService, true,
-                distributionPointConnector);
-        final var result = sutWithUnsignedSupport.getMeasurements(cbor);
+                distributionPointConnector, trustedRootHash);
+        final var result = sutWithUnsignedSupport.getMeasurements(unsignedFirmwareOldCorim);
 
         // then
         verify(cborSignatureVerifier, never()).verify(any(), (CBORObject) any());
-        assertIterableEquals(List.of(tcbInfoMeasurement, tcbInfoMeasurement), result.getReferenceMeasurements());
-        assertIterableEquals(List.of(tcbInfoMeasurement), result.getEndorsedMeasurements());
+        assertEquals(2, result.getReferenceMeasurements().toArray().length);
+        verifyRvList(result.getReferenceMeasurements().get(0),
+            "",
+            "intel.com",
+            "Agilex",
+            0,
+            0,
+            layer0Digest,
+            ECTMap.CMType.REFERENCE_VALUES.name());
+        verifyRvList(result.getReferenceMeasurements().get(1),
+            "",
+            "intel.com",
+            "Agilex",
+            1,
+            0,
+            layer1Digest,
+            ECTMap.CMType.REFERENCE_VALUES.name());
+        assertEquals(1, result.getConditionalEndorsedMeasurements().toArray().length);
+        assertEquals(2, result.getConditionalEndorsedMeasurements().get(0).getCondition().toArray().length);
+        verifyCondition(result.getConditionalEndorsedMeasurements().get(0).getCondition().get(0),
+            "",
+            "intel.com",
+            "Agilex",
+            0,
+            0,
+            layer0Digest);
+        verifyCondition(result.getConditionalEndorsedMeasurements().get(0).getCondition().get(1),
+            "",
+            "intel.com",
+            "Agilex",
+            1,
+            0,
+            layer1Digest);
+        assertEquals(1, result.getConditionalEndorsedMeasurements().get(0).getAddition().toArray().length);
+        verifyAddition(result.getConditionalEndorsedMeasurements().get(0).getAddition().get(0),
+            "111(h'6086480186F84D010F048148')",
+            "intel.com",
+            "Agilex",
+            1,
+            0,
+            layer1Digest,
+            ECTMap.CMType.ENDORSEMENTS.name());
     }
 
     @Test
     void getMeasurements_WithUnsignedRim_IsUnsignedSupportedFalse_Throws() {
         // given
-        final var cbor = generateUnsignedRim();
+        final var unsignedFirmwareOldCorim = generateRim(false, false, false);
 
         // when-then
-        final var ex = assertThrows(RimVerificationException.class, () -> sut.getMeasurements(cbor));
+        final var ex = assertThrows(RimVerificationException.class, () -> sut.getMeasurements(unsignedFirmwareOldCorim));
 
         // then
         verify(cborSignatureVerifier, never()).verify(any(), (CBORObject) any());
@@ -260,13 +420,13 @@ class CoRimHandlerTest {
     @Test
     void getMeasurements_WithSignatureVerificationFailure_Throws() {
         // given
-        final var cbor = generateSignedRim(false);
+        final var signedFirmwareOldCorim = generateRim(true, false, false);
         when(chainService.verifyRimSigningChainAndGetRimSigningKey(any(String.class)))
             .thenReturn(signingKey.getPublicKey());
-        when(cborSignatureVerifier.verify(signingKey.getPublicKey(), cbor)).thenReturn(false);
+        when(cborSignatureVerifier.verify(signingKey.getPublicKey(), signedFirmwareOldCorim)).thenReturn(false);
 
         // when-then
-        final var ex = assertThrows(RimVerificationException.class, () -> sut.getMeasurements(cbor));
+        final var ex = assertThrows(RimVerificationException.class, () -> sut.getMeasurements(signedFirmwareOldCorim));
 
         // then
         assertEquals("CoRIM verification failed: invalid signature.", ex.getMessage());
@@ -313,12 +473,15 @@ class CoRimHandlerTest {
                 node.getMocks().rimUnsigned(), node.getMocks().rimSigned(), node.getChildren()));
 
             // when
+            sut = new CoRimHandler(measurementMapper, chainService, cborSignatureVerifier, xrimService, false,
+                distributionPointConnector, trustedRootHash);
             final var result = sut.getMeasurements(cborA);
 
             // then
-            final var expected = nodeList.stream().map(node -> node.getMocks().measurement()).toList();
-            assertTrue(expected.containsAll(result.getReferenceMeasurements()));
-            assertIterableEquals(emptyList(), result.getEndorsedMeasurements());
+            List<TcbInfoMeasurement> measurements = nodeList.stream().map(node -> node.getMocks().measurement()).toList();
+            final var expectedRvList = ECTMap.createRvECTMap(measurements, trustedRootHash);
+            assertEquals(expectedRvList.toString(), result.getReferenceMeasurements().toString());
+            assertIterableEquals(emptyList(), result.getConditionalEndorsedMeasurements());
         }
     }
 
@@ -346,25 +509,149 @@ class CoRimHandlerTest {
                 node.getMocks().rimUnsigned(), node.getMocks().rimSigned(), node.getChildren()));
 
             // when
+            sut = new CoRimHandler(measurementMapper, chainService, cborSignatureVerifier, xrimService, false,
+                distributionPointConnector, trustedRootHash);
             final var result = sut.getMeasurements(cborA);
 
             // then
-            final var expected = nodeList.stream().map(node -> node.getMocks().measurement()).toList();
-            assertTrue(expected.containsAll(result.getReferenceMeasurements()));
+            List<TcbInfoMeasurement> measurements = nodeList.stream().map(node -> node.getMocks().measurement()).toList();
+            final var expectedRvList = ECTMap.createRvECTMap(measurements, trustedRootHash);
+            assertEquals(expectedRvList.toString(), result.getReferenceMeasurements().toString());
             assertFalse(result.getReferenceMeasurements().contains(lastNode.getMocks().measurement()));
-            assertIterableEquals(emptyList(), result.getEndorsedMeasurements());
+            assertIterableEquals(emptyList(), result.getConditionalEndorsedMeasurements());
         }
     }
 
-    private void mockTcbInfoMeasurement() {
-        when(tcbInfoMeasurement.getKey()).thenReturn(TcbInfoKey.builder().build());
-        when(tcbInfoMeasurement.getValue()).thenReturn(TcbInfoValue.builder().build());
+    private List<CBORObject> getEnvironmentMap(ECTMap ectMap,
+                                               String expectedClassOid,
+                                               String expectedVendor,
+                                               String expectedModel,
+                                               Integer expectedLayer,
+                                               Integer expectedIndex) {
+        return ofNullable(ectMap).stream()
+                .map(ECTMap::getEnvironment)
+                .filter(env -> env.ContainsKey(EnvironmentMap.CBOR_CLASS_ID_KEY))
+                .filter(env -> ofNullable(env.get(EnvironmentMap.CBOR_CLASS_ID_KEY))
+                    .map(classMap -> classMap.get(EnvironmentMap.CBOR_CLASS_ID_KEY))
+                    .map(classId -> classId.toString().equals(expectedClassOid))
+                    .orElse(true))
+                .filter(env -> ofNullable(env.get(EnvironmentMap.CBOR_CLASS_ID_KEY))
+                    .map(classMap -> classMap.get(EnvironmentMap.CBOR_VENDOR_KEY))
+                    .map(vendor -> vendor.AsString().equals(expectedVendor))
+                    .orElse(true))
+                .filter(env -> ofNullable(env.get(EnvironmentMap.CBOR_CLASS_ID_KEY))
+                    .map(classMap -> classMap.get(EnvironmentMap.CBOR_MODEL_KEY))
+                    .map(model -> model.AsString().equals(expectedModel))
+                    .orElse(true))
+                .filter(env -> ofNullable(env.get(EnvironmentMap.CBOR_CLASS_ID_KEY))
+                    .map(classMap -> classMap.get(EnvironmentMap.CBOR_LAYER_KEY))
+                    .map(layer -> layer.AsInt32() == expectedLayer)
+                    .orElse(true))
+                .filter(env -> ofNullable(env.get(EnvironmentMap.CBOR_CLASS_ID_KEY))
+                    .map(classMap -> classMap.get(EnvironmentMap.CBOR_INDEX_KEY))
+                    .map(index -> index.AsInt32() == expectedIndex)
+                    .orElse(true))
+                .collect(Collectors.toList());
     }
 
-    private List<TcbInfoMeasurement> toOneList(MeasurementHolder holder) {
-        return Stream.of(holder.getReferenceMeasurements(), holder.getEndorsedMeasurements())
-            .flatMap(List::stream)
-            .collect(Collectors.toList());
+    private List<CBORObject> getClaims(ECTMap ectMap, String layerDigest) {
+        return ofNullable(ectMap.getElementList()).stream()
+                .flatMap(list -> list.stream().map(ElementMap::getElementClaims)
+                            .filter(claim -> ofNullable(claim.get(MeasurementMap.CBOR_DIGESTS_KEY))
+                                .map(digestArr -> digestArr.get(0).get(0).AsInt32() == 7 &&
+                                    toHex(digestArr.get(0).get(1).GetByteString()).equals(layerDigest))
+                                .orElse(true))
+                            .filter(claim -> ofNullable(claim.get(MeasurementMap.CBOR_MEAS_VERSION_KEY))
+                                    .map(versionMap -> versionMap.get(MeasurementVersion.CBOR_VERSION_KEY).AsString().equals("release-2023.28.1.1") &&
+                                        versionMap.get(MeasurementVersion.CBOR_VERSION_SCHEME_KEY).AsInt32() == 3)
+                                    .orElse(true)
+                            ))
+                .collect(Collectors.toList());
+    }
+
+    private void verifyCondition(ECTMap condition,
+                                 String expectedClassOid,
+                                 String expectedVendor,
+                                 String expectedModel,
+                                 Integer expectedLayer,
+                                 Integer expectedIndex,
+                                 String layerDigest) {
+        assertFalse(getEnvironmentMap(
+            condition,
+            expectedClassOid,
+            expectedVendor,
+            expectedModel,
+            expectedLayer,
+            expectedIndex)
+            .isEmpty());
+        assertEquals(getClaims(condition, layerDigest).size(), 1);
+        assertTrue(condition.getAuthority().isEmpty());
+        assertTrue(condition.getCmtype().isEmpty());
+    }
+
+    private void verifyAddition(ECTMap addition,
+                                String expectedClassOid,
+                                String expectedVendor,
+                                String expectedModel,
+                                Integer expectedLayer,
+                                Integer expectedIndex,
+                                String layerDigest,
+                                String cmType) {
+        assertFalse(getEnvironmentMap(
+            addition,
+            expectedClassOid,
+            expectedVendor,
+            expectedModel,
+            expectedLayer,
+            expectedIndex)
+            .isEmpty());
+        assertEquals(getClaims(addition, layerDigest).size(), 1);
+        assertEquals(addition.getAuthority(), ofNullable(trustedRootHash));
+        assertEquals(addition.getCmtype(), ofNullable(cmType));
+    }
+
+    private void verifyRvList(IECTMapStorage referenceValuesECTMapStorage,
+                              String expectedClassOid,
+                              String expectedVendor,
+                              String expectedModel,
+                              Integer expectedLayer,
+                              Integer expectedIndex,
+                              String layerDigest,
+                              String cmType) {
+        for (var condition : referenceValuesECTMapStorage.getCondition()) {
+            verifyCondition(condition,
+                expectedClassOid,
+                expectedVendor,
+                expectedModel,
+                expectedLayer,
+                expectedIndex,
+                layerDigest);
+        }
+
+        for (var addition : referenceValuesECTMapStorage.getAddition()) {
+            verifyAddition(addition,
+                expectedClassOid,
+                expectedVendor,
+                expectedModel,
+                expectedLayer,
+                expectedIndex,
+                layerDigest,
+                cmType);
+        }
+    }
+
+    private List<ECTMap> toOneList(MeasurementHolder holder) {
+        final List<ECTMap> rvList = holder.getReferenceMeasurements().stream()
+                                .map(IECTMapStorage::getAddition)
+                                .flatMap(List::stream)
+                                .collect(Collectors.toList());
+        final List<ECTMap> evList = holder.getConditionalEndorsedMeasurements().stream()
+                                .map(IECTMapStorage::getAddition)
+                                .flatMap(List::stream)
+                                .collect(Collectors.toList());
+        return Stream.of(rvList, evList)
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
     }
 
     /*  Structure of locators:
@@ -441,7 +728,7 @@ class CoRimHandlerTest {
 
         referenceTriples.add(referenceTriple);
         when(claims.getReferenceTriples()).thenReturn(referenceTriples);
-        when(measurementMapper.map(referenceTriple)).thenReturn(tim);
+        doReturn(tim).when(measurementMapper).map(referenceTriple);
 
         final var locatorList = children.stream().map(
             LocatorsTreeNode::getLink).toList();

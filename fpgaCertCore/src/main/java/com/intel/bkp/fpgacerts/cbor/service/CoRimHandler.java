@@ -49,8 +49,9 @@ import com.intel.bkp.fpgacerts.cbor.utils.SignatureTimeValidator;
 import com.intel.bkp.fpgacerts.cbor.xrim.XrimService;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.MeasurementHolder;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurement;
-import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurementsAggregator;
 import com.intel.bkp.fpgacerts.dp.IDistributionPointConnector;
+import com.intel.bkp.fpgacerts.ect.ECTMap;
+import com.intel.bkp.fpgacerts.ect.IECTMapStorage;
 import com.intel.bkp.fpgacerts.rim.IRimHandler;
 import com.intel.bkp.fpgacerts.url.FetchDataSchemeBroker;
 import com.intel.bkp.fpgacerts.utils.VerificationStatusLogger;
@@ -62,11 +63,14 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.security.PublicKey;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.Collection;
 
 import static com.intel.bkp.utils.HexConverter.fromHex;
 
@@ -86,6 +90,7 @@ public class CoRimHandler implements IRimHandler<CBORObject> {
     private final IDistributionPointConnector dpConnector;
     private final Set<String> linkedTags = new HashSet<>();
     private int counter = 0;
+    private final List<String> trustedRootHash;
 
     public CoRimHandler(IDistributionPointConnector dpConnector) {
         this(dpConnector, null, false);
@@ -98,7 +103,8 @@ public class CoRimHandler implements IRimHandler<CBORObject> {
             new CborSignatureVerifier(),
             new XrimService(dpConnector, new CborSignatureVerifier()),
             acceptUnsignedCorim,
-            dpConnector
+            dpConnector,
+            Optional.ofNullable(trustedRootHash).map(Arrays::asList).orElse(List.of())
         );
     }
 
@@ -121,26 +127,55 @@ public class CoRimHandler implements IRimHandler<CBORObject> {
         return measurements;
     }
 
-    private List<TcbInfoMeasurement> getReferenceMeasurements(RimUnsigned unsignedRim) {
-        return unsignedRim
-            .getComIds()
-            .get(FIRST_COM_ID)
-            .getClaims()
-            .getReferenceTriples()
-            .stream()
-            .map(measurementMapper::map)
-            .collect(Collectors.toList());
+    private List<IECTMapStorage> getReferenceMeasurements(RimUnsigned unsignedRim) {
+        List<TcbInfoMeasurement> refTcbInfoMeasurements = unsignedRim
+                                                            .getComIds()
+                                                            .get(FIRST_COM_ID)
+                                                            .getClaims()
+                                                            .getReferenceTriples()
+                                                            .stream()
+                                                            .map(measurementMapper::map)
+                                                            .collect(Collectors.toList());
+        return ECTMap.createRvECTMap(refTcbInfoMeasurements, trustedRootHash);
     }
 
-    private List<TcbInfoMeasurement> getEndorsedMeasurements(RimUnsigned unsignedRim) {
-        return unsignedRim
-            .getComIds()
-            .get(FIRST_COM_ID)
-            .getClaims()
-            .getEndorsedTriples()
-            .stream()
-            .map(measurementMapper::map)
-            .collect(Collectors.toList());
+    private IECTMapStorage getConditionalEndorsedMeasurements(RimUnsigned unsignedRim) {
+
+        List<TcbInfoMeasurement> conditionMeasurements = Optional.ofNullable(unsignedRim
+                                                            .getComIds()
+                                                            .get(FIRST_COM_ID)
+                                                            .getClaims())
+                                                            .map(claim -> Optional.ofNullable(claim.getConditionalEndorsedTriples())
+                                                                .map(e -> e.getConditions().stream()
+                                                                    .map(measurementMapper::map)
+                                                                    .toList())
+                                                                .or(() -> {
+                                                                    if (claim.getEndorsedTriples() != null) {
+                                                                        return Optional.ofNullable(claim.getReferenceTriples())
+                                                                            .map(e -> e.stream()
+                                                                                .map(measurementMapper::map)
+                                                                                .toList());
+                                                                    }
+                                                                    return Optional.empty();
+                                                                })
+                                                                .orElse(List.of()))
+                                                            .orElse(List.of());
+
+        List<TcbInfoMeasurement> endorseMeasurements = Optional.ofNullable(unsignedRim
+                                                            .getComIds()
+                                                            .get(FIRST_COM_ID)
+                                                            .getClaims())
+                                                            .flatMap(c -> Optional.ofNullable(c.getConditionalEndorsedTriples())
+                                                                .map(e -> e.getEndorsements())
+                                                                .or(() -> Optional.ofNullable(c.getEndorsedTriples())))
+                                                            .stream()
+                                                            .flatMap(Collection::stream)
+                                                            .map(measurementMapper::map)
+                                                            .toList();
+
+        return ECTMap.createEvECTMap(conditionMeasurements,
+                                     endorseMeasurements,
+                                     trustedRootHash);
     }
 
     private MeasurementHolder fetchMeasurements(List<CBORObject> cborList, MeasurementHolder measurements) {
@@ -182,7 +217,11 @@ public class CoRimHandler implements IRimHandler<CBORObject> {
         }
 
         measurements.getReferenceMeasurements().addAll(getReferenceMeasurements(helperDTO.rim()));
-        measurements.getEndorsedMeasurements().addAll(getEndorsedMeasurements(helperDTO.rim()));
+        var conditionalEndorsedECTMapStorage = getConditionalEndorsedMeasurements(helperDTO.rim());
+        if (!conditionalEndorsedECTMapStorage.getCondition().isEmpty()
+            && !conditionalEndorsedECTMapStorage.getAddition().isEmpty()) {
+            measurements.getConditionalEndorsedMeasurements().add(conditionalEndorsedECTMapStorage);
+        }
 
         return helperDTO;
     }
@@ -218,14 +257,16 @@ public class CoRimHandler implements IRimHandler<CBORObject> {
         final var signed = ((RimSignedParser) converter.getParser()).parse(rimCbor);
         final var rim = signed.getPayload();
         SignatureTimeValidator.verify(signed);
-        ProfileValidator.verify(rim.getProfile());
+        if (!rim.getProfile().isEmpty()) {
+            ProfileValidator.verify(rim.getProfile());
+        }
 
         appendLinkedTags(rim);
 
         final var rimSigPubKey = rim.getLocatorLink(LocatorType.CER)
             .map(chainService::verifyRimSigningChainAndGetRimSigningKey)
             .orElseThrow(() -> new RimVerificationException("trusted Anchor is not implemented."));
-        log.info(VerificationStatusLogger.success("Verified XCoRIM Signing Certificate chain."));
+        log.info(VerificationStatusLogger.success("Verified CoRIM Signing Certificate chain."));
         verifyRimSignature(rimCbor, rimSigPubKey);
         return new CoRimHelperDTO(rim, rimSigPubKey);
     }
@@ -254,13 +295,24 @@ public class CoRimHandler implements IRimHandler<CBORObject> {
     }
 
     private void logMeasurements(MeasurementHolder measurements) {
-        final var referenceAggregator = new TcbInfoMeasurementsAggregator();
-        referenceAggregator.add(measurements.getReferenceMeasurements());
-        log.debug("Received TcbInfos from RIM - reference: {}", referenceAggregator.mapToString());
+        var rvList = measurements.getReferenceMeasurements();
+        if (!rvList.isEmpty()) {
+            log.debug("reference-values ECT: {}",
+                Optional.ofNullable(measurements.getReferenceMeasurements())
+                    .map(list -> list.stream()
+                        .map(e -> e.toString())
+                        .collect(Collectors.joining(",\n\t", "\n[\n\t", "\n]\n")))
+                    .orElse("null"));
+        }
 
-        final var endorsedAggregator = new TcbInfoMeasurementsAggregator();
-        endorsedAggregator.add(measurements.getEndorsedMeasurements());
-        log.debug("Received TcbInfos from RIM - endorsed: {}", endorsedAggregator.mapToString());
+        var evList = measurements.getConditionalEndorsedMeasurements();
+        if (!evList.isEmpty()) {
+            log.debug("endorsements ECT: {}", Optional.ofNullable(measurements.getConditionalEndorsedMeasurements())
+                                              .map(list -> list.stream()
+                                                    .map(e -> e.toString())
+                                                    .collect(Collectors.joining(",\n\t", "\n[\n\t", "\n]\n")))
+                                              .orElse("null"));
+        }
     }
 
     private record CoRimHelperDTO(RimUnsigned rim, PublicKey rimSigPubKey) {

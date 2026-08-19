@@ -49,6 +49,8 @@ public class ServiceConfigurationDetailsDTO {
     private OverbuildDTO overbuild;
     private boolean requireIidUds;
     private boolean testModeSecrets;
+    private boolean autoFetchFirmwareCorim;
+    private Long appraisalPolicyId;
     private ConfidentialDataDetailDTO confidentialData;
     private AttestationConfigurationDTO attestationConfig;
 }

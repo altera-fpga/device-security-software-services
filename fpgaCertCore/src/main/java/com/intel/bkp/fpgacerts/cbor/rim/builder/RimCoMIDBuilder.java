@@ -39,6 +39,7 @@ import com.intel.bkp.fpgacerts.cbor.rim.comid.Digest;
 import com.intel.bkp.fpgacerts.cbor.rim.comid.EnvironmentMap;
 import com.intel.bkp.fpgacerts.cbor.rim.comid.MeasurementVersion;
 import com.intel.bkp.fpgacerts.cbor.rim.comid.ReferenceTriple;
+import com.intel.bkp.fpgacerts.cbor.utils.GuidGenerator;
 import com.intel.bkp.fpgacerts.utils.OidConverter;
 import com.upokecenter.cbor.CBORObject;
 import lombok.AccessLevel;
@@ -49,6 +50,7 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 import static com.intel.bkp.fpgacerts.cbor.CborTagsConstant.CBOR_LOCATOR_ITEM_TAG;
+import static com.intel.bkp.fpgacerts.cbor.rim.comid.Claims.CBOR_CONDITIONAL_ENDORSED_TRIPLES_KEY;
 import static com.intel.bkp.fpgacerts.cbor.rim.comid.Claims.CBOR_ENDORSED_TRIPLES_KEY;
 import static com.intel.bkp.fpgacerts.cbor.rim.comid.Claims.CBOR_REFERENCE_TRIPLES_KEY;
 import static com.intel.bkp.fpgacerts.cbor.rim.comid.ComidEntity.CBOR_ENTITY_NAME_KEY;
@@ -81,11 +83,12 @@ public class RimCoMIDBuilder extends RimBuilderBase<Comid> {
 
     @Override
     public byte[] build(Comid data) {
-        final CBORObject map = CBORObject.NewOrderedMap();
-        map.Add(Comid.CBOR_ID_KEY, buildIdNode(data));
+        CBORObject map = CBORObject.NewOrderedMap();
+        map.Add(Comid.CBOR_ID_KEY, new byte[16]);
         map.Add(Comid.CBOR_ENTITIES_KEY, buildEntitiesNode(data.getEntities().get(0)));
         Optional.ofNullable(buildLinkedTags(data)).ifPresent(item -> map.Add(Comid.CBOR_LINKED_TAGS, item));
         map.Add(Comid.CBOR_CLAIMS_KEY, buildClaimsNode(data));
+        map.set(Comid.CBOR_ID_KEY, buildIdNode(data, map.EncodeToBytes()));
         return map.EncodeToBytes();
     }
 
@@ -94,9 +97,13 @@ public class RimCoMIDBuilder extends RimBuilderBase<Comid> {
         return this;
     }
 
-    private static CBORObject buildIdNode(Comid data) {
+    private static CBORObject buildIdNode(Comid data, byte[] content) {
+        byte[] comidId = ofNullable(data.getId())
+            .map(id -> fromHex(id.getValue()))
+            .orElseGet(() -> GuidGenerator.create(content));
+
         return CBORObject.NewMap()
-            .Add(0, CBORObject.FromObject(fromHex(data.getId().getValue())));
+            .Add(0, CBORObject.FromObject(comidId));
     }
 
     private CBORObject buildEntitiesNode(ComidEntity comidEntity) {
@@ -135,6 +142,8 @@ public class RimCoMIDBuilder extends RimBuilderBase<Comid> {
     private static CBORObject buildClaimsNode(Comid data) {
         final CBORObject map = CBORObject.NewMap();
         map.Add(CBOR_REFERENCE_TRIPLES_KEY, buildReferenceTriplesArray(data));
+        Optional.ofNullable(buildConditionalEndorsedTriplesArray(data))
+            .ifPresent(item -> map.Add(CBOR_CONDITIONAL_ENDORSED_TRIPLES_KEY, item));
         Optional.ofNullable(buildEndorsedTriplesArray(data))
             .ifPresent(item -> map.Add(CBOR_ENDORSED_TRIPLES_KEY, item));
         return map;
@@ -210,6 +219,44 @@ public class RimCoMIDBuilder extends RimBuilderBase<Comid> {
                     .Add(CBORObject.NewOrderedMap().Add(CBOR_ENVIRONMENTS_KEY, buildEnvironmentNodeMap(triple)))
                     .Add(CBORObject.NewArray().Add(CBORObject.NewOrderedMap().Add(CBOR_MEASUREMENTS_KEY,
                         CBORObject.NewOrderedMap().Add(0, buildEndorsedMeasurementNodeMap(triple)))))));
+
+        return mainArray;
+    }
+
+    private static CBORObject buildEndorsedTriplesArrayFromNewFormat(Comid data) {
+        if (data.getClaims().getConditionalEndorsedTriples() == null) {
+            return null;
+        }
+        final var mainArray = CBORObject.NewArray();
+
+        data.getClaims().getConditionalEndorsedTriples().getEndorsements()
+            .forEach(endorsement -> mainArray
+                .Add(CBORObject.NewArray()
+                    .Add(CBORObject.NewOrderedMap().Add(CBOR_ENVIRONMENTS_KEY, buildEnvironmentNodeMap(endorsement)))
+                    .Add(CBORObject.NewArray().Add(CBORObject.NewOrderedMap().Add(CBOR_MEASUREMENTS_KEY,
+                        CBORObject.NewOrderedMap().Add(0, buildEndorsedMeasurementNodeMap(endorsement)))))));
+
+        return mainArray;
+    }
+
+    private static CBORObject buildConditionalEndorsedTriplesArray(Comid data) {
+        if (data.getClaims().getConditionalEndorsedTriples() == null
+            || data.getClaims().getConditionalEndorsedTriples().getConditions().isEmpty()
+            || data.getClaims().getConditionalEndorsedTriples().getEndorsements().isEmpty()) {
+            return null;
+        }
+
+        final var condArray = CBORObject.NewArray();
+
+        data.getClaims().getConditionalEndorsedTriples().getConditions()
+            .forEach(triple -> condArray.Add(CBORObject.NewArray().Add(CBORObject.NewOrderedMap()
+                    .Add(CBOR_ENVIRONMENTS_KEY, buildEnvironmentNodeMap(triple)))
+                .Add(CBORObject.NewArray().Add(CBORObject.NewMap()
+                    .Add(CBOR_MEASUREMENTS_KEY, buildMeasurementNodeMap(triple))
+                ))));
+        final var mainArray = CBORObject.NewArray();
+        mainArray.Add(condArray);
+        mainArray.Add(buildEndorsedTriplesArrayFromNewFormat(data));
 
         return mainArray;
     }

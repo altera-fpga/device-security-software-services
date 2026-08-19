@@ -58,6 +58,8 @@ public class Properties {
 
     public static final String DISTRIBUTION_POINT_MAIN_PATH = "main-path";
     public static final String DISTRIBUTION_POINT_ATT_CERT_PATH = "attestation-cert-base-path";
+    public static final String DISTRIBUTION_POINT_RIM_DATA_PATH = "rim-data-base-path";
+    public static final String DISTRIBUTION_POINT_RIM_DATA_PATH_V2 = "rim-data-base-path-v2";
     public static final String DISTRIBUTION_POINT_PROXY_HOST = "host";
     public static final String DISTRIBUTION_POINT_PROXY_PORT = "port";
 

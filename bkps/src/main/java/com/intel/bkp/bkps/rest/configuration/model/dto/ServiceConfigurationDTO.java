@@ -76,6 +76,12 @@ public class ServiceConfigurationDTO implements Serializable {
     @Size(max = 255)
     private String corimUrl;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Boolean autoFetchFirmwareCorim;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Long appraisalPolicyId;
+
     @NotNull
     @Valid
     private ConfidentialDataDTO confidentialData;

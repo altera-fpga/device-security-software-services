@@ -36,6 +36,7 @@ import com.intel.bkp.bkps.config.ApplicationProperties;
 import com.intel.bkp.bkps.rest.provisioning.chain.CacheCrlProvider;
 import com.intel.bkp.bkps.rest.provisioning.chain.DiceBkpChainVerifier;
 import com.intel.bkp.fpgacerts.dice.iidutils.IidFlowDetector;
+import com.intel.bkp.fpgacerts.dp.IDistributionPointConnector;
 import com.intel.bkp.fpgacerts.rim.IRimHandlersProvider;
 import com.intel.bkp.fpgacerts.rim.RimUrlProvider;
 import com.intel.bkp.fpgacerts.spdm.SpdmDiceAttestationComponentBase;
@@ -53,6 +54,7 @@ public class SpdmDiceAttestationComponentFactory {
     private final IidFlowDetector iidFlowDetector;
     private final CacheCrlProvider crlProvider;
     private final IRimHandlersProvider rimHandlersProvider;
+    private final IDistributionPointConnector dpConnector;
 
     public SpdmDiceAttestationComponentBase get(SpdmProtocol spdmProtocol, AttestationParams params) {
         final var trustedRootHashes = getTrustedRootHashes();
@@ -62,16 +64,22 @@ public class SpdmDiceAttestationComponentFactory {
             iidFlowDetector.withRequireIidUds(params.requireIidUds()),
             diceChainVerifier, trustedRootHashes
         );
-        final var rimUrlProvider = new RimUrlProvider(new DistributionPointAddressProvider(getIpcsUrlPrefix()));
-        return new SpdmDiceAttestationComponentImpl(spdmProtocol, chainSearcher, rimHandlersProvider, rimUrlProvider);
+        final var rimUrlProvider = new RimUrlProvider(new DistributionPointAddressProvider(getRimUrlPrefix()));
+        final var newRimUrlProvider = new RimUrlProvider(new DistributionPointAddressProvider(getNewRimUrlPrefix()));
+        return new SpdmDiceAttestationComponentImpl(spdmProtocol, chainSearcher, rimHandlersProvider, rimUrlProvider, newRimUrlProvider, dpConnector);
     }
 
     private String[] getTrustedRootHashes() {
         return applicationProperties.getDistributionPoint().getTrustedRootHash();
     }
 
-    private String getIpcsUrlPrefix() {
+    private String getRimUrlPrefix() {
         final var dp = applicationProperties.getDistributionPoint();
-        return PathUtils.buildPath(dp.getMainPath(), dp.getAttestationCertBasePath());
+        return PathUtils.buildPath(dp.getMainPath(), dp.getRimDataBasePath());
+    }
+
+    private String getNewRimUrlPrefix() {
+        final var dp = applicationProperties.getDistributionPoint();
+        return PathUtils.buildPath(dp.getMainPath(), dp.getRimDataBasePathV2());
     }
 }

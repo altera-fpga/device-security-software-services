@@ -95,6 +95,12 @@ public class ServiceConfiguration implements Serializable {
     @Column
     private String corimUrl;
 
+    @Column
+    private boolean autoFetchFirmwareCorim = true;
+
+    @Column
+    private Long appraisalPolicyId = 0L;
+
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(unique = true)
     private AttestationConfiguration attestationConfig;
@@ -135,6 +141,18 @@ public class ServiceConfiguration implements Serializable {
 
     public ServiceConfiguration confidentialData(ConfidentialData confidentialData) {
         this.confidentialData = confidentialData;
+        return this;
+    }
+
+    public ServiceConfiguration autoFetchFirmwareCorim(boolean autoFetchFirmwareCorim) {
+        this.autoFetchFirmwareCorim = autoFetchFirmwareCorim;
+        return this;
+    }
+
+    public ServiceConfiguration appraisalPolicyId(Long id) {
+        if (id != null) {
+            this.appraisalPolicyId = id;
+        }
         return this;
     }
 }

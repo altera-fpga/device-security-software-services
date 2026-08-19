@@ -35,31 +35,70 @@ package com.intel.bkp.fpgacerts.cbor.rim.parser;
 import com.intel.bkp.fpgacerts.cbor.rim.Comid;
 import com.intel.bkp.test.FileUtils;
 import com.intel.bkp.utils.HexConverter;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+import java.util.List;
+
 import static com.intel.bkp.test.FileUtils.TEST_FOLDER;
+import static com.intel.bkp.utils.HexConverter.fromHex;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RimCoMIDParserTest {
 
-    private byte[] cborData;
-
     private final RimCoMIDParser sut = RimCoMIDParser.instance();
 
-    @BeforeEach
-    void setUp() throws Exception {
-        cborData = FileUtils.readFromResources(TEST_FOLDER, "rim_unsigned_comid.cbor");
+    @Test
+    void parse_WithNewCorimFormat_Success() {
+        // given
+        final var data = "A301A1005051F505F82911480B9F44B8A614FF2B180281A200714669726D77617265206D616E6966657374028100"
+            + "04A2008282A100A40169696E74656C2E636F6D02664167696C65780300040081A101A201D90228000281820758403BD9C16922C"
+            + "D93CC29F8FE27107FC6456068FC0504A8B84476EA5F2A2342D07B794957152DDE6A7D857C8176BC35FB629BF5B6F6726DC15FC0"
+            + "1FB9AC3074BE2C82A100A40169696E74656C2E636F6D02664167696C65780301040081A101A201D902280002818207583032883"
+            + "E2526F54EA21FBF99642A8F56E787A0319D1D0E2AF84C36352E9A760EE80EA6C427098D17D26F65723C0C1C66EA0A828282A100"
+            + "A40169696E74656C2E636F6D02664167696C65780300040081A101A201D90228000281820758403BD9C16922CD93CC29F8FE271"
+            + "07FC6456068FC0504A8B84476EA5F2A2342D07B794957152DDE6A7D857C8176BC35FB629BF5B6F6726DC15FC01FB9AC3074BE2C"
+            + "82A100A40169696E74656C2E636F6D02664167696C65780301040081A101A201D902280002818207583032883E2526F54EA21FB"
+            + "F99642A8F56E787A0319D1D0E2AF84C36352E9A760EE80EA6C427098D17D26F65723C0C1C66EA8182A100A300D86F4C60864801"
+            + "86F84D010F0481480169696E74656C2E636F6D030181A101A100A2007372656C656173652D323032332E32382E312E310103";
+
+        // when
+        final Comid parse = sut.parse(fromHex(data));
+
+        // then
+
+        assertEquals("51F505F82911480B9F44B8A614FF2B18", parse.getId().getValue());
+        assertEquals(1, parse.getEntities().toArray().length);
+        assertEquals("Firmware manifest", parse.getEntities().get(0).getEntityName());
+        assertTrue(parse.getEntities().get(0).getRegId() == null);
+        assertTrue(Arrays.equals(List.of(0).toArray(), parse.getEntities().get(0).getRoles().toArray()));
+        assertEquals(2, parse.getClaims().getReferenceTriples().toArray().length);
+        assertEquals(2, parse.getClaims().getConditionalEndorsedTriples().getConditions().toArray().length);
+        assertEquals(1, parse.getClaims().getConditionalEndorsedTriples().getEndorsements().toArray().length);
+        assertTrue(parse.getClaims().getEndorsedTriples() == null);
     }
 
     @Test
-    void parse_Success() {
+    void parse_Success() throws Exception {
+        // given
+        final byte[] data = FileUtils.readFromResources(TEST_FOLDER, "rim_unsigned_comid.cbor");
+
         // when
-        final Comid entity = sut.parse(cborData);
+        sut.setHasProfile(true);
+        final Comid parse = sut.parse(data);
 
         // then
-        assertEquals("51F505F82911480B9F44B8A614FF2B18", entity.getId().getValue());
+
+        assertEquals("51F505F82911480B9F44B8A614FF2B18", parse.getId().getValue());
+        assertEquals(1, parse.getEntities().toArray().length);
+        assertEquals("Firmware manifest", parse.getEntities().get(0).getEntityName());
+        assertTrue(parse.getEntities().get(0).getRegId() == null);
+        assertTrue(Arrays.equals(List.of(0).toArray(), parse.getEntities().get(0).getRoles().toArray()));
+        assertEquals(2, parse.getClaims().getReferenceTriples().toArray().length);
+        assertEquals(1, parse.getClaims().getEndorsedTriples().toArray().length);
+        assertTrue(parse.getClaims().getConditionalEndorsedTriples() == null);
     }
 
     @Test
@@ -75,11 +114,21 @@ class RimCoMIDParserTest {
             + "676E2D32332E34666D2D360103";
 
         // when
+        sut.setHasProfile(true);
         final Comid parse = sut.parse(HexConverter.fromHex(data));
 
         // then
+        assertEquals("E7D0DBB1A8764C7F9B71A6E8391DE722", parse.getId().getValue());
         assertFalse(parse.getLinkedTags().isEmpty());
         assertEquals("2F77CE7A5808487C9D1CA49CEA86B993", parse.getLinkedTags().get(0).getLinkedTagId());
         assertEquals(0, parse.getLinkedTags().get(0).getTagRel());
+        assertEquals(1, parse.getEntities().toArray().length);
+        assertEquals("Design Author", parse.getEntities().get(0).getEntityName());
+        assertEquals("", parse.getEntities().get(0).getRegId());
+        assertTrue(Arrays.equals(List.of(0).toArray(), parse.getEntities().get(0).getRoles().toArray()));
+        assertEquals(4, parse.getClaims().getReferenceTriples().toArray().length);
+        assertEquals(0,  parse.getClaims().getEndorsedTriples().toArray().length);
+        assertTrue(parse.getClaims().getConditionalEndorsedTriples() == null);
+
     }
 }

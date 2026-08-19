@@ -51,7 +51,8 @@ public class AppArgumentParser {
 
     private static final String WORKLOAD_APP_DESC =
         "WorkloadApp --command GET --transport-id \"host:127.0.0.1;port:50001\" "
-            + "--ref-measurement /path/to/reference.rim";
+            + "--ref-measurement /path/to/reference.rim "
+            + "--appraisal-policy /path/to/policy.txt";
 
     public static AppArgument parseArguments(String[] args) {
         Options options = getOptions();
@@ -74,6 +75,7 @@ public class AppArgumentParser {
             .context(cmd.getOptionValue("context"))
             .pufType(cmd.getOptionValue("puf-type"))
             .refMeasurement(cmd.getOptionValue("ref-measurement"))
+            .appraisalPolicy(cmd.getOptionValue("appraisal-policy"))
             .command(cmd.getOptionValue("command").trim())
             .logLevel(cmd.getOptionValue("log-level"))
             .build();
@@ -110,6 +112,9 @@ public class AppArgumentParser {
 
         Option refMeasure = new Option(null, "ref-measurement", true, "Path to Reference Integrity Manifest (RIM)");
         options.addOption(refMeasure);
+
+        Option appraisalPolicy = new Option(null, "appraisal-policy", true, "Path to Appraisal Policy text file");
+        options.addOption(appraisalPolicy);
 
         Option logLevel = new Option(null, "log-level", true, "Logging level. "
             + "Possible values: OFF, ERROR, WARN, INFO (default), DEBUG, TRACE");

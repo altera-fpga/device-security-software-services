@@ -84,6 +84,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -178,6 +179,8 @@ public class ServiceConfigurationControllerTestIT {
         assertEquals(TestHelper.DEFAULT_NAME, testServiceConfiguration.getName());
         assertEquals(PUF_TYPE, testServiceConfiguration.getPufType());
         assertEquals(DEFAULT_OVERBUILD_MAX, testServiceConfiguration.getOverbuildMax());
+        assertTrue(testServiceConfiguration.isAutoFetchFirmwareCorim());
+        assertEquals(0L, testServiceConfiguration.getAppraisalPolicyId());
 
         final AesKey aesKey = testServiceConfiguration.getConfidentialData().getAesKey();
         assertEquals(STORAGE_TYPE, aesKey.getStorage());
@@ -332,6 +335,8 @@ public class ServiceConfigurationControllerTestIT {
             .andExpect(jsonPath("$.pufType").value(PUF_TYPE.toString()))
             .andExpect(jsonPath("$.overbuild.max").value(1))
             .andExpect(jsonPath("$.overbuild.currentValue").value(2))
+            .andExpect(jsonPath("$.autoFetchFirmwareCorim").value(true))
+            .andExpect(jsonPath("$.appraisalPolicyId").value(0L))
             .andExpect(jsonPath("$.confidentialData.importMode").value(ImportMode.PLAINTEXT.toString()))
             .andExpect(jsonPath("$.confidentialData.aesKey.storage").value(STORAGE_TYPE.toString()))
             .andExpect(jsonPath("$.confidentialData.aesKey.keyWrappingType").value(KEY_WRAPPING_TYPE.name()))

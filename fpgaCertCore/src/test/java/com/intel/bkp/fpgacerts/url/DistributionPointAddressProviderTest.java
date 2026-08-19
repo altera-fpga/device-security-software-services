@@ -36,6 +36,7 @@ import com.intel.bkp.fpgacerts.model.Family;
 import com.intel.bkp.fpgacerts.model.UdsChoice;
 import com.intel.bkp.fpgacerts.url.params.DiceEnrollmentParams;
 import com.intel.bkp.fpgacerts.url.params.DiceParams;
+import com.intel.bkp.fpgacerts.url.params.FwRimParams;
 import com.intel.bkp.fpgacerts.url.params.RimParams;
 import com.intel.bkp.fpgacerts.url.params.RimSignedDataParams;
 import com.intel.bkp.fpgacerts.url.params.S10Params;
@@ -160,6 +161,21 @@ class DistributionPointAddressProviderTest {
     }
 
     @Test
+    void getFwRimSigningCertUrl_Success() {
+        // given
+        final String familyName = Family.AGILEX.getFamilyName();
+        final String ski = "41SSZwl66ctC-wuR6nz5ggpzhTY";
+        final String expected = PATH_CER_WITH_SLASH + "RIM_Signing_agilex_fw-version_41SSZwl66ctC-wuR6nz5ggpzhTY.cer";
+        final DistributionPointAddressProvider sut = new DistributionPointAddressProvider(PATH_CER_WITH_SLASH);
+
+        // when
+        final String actual = sut.getFwRimSigningCertUrl(new FwRimParams(ski, familyName, "fw-version"));
+
+        // then
+        assertEquals(expected, actual);
+    }
+
+    @Test
     void getRimSignedDataUrl_Success() {
         // given
         final String expected = PATH_RIM_WITH_SLASH + "agilex_L1_Mog-JSb1TqIfv5lkKo9W54egMZ0d.corim";
@@ -169,21 +185,6 @@ class DistributionPointAddressProviderTest {
 
         // when
         final String actual = sut.getRimSignedDataUrl(new RimSignedDataParams(familyName, "L1", fwId));
-
-        // then
-        assertEquals(expected, actual);
-    }
-
-    @Test
-    void getXrimSignedDataUrl_Success() {
-        // given
-        final String familyName = Family.AGILEX.getFamilyName();
-        final String ski = "41SSZwl66ctC-wuR6nz5ggpzhTY";
-        final String expected = PATH_XRIM_WITH_SLASH + "RIM_Signing_agilex_41SSZwl66ctC-wuR6nz5ggpzhTY.xcorim";
-        final DistributionPointAddressProvider sut = new DistributionPointAddressProvider(PATH_XRIM_WITH_SLASH);
-
-        // when
-        final String actual = sut.getXrimSignedDataUrl(new RimParams(ski, familyName));
 
         // then
         assertEquals(expected, actual);

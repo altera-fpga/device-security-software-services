@@ -37,13 +37,14 @@ import com.intel.bkp.fpgacerts.url.filename.DeviceIdCertificateNameProvider;
 import com.intel.bkp.fpgacerts.url.filename.EnrollmentCertificateNameProvider;
 import com.intel.bkp.fpgacerts.url.filename.ICertificateFileNameProvider;
 import com.intel.bkp.fpgacerts.url.filename.IidUdsCertificateNameProvider;
+import com.intel.bkp.fpgacerts.url.filename.FwRimCertificateNameProvider;
 import com.intel.bkp.fpgacerts.url.filename.RimCertificateNameProvider;
 import com.intel.bkp.fpgacerts.url.filename.RimSignedDataNameProvider;
 import com.intel.bkp.fpgacerts.url.filename.S10CertificateNameProvider;
-import com.intel.bkp.fpgacerts.url.filename.XrimDataNameProvider;
 import com.intel.bkp.fpgacerts.url.filename.ZipDiceNameProvider;
 import com.intel.bkp.fpgacerts.url.params.DiceEnrollmentParams;
 import com.intel.bkp.fpgacerts.url.params.DiceParams;
+import com.intel.bkp.fpgacerts.url.params.FwRimParams;
 import com.intel.bkp.fpgacerts.url.params.RimParams;
 import com.intel.bkp.fpgacerts.url.params.RimSignedDataParams;
 import com.intel.bkp.fpgacerts.url.params.S10Params;
@@ -80,14 +81,13 @@ public class DistributionPointAddressProvider {
         return getIpcsUrl(new RimCertificateNameProvider(rimParams));
     }
 
+    public String getFwRimSigningCertUrl(FwRimParams fwRimParams) {
+        return getIpcsUrl(new FwRimCertificateNameProvider(fwRimParams));
+    }
+
     public String getRimSignedDataUrl(RimSignedDataParams rimParams) {
         return getIpcsUrl(new RimSignedDataNameProvider(rimParams));
     }
-
-    public String getXrimSignedDataUrl(RimParams rimParams) {
-        return getIpcsUrl(new XrimDataNameProvider(rimParams));
-    }
-
 
     public String getEnrollmentCertUrl(DiceEnrollmentParams diceEnrollmentParams) {
         return getIpcsUrl(new EnrollmentCertificateNameProvider(diceEnrollmentParams));

@@ -1,0 +1,2 @@
+dependencies.artifactory.folder=#AUTOMATIC#
+openssl.version=3.5.5

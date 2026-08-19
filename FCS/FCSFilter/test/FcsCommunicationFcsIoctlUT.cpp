@@ -32,6 +32,10 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "gtest/gtest.h"
 
+#include <cstdio>
+#include <fstream>
+#include <sys/stat.h>
+
 #include "FcsCommunicationFcsIoctl.h"
 #include "FcsSimulator.h"
 
@@ -40,7 +44,23 @@ TEST(FcsCommunicationFcsIoctlUT, altera_fcs_dev_ioctlSizeTest)
     EXPECT_EQ((size_t)256, sizeof(altera_fcs_dev_ioctl));
 }
 
-TEST(FcsCommunicationFcsIoctlUT, getChipIdTest)
+class FcsCommunicationFcsIoctlChipIdFixture : public ::testing::Test {
+protected:
+    static constexpr const char* kFixtureDir  = "./spdmSim1.2";
+    static constexpr const char* kFixturePath = "./spdmSim1.2/chipid.txt";
+    static constexpr const char* kFixtureHex  = "5AECAC18CCC68207";
+
+    void SetUp() override {
+        mkdir(kFixtureDir, 0755);
+        std::ofstream(kFixturePath) << kFixtureHex;
+    }
+    void TearDown() override {
+        std::remove(kFixturePath);
+        rmdir(kFixtureDir);
+    }
+};
+
+TEST_F(FcsCommunicationFcsIoctlChipIdFixture, getChipIdTest)
 {
     std::vector<uint8_t> expectedPayload {0x5A, 0xEC, 0xAC, 0x18, 0xCC, 0xC6, 0x82, 0x07};
     std::vector<uint8_t> payload;

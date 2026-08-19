@@ -226,7 +226,7 @@ public class DesignRimWithNestedLocatorToItself extends TestDataBase {
                     )
                 )
                 .endorsedTriples(List.of(ReferenceTriple.builder()
-                    .environmentMap(environmentMap("6086480186F84D010F048149"))
+                    .environmentMap(environmentMap("6086480186F84D010F048149", 2))
                     .measurementMap(versionMap("", null))
                     .build()))
                 .build())

@@ -48,7 +48,7 @@ public abstract class VerifierExchangeProtocol {
         return ERROR.getCode();
     }
 
-    public VerifierExchangeResponseDTO getAttestationInternal(String refMeasurementHex) {
+    public VerifierExchangeResponseDTO getAttestationInternal(String refMeasurementHex, String appraisalPolicy) {
         log.error("Operation not supported by this device.");
         return new VerifierExchangeResponseDTO(ERROR.getCode(), "");
     }

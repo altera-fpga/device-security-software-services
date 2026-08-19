@@ -54,6 +54,10 @@ public abstract class TestDataBase {
         return false;
     }
 
+    public boolean isFirmwareOnly() {
+        return false;
+    }
+
     static String getLink(List<LocatorItem> locators, LocatorType locatorType) {
         return locators.stream()
             .filter(item -> item.type() == locatorType).findFirst()
