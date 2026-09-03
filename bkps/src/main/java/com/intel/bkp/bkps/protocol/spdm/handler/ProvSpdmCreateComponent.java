@@ -116,6 +116,7 @@ public class ProvSpdmCreateComponent extends ProvisioningHandler {
         final ServiceConfiguration configuration = configurationCallback.getConfiguration(cfgId);
 
         ensureOverbuildCounterNotExceeded(deviceIdHex, configuration);
+        ensureCorimUrlProvided(configuration);
 
         spdmBackgroundService.startSecureSessionThread(deviceIdHex, cfgId, configurationCallback);
 
@@ -144,6 +145,13 @@ public class ProvSpdmCreateComponent extends ProvisioningHandler {
             overbuildCounterManager.verifyOverbuildCounter(configuration, deviceIdHex);
         } catch (ExceededOvebuildException e) {
             throw new ProvisioningGenericException(e);
+        }
+    }
+
+    private void ensureCorimUrlProvided(ServiceConfiguration configuration) {
+        log.info(prepareLogEntry("Verify CoRIM url provided in configuration"));
+        if (isBlank(configuration.getCorimUrl())) {
+            throw new ProvisioningGenericException("Missing CoRIM URL in configuration - required for attestation.");
         }
     }
 }

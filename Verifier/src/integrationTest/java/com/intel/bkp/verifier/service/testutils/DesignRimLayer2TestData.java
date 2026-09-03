@@ -40,7 +40,6 @@ import com.intel.bkp.fpgacerts.cbor.rim.comid.ComidEntity;
 import com.intel.bkp.fpgacerts.cbor.rim.comid.ComidId;
 import com.intel.bkp.fpgacerts.cbor.rim.comid.ReferenceTriple;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.FwIdField;
-import com.intel.bkp.fpgacerts.dice.tcbinfo.MeasurementType;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoKey;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurement;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoValue;
@@ -67,7 +66,7 @@ public class DesignRimLayer2TestData extends TestDataBase {
     private static final String BASE_URL_PRE = "https://pre1-tsci.intel.com/content/";
 
     private static final String LAYER_2_CLASS_ID_401 = "6086480186F84D010F0401";
-    private static final String LAYER_2_CLASS_ID_48148 = MeasurementType.FIRMWARE_VERSION.getOid();
+    private static final String LAYER_2_CLASS_ID_48148 = "6086480186F84D010F048148";
     private static final String LAYER_2_CLASS_ID_402 = "6086480186F84D010F0402";
     private static final String LAYER_2_DIGEST_402
         = "AB822974FAD8A6E3AD95916AF199AC189015CAD15613CD161EC33090E9D13EBD9C21B952CAC8F856411F42238FFAA8C4";
@@ -214,7 +213,7 @@ public class DesignRimLayer2TestData extends TestDataBase {
                     )
                 )
                 .endorsedTriples(List.of(ReferenceTriple.builder()
-                    .environmentMap(environmentMap("6086480186F84D010F048149", 2))
+                    .environmentMap(environmentMap("6086480186F84D010F048149"))
                     .measurementMap(versionMap("", null))
                     .build()))
                 .build())

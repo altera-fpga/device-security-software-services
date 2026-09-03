@@ -47,7 +47,7 @@ class AppArgumentParserTest {
         args[1] = "-cCREATE";
 
         final var expected = new AppArgument("10", CommandType.CREATE,
-            null, null, null, null, null);
+            null, null, null, null);
 
         // when
         final AppArgument result = AppArgumentParser.parseArguments(args);
@@ -60,17 +60,16 @@ class AppArgumentParserTest {
     void parseArgumentsAll_Success() {
         // given
         String pufType = "EFUSE";
-        String[] args = new String[7];
+        String[] args = new String[6];
         args[0] = "-i10";
         args[1] = "-cCREATE";
         args[2] = "--context=00010203";
         args[3] = "--puf-type=" + pufType;
         args[4] = "--ref-measurement=file";
-        args[5] = "--appraisal-policy=template-file";
-        args[6] = "--log-level=INFO";
+        args[5] = "--log-level=INFO";
 
         final var expected = new AppArgument("10", CommandType.CREATE,
-            "00010203", pufType, "file", "template-file", "INFO");
+            "00010203", pufType, "file", "INFO");
 
         // when
         final AppArgument result = AppArgumentParser.parseArguments(args);

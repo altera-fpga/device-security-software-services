@@ -36,7 +36,6 @@ import com.intel.bkp.fpgacerts.cbor.CborTagsConstant;
 import com.intel.bkp.fpgacerts.cbor.LocatorItem;
 import com.intel.bkp.fpgacerts.cbor.RimBuilderBase;
 import com.intel.bkp.fpgacerts.cbor.rim.RimUnsigned;
-import com.intel.bkp.fpgacerts.cbor.utils.GuidGenerator;
 import com.upokecenter.cbor.CBORObject;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -44,7 +43,6 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 import static com.intel.bkp.utils.HexConverter.fromHex;
-import static java.util.Optional.ofNullable;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class RimUnsignedBuilder extends RimBuilderBase<RimUnsigned> {
@@ -69,19 +67,16 @@ public class RimUnsignedBuilder extends RimBuilderBase<RimUnsigned> {
         if (standalone) {
             cborMap = cborMap.WithTag(CborTagsConstant.CBOR_RIM_MAIN_TAG);
         }
-        var map = cborMap
-                    .Add(RimUnsigned.CBOR_MANIFEST_ID_KEY, new byte[16])
-                    .Add(RimUnsigned.CBOR_COMID_KEY,
-                        CBORObject.NewArray().Add(CBORObject.FromObjectAndTag(
-                            RIM_CO_MID_BUILDER.designRim(data.isDesign()).build(data.getComIds().get(0)),
-                            RimUnsigned.CBOR_COMID_TAG)))
-                    .Add(RimUnsigned.CBOR_LOCATORS_KEY, buildLocators(data.getLocators()));
-        if (data.getProfile() != null && !data.getProfile().isEmpty()) {
-            map.Add(RimUnsigned.CBOR_PROFILE_KEY, CBORObject.NewArray().Add(
-                CBORObject.FromObjectAndTag(fromHex(data.getProfile().get(0)), RimUnsigned.CBOR_PROFILE_TAG)));
-        }
-        cborMap.set(RimUnsigned.CBOR_MANIFEST_ID_KEY, buildIdNode(data, map.EncodeToBytes()));
-        return map.EncodeToBytes();
+        return cborMap
+            .Add(RimUnsigned.CBOR_MANIFEST_ID_KEY, CBORObject.FromObject(fromHex(data.getManifestId())))
+            .Add(RimUnsigned.CBOR_COMID_KEY,
+                CBORObject.NewArray().Add(CBORObject.FromObjectAndTag(
+                    RIM_CO_MID_BUILDER.designRim(data.isDesign()).build(data.getComIds().get(0)),
+                    RimUnsigned.CBOR_COMID_TAG)))
+            .Add(RimUnsigned.CBOR_LOCATORS_KEY, buildLocators(data.getLocators()))
+            .Add(RimUnsigned.CBOR_PROFILE_KEY, CBORObject.NewArray().Add(
+                CBORObject.FromObjectAndTag(fromHex(data.getProfile().get(0)), RimUnsigned.CBOR_PROFILE_TAG)))
+            .EncodeToBytes();
     }
 
     RimUnsignedBuilder designRim(boolean designRim) {
@@ -96,13 +91,5 @@ public class RimUnsignedBuilder extends RimBuilderBase<RimUnsigned> {
             CBORObject.FromObjectAndTag(item.link(), CborTagsConstant.CBOR_LOCATOR_ITEM_TAG))));
 
         return cborArray;
-    }
-
-    private static CBORObject buildIdNode(RimUnsigned data, byte[] content) {
-        byte[] manifestId = ofNullable(data.getManifestId())
-            .map(id -> fromHex(id))
-            .orElseGet(() -> GuidGenerator.create(content));
-
-        return CBORObject.FromObject(manifestId);
     }
 }

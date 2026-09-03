@@ -1,7 +1,7 @@
 {
     "measurement records": {
         "tcbinfo": [
-
+            
             {
                 "//": "Hash of loaded IO section",
                 "vendor": "intel.com",

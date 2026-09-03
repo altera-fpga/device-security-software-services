@@ -98,8 +98,7 @@ public enum ErrorCodeMap implements IErrorCode {
     CERTIFICATE_IN_TRUSTSTORE_CHECK_FAILED(2175, "Failed to check if certificate is saved in truststore."),
     CERTIFICATE_FAILED_TO_REMOVE(2176, "Failed to remove certificate: specified alias '%s' not found"),
     SPDM_PROCESS_RUNNING(2177, "SPDM Process is still running. Please try again in a few seconds."),
-    APPRAISAL_POLICY_NOT_FOUND(2178, "The appraisal policy could not be located."),
-    MALFORMED_URL_PATH(2179, "URL path \"%s\" to be fetched is malformed."),
+    MALFORMED_URL_PATH(2178, "URL path \"%s\" to be fetched is malformed."),
 
     /* =========== Onboarding =========== */
     PREFETCHING_GENERIC_EXCEPTION(2300, "Prefetching failed."),

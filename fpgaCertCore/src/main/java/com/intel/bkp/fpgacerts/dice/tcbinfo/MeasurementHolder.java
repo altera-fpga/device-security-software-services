@@ -32,7 +32,6 @@
 
 package com.intel.bkp.fpgacerts.dice.tcbinfo;
 
-import com.intel.bkp.fpgacerts.ect.IECTMapStorage;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -44,15 +43,13 @@ import java.util.Optional;
 @NoArgsConstructor
 public class MeasurementHolder {
 
-    private List<IECTMapStorage> referenceMeasurements = new ArrayList<>();
-    private List<IECTMapStorage> conditionalEndorsedMeasurements = new ArrayList<>();
+    private List<TcbInfoMeasurement> referenceMeasurements = new ArrayList<>();
+    private List<TcbInfoMeasurement> endorsedMeasurements = new ArrayList<>();
 
     public void add(MeasurementHolder holder) {
         Optional.ofNullable(holder.referenceMeasurements)
-            .filter(e -> !e.isEmpty())
-            .ifPresent(referenceMeasurements::addAll);
-        Optional.ofNullable(holder.conditionalEndorsedMeasurements)
-            .filter(e -> !e.isEmpty())
-            .ifPresent(conditionalEndorsedMeasurements::addAll);
+            .ifPresent(this.referenceMeasurements::addAll);
+        Optional.ofNullable(holder.endorsedMeasurements)
+            .ifPresent(this.endorsedMeasurements::addAll);
     }
 }

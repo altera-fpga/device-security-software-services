@@ -1,15 +1,15 @@
 
 # WORKLOAD dependency list
 ## Dependency License Report
-_2026-08-19 02:33:13 UTC_
+_2026-09-03 09:18:46 UTC_
 ## Apache License 2.0
 
-**1** **Group:** `io.swagger.core.v3` **Name:** `swagger-annotations` **Version:** `2.2.53` 
+**1** **Group:** `io.swagger.core.v3` **Name:** `swagger-annotations` **Version:** `2.2.52` 
 > - **Manifest Project URL**: [https://github.com/swagger-api/swagger-core/modules/swagger-annotations](https://github.com/swagger-api/swagger-core/modules/swagger-annotations)
 > - **Manifest License**: "Apache License 2.0";link="http://www.apache.org/licenses/LICENSE-2.0.html" (Not Packaged)
 > - **POM License**: Apache License 2.0 - [http://www.apache.org/licenses/LICENSE-2.0.html](http://www.apache.org/licenses/LICENSE-2.0.html)
-> - **Embedded license files**: [swagger-annotations-2.2.53.jar/META-INF/LICENSE](swagger-annotations-2.2.53.jar/META-INF/LICENSE) 
-    - [swagger-annotations-2.2.53.jar/META-INF/NOTICE](swagger-annotations-2.2.53.jar/META-INF/NOTICE)
+> - **Embedded license files**: [swagger-annotations-2.2.52.jar/META-INF/LICENSE](swagger-annotations-2.2.52.jar/META-INF/LICENSE) 
+    - [swagger-annotations-2.2.52.jar/META-INF/NOTICE](swagger-annotations-2.2.52.jar/META-INF/NOTICE)
 
 **2** **Group:** `jakarta.validation` **Name:** `jakarta.validation-api` **Version:** `3.1.0` 
 > - **Manifest Project URL**: [https://www.eclipse.org](https://www.eclipse.org)
@@ -37,10 +37,10 @@ _2026-08-19 02:33:13 UTC_
 **5** **Group:** `dev.failsafe` **Name:** `failsafe` **Version:** `3.3.2` 
 > - **POM License**: Apache License, Version 2.0 - [http://apache.org/licenses/LICENSE-2.0](http://apache.org/licenses/LICENSE-2.0)
 
-**6** **Group:** `org.apache.httpcomponents.client5` **Name:** `httpclient5` **Version:** `5.6.3` 
+**6** **Group:** `org.apache.httpcomponents.client5` **Name:** `httpclient5` **Version:** `5.6.2` 
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0.txt](https://www.apache.org/licenses/LICENSE-2.0.txt)
-> - **Embedded license files**: [httpclient5-5.6.3.jar/META-INF/LICENSE](httpclient5-5.6.3.jar/META-INF/LICENSE) 
-    - [httpclient5-5.6.3.jar/META-INF/NOTICE](httpclient5-5.6.3.jar/META-INF/NOTICE)
+> - **Embedded license files**: [httpclient5-5.6.2.jar/META-INF/LICENSE](httpclient5-5.6.2.jar/META-INF/LICENSE) 
+    - [httpclient5-5.6.2.jar/META-INF/NOTICE](httpclient5-5.6.2.jar/META-INF/NOTICE)
 
 **7** **Group:** `org.apache.httpcomponents.core5` **Name:** `httpcore5` **Version:** `5.4.3` 
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0.txt](https://www.apache.org/licenses/LICENSE-2.0.txt)
@@ -60,11 +60,11 @@ _2026-08-19 02:33:13 UTC_
 > - **Embedded license files**: [commons-cli-1.11.0.jar/META-INF/LICENSE.txt](commons-cli-1.11.0.jar/META-INF/LICENSE.txt) 
     - [commons-cli-1.11.0.jar/META-INF/NOTICE.txt](commons-cli-1.11.0.jar/META-INF/NOTICE.txt)
 
-**10** **Group:** `commons-codec` **Name:** `commons-codec` **Version:** `1.22.1` 
+**10** **Group:** `commons-codec` **Name:** `commons-codec` **Version:** `1.22.0` 
 > - **Project URL**: [https://commons.apache.org/proper/commons-codec/](https://commons.apache.org/proper/commons-codec/)
 > - **POM License**: Apache-2.0 - [https://www.apache.org/licenses/LICENSE-2.0.txt](https://www.apache.org/licenses/LICENSE-2.0.txt)
-> - **Embedded license files**: [commons-codec-1.22.1.jar/META-INF/LICENSE.txt](commons-codec-1.22.1.jar/META-INF/LICENSE.txt) 
-    - [commons-codec-1.22.1.jar/META-INF/NOTICE.txt](commons-codec-1.22.1.jar/META-INF/NOTICE.txt)
+> - **Embedded license files**: [commons-codec-1.22.0.jar/META-INF/LICENSE.txt](commons-codec-1.22.0.jar/META-INF/LICENSE.txt) 
+    - [commons-codec-1.22.0.jar/META-INF/NOTICE.txt](commons-codec-1.22.0.jar/META-INF/NOTICE.txt)
 
 **11** **Group:** `commons-dbutils` **Name:** `commons-dbutils` **Version:** `1.8.1` 
 > - **Project URL**: [https://commons.apache.org/proper/commons-dbutils/](https://commons.apache.org/proper/commons-dbutils/)
@@ -124,12 +124,12 @@ _2026-08-19 02:33:13 UTC_
 
 ## EPL-2.0
 
-**21** **Group:** `ch.qos.logback` **Name:** `logback-classic` **Version:** `1.6.1` 
+**21** **Group:** `ch.qos.logback` **Name:** `logback-classic` **Version:** `1.5.38` 
 > - **Manifest Project URL**: [http://www.qos.ch](http://www.qos.ch)
 > - **POM License**: EPL-2.0 - [https://www.eclipse.org/legal/epl-v20.html](https://www.eclipse.org/legal/epl-v20.html)
 > - **POM License**: LGPL-2.1-only - [https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html](https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html)
 
-**22** **Group:** `ch.qos.logback` **Name:** `logback-core` **Version:** `1.6.1` 
+**22** **Group:** `ch.qos.logback` **Name:** `logback-core` **Version:** `1.5.38` 
 > - **Manifest Project URL**: [http://www.qos.ch](http://www.qos.ch)
 > - **POM License**: EPL-2.0 - [https://www.eclipse.org/legal/epl-v20.html](https://www.eclipse.org/legal/epl-v20.html)
 > - **POM License**: LGPL-2.1-only - [https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html](https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html)
@@ -164,12 +164,12 @@ _2026-08-19 02:33:13 UTC_
 
 ## LGPL-2.1-only
 
-**26** **Group:** `ch.qos.logback` **Name:** `logback-classic` **Version:** `1.6.1` 
+**26** **Group:** `ch.qos.logback` **Name:** `logback-classic` **Version:** `1.5.38` 
 > - **Manifest Project URL**: [http://www.qos.ch](http://www.qos.ch)
 > - **POM License**: EPL-2.0 - [https://www.eclipse.org/legal/epl-v20.html](https://www.eclipse.org/legal/epl-v20.html)
 > - **POM License**: LGPL-2.1-only - [https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html](https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html)
 
-**27** **Group:** `ch.qos.logback` **Name:** `logback-core` **Version:** `1.6.1` 
+**27** **Group:** `ch.qos.logback` **Name:** `logback-core` **Version:** `1.5.38` 
 > - **Manifest Project URL**: [http://www.qos.ch](http://www.qos.ch)
 > - **POM License**: EPL-2.0 - [https://www.eclipse.org/legal/epl-v20.html](https://www.eclipse.org/legal/epl-v20.html)
 > - **POM License**: LGPL-2.1-only - [https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html](https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html)
@@ -211,11 +211,11 @@ _2026-08-19 02:33:13 UTC_
 > - **Embedded license files**: [jackson-databind-2.22.1.jar/META-INF/LICENSE](jackson-databind-2.22.1.jar/META-INF/LICENSE) 
     - [jackson-databind-2.22.1.jar/META-INF/NOTICE](jackson-databind-2.22.1.jar/META-INF/NOTICE)
 
-**33** **Group:** `org.xerial` **Name:** `sqlite-jdbc` **Version:** `3.53.2.1` 
+**33** **Group:** `org.xerial` **Name:** `sqlite-jdbc` **Version:** `3.53.2.0` 
 > - **POM Project URL**: [https://github.com/xerial/sqlite-jdbc](https://github.com/xerial/sqlite-jdbc)
 > - **POM License**: The Apache Software License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0.txt](https://www.apache.org/licenses/LICENSE-2.0.txt)
-> - **Embedded license files**: [sqlite-jdbc-3.53.2.1.jar/META-INF/maven/org.xerial/sqlite-jdbc/LICENSE](sqlite-jdbc-3.53.2.1.jar/META-INF/maven/org.xerial/sqlite-jdbc/LICENSE) 
-    - [sqlite-jdbc-3.53.2.1.jar/META-INF/maven/org.xerial/sqlite-jdbc/LICENSE.zentus](sqlite-jdbc-3.53.2.1.jar/META-INF/maven/org.xerial/sqlite-jdbc/LICENSE.zentus)
+> - **Embedded license files**: [sqlite-jdbc-3.53.2.0.jar/META-INF/maven/org.xerial/sqlite-jdbc/LICENSE](sqlite-jdbc-3.53.2.0.jar/META-INF/maven/org.xerial/sqlite-jdbc/LICENSE) 
+    - [sqlite-jdbc-3.53.2.0.jar/META-INF/maven/org.xerial/sqlite-jdbc/LICENSE.zentus](sqlite-jdbc-3.53.2.0.jar/META-INF/maven/org.xerial/sqlite-jdbc/LICENSE.zentus)
 
 ## Unknown
 

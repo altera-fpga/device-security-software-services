@@ -116,7 +116,7 @@ class VerifierServiceTest {
         doReturn(fileReader).when(sut).getFileReader();
         when(fileReader.exists(refMeasurementFile)).thenReturn(true);
         when(fileReader.readFile(refMeasurementFile)).thenReturn(refMeasurementContent);
-        when(verifierExchange.getDeviceAttestation(transportId, refMeasurementContent, null))
+        when(verifierExchange.getDeviceAttestation(transportId, refMeasurementContent))
             .thenReturn(new VerifierExchangeResponseDTO());
 
         AppArgument appArgument = AppArgument

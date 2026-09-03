@@ -36,5 +36,5 @@ import com.intel.bkp.verifier.model.VerifierExchangeResponse;
 
 public abstract class GetDeviceAttestationComponent {
 
-    public abstract VerifierExchangeResponse perform(String refMeasurementHex, String appraisalPolicy, byte[] deviceId);
+    public abstract VerifierExchangeResponse perform(String refMeasurementHex, byte[] deviceId);
 }

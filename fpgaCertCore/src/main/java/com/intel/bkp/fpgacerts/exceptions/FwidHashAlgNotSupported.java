@@ -45,8 +45,4 @@ public class FwidHashAlgNotSupported extends RuntimeException {
     public static FwidHashAlgNotSupported fromHashAlgId(int hashAlgId) {
         return new FwidHashAlgNotSupported("FwId hash algorithm with id %d is not supported.".formatted(hashAlgId));
     }
-
-    public static FwidHashAlgNotSupported fromHashAlgOid(String hashAlgOid) {
-        return new FwidHashAlgNotSupported("FwId hash algorithm with oid %s is not supported.".formatted(hashAlgOid));
-    }
 }

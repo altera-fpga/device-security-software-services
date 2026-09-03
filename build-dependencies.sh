@@ -391,7 +391,7 @@ function build_libcurl() {
         export CC=${CROSS_COMPILE}-gcc
         export NM=${CROSS_COMPILE}-nm
         export LDFLAGS="-L${OPENSSL_ROOT_DIR}/lib -Wl,-rpath,${OPENSSL_ROOT_DIR}/lib"
-        ./configure --target=${CROSS_COMPILE} --host=${CROSS_COMPILE} --build=i586-pc-linux-gnu --with-openssl=${OPENSSL_ROOT_DIR} --without-libpsl --without-zlib --without-zstd --without-brotli --prefix=$(pwd)/output
+        ./configure --target=${CROSS_COMPILE} --host=${CROSS_COMPILE} --build=i586-pc-linux-gnu --with-openssl=${OPENSSL_ROOT_DIR} --without-zlib --without-zstd --prefix=$(pwd)/output
         check_error_code
         make
         local make_status=$?
@@ -405,7 +405,7 @@ function build_libcurl() {
             exit 1
         fi
     else
-        ./configure --with-openssl=${OPENSSL_ROOT_DIR} --without-libpsl --without-zlib --without-zstd --without-brotli --prefix=$(pwd)/output
+        ./configure --with-openssl=${OPENSSL_ROOT_DIR} --without-zlib --without-zstd --prefix=$(pwd)/output
         check_error_code
         # Add openssl to LD_LIBRARY_PATH, so that curl don't try to link to system provided one. It caused issues on the systems with installed openssl 3.0
         export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${OPENSSL_ROOT_DIR}/lib
@@ -447,7 +447,7 @@ function build_libspdm_internal() {
 
     local custom_defines="-DLIBSPDM_MAX_MESSAGE_BUFFER_SIZE=20000 -DLIBSPDM_MAX_CERT_CHAIN_BLOCK_LEN=15000 -DLIBSPDM_MAX_CERT_CHAIN_SIZE=18000 -DLIBSPDM_MAX_MEASUREMENT_RECORD_SIZE=15000"
     local algorithms_enabled="-DLIBSPDM_RECORD_TRANSCRIPT_DATA_SUPPORT=1"
-    local algorithms_disabled="-DLIBSPDM_ENABLE_CAPABILITY_CHUNK_CAP=0 -DLIBSPDM_ENABLE_CAPABILITY_CSR_CAP=0 -DLIBSPDM_ENABLE_CAPABILITY_HBEAT_CAP=0 -DLIBSPDM_ENABLE_CAPABILITY_PSK_CAP=0 -DLIBSPDM_ENABLE_CAPABILITY_CHAL_CAP=0 -DLIBSPDM_ENABLE_CAPABILITY_ENDPOINT_INFO_CAP=0"
+    local algorithms_disabled="-DLIBSPDM_ENABLE_CAPABILITY_CHUNK_CAP=0 -DLIBSPDM_ENABLE_CAPABILITY_CSR_CAP=0 -DLIBSPDM_ENABLE_CAPABILITY_HBEAT_CAP=0 -DLIBSPDM_ENABLE_CAPABILITY_PSK_CAP=0 -DLIBSPDM_ENABLE_CAPABILITY_CHAL_CAP=0"
 
     local sources_dir=$(pwd)
     local build_dir="build/${cmake_build_type}"

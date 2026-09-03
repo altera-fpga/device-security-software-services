@@ -40,7 +40,6 @@ import com.intel.bkp.fpgacerts.cbor.rim.comid.ComidEntity;
 import com.intel.bkp.fpgacerts.cbor.rim.comid.ComidId;
 import com.intel.bkp.fpgacerts.cbor.rim.comid.ReferenceTriple;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.FwIdField;
-import com.intel.bkp.fpgacerts.dice.tcbinfo.MeasurementType;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoKey;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurement;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoValue;
@@ -73,11 +72,6 @@ public class FirmwareRimTestData extends TestDataBase {
         "58E352D2D00A37B69398223EDFAA1012BC7F81BEDAA8D323AF18B00E4E384FF7CA56F3C62A4BBAE6A0EC08511A93DD7F";
 
     private static final String FAMILY_AGILEX = Family.AGILEX.getFamilyName();
-
-    @Override
-    public boolean isFirmwareOnly() {
-        return true;
-    }
 
     @Override
     public TestDataDTO prepare(KeyPair keyPair) {
@@ -121,7 +115,7 @@ public class FirmwareRimTestData extends TestDataBase {
                         .measurementMap(measurementMap(0, 7, LAYER_0_INDEX1_DIGEST))
                         .build()))
                 .endorsedTriples(List.of(ReferenceTriple.builder()
-                    .environmentMap(environmentMap(MeasurementType.FIRMWARE_VERSION.getOid(), 1))
+                    .environmentMap(environmentMap("6086480186F84D010F048148", 1))
                     .measurementMap(versionMap("release-2023.28.1.2", "3"))
                     .build()))
                 .build())

@@ -49,10 +49,6 @@ class CliMapper:
     help_users = "users > create [-i FILE | --input FILE] [-o FILE | --output FILE] " \
                  "| initial-create (--token TOKEN) [-i FILE | --input FILE] [-o FILE | --output FILE] | list " \
                  "| role-set [--id ID] [--role ROLE] | role-unset [--id ID] [--role ROLE] | delete [--id ID]"
-    help_appraisal_policy = "appraisal-policy > create (-i FILE | --input FILE)\n" \
-                            "appraisal-policy > update (--id ID) (-i FILE | --input FILE)\n" \
-                            "appraisal-policy > list | get (--id ID) | delete (--id ID)"
-    help_attestation_file = "runner.py attestation-file (upload [-i ZIP_FILE | --input ZIP_FILE] | delete [--path PATH])"
 
     available_user_roles = None
 
@@ -201,30 +197,6 @@ class CliMapper:
             params['UID'] = input('Enter HEX encoded deviceId [leave empty for status of all devices]: ')
             params['FAMILY_ID'] = input('Device family identifier (as hex, eg. 0x0A) '
                                         '[leave empty for status of all devices]: ')
-
-        if assign_params_value(params, 'appraisal-policy', variable):
-            variable = self.section_loop_short('request::appraisal-policy', self.help_appraisal_policy,
-                                               ['list', 'create', 'get', 'update', 'delete'])
-            if variable is not None:
-                assign_params_value(params, 'list', variable)
-                assign_params_value(params, 'get', variable, 'Enter ID', 'ID', 'NUMBER')
-                assign_params_value(params, 'delete', variable, 'Enter ID', 'ID', 'NUMBER')
-                if assign_params_value(params, 'create', variable) or assign_params_value(params, 'update', variable):
-                    params['--input'] = input_file_path('JSON appraisal policy')
-
-            else:
-                return params
-
-        if assign_params_value(params, 'attestation-file', variable):
-            variable = self.section_loop_short('request::attestation-file', self.help_attestation_file,
-                                               ['upload', 'delete'])
-            if variable is not None:
-                print(variable)
-                assign_params_value(params, 'upload', variable, 'Provide input path', '--input', 'FILE')
-                assign_params_value(params, 'delete', variable, 'Provide input path', 'PATH')
-
-            else:
-                return params
 
         return params
 

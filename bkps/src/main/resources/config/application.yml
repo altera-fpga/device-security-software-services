@@ -44,9 +44,9 @@ server:
     ssl:
         enabled: true
         client-auth: want
-        ciphers: TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384
+        ciphers: TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
         protocol: TLS
-        enabled-protocols: TLSv1.2,TLSv1.3
+        enabled-protocols: TLSv1.2
     servlet:
         context-path: /
         session:
@@ -82,8 +82,6 @@ application:
     distribution-point:
         main-path: ${AWS_S3_MAIN_PATH:https://tsci.altera.com/}
         attestation-cert-base-path: ${AWS_S3_ATTESTATION_CERTIFICATES_PATH:content/IPCS/certs/}
-        rim-data-base-path: ${AWS_S3_ATTESTATION_RIMS_PATH:content/IPCS/rims/}
-        rim-data-base-path-v2: ${AWS_S3_ATTESTATION_RIMS_PATH_V2:content/IPCS/rims_v2/}
         zip-base-path: ${AWS_S3_ZIP_PATH:content/IPCS/}
         trusted-root-hash: >
             ${DP_TRUSTED_ROOT_HASH_DICE:99B95D7EF5A42B26758F959C9F7BDC5E473AC5D50A3484BC96E7E587D3C328CC}

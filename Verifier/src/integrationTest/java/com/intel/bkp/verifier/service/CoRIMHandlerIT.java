@@ -35,29 +35,21 @@ package com.intel.bkp.verifier.service;
 import ch.qos.logback.classic.Level;
 import com.intel.bkp.crypto.CryptoUtils;
 import com.intel.bkp.crypto.x509.utils.X509CertificateUtils;
-import com.intel.bkp.fpgacerts.appraisalpolicy.AppraisalPolicy;
-import com.intel.bkp.fpgacerts.appraisalpolicy.parser.AppraisalPolicyParser;
 import com.intel.bkp.fpgacerts.cbor.LocatorItem;
 import com.intel.bkp.fpgacerts.cbor.LocatorType;
 import com.intel.bkp.fpgacerts.cbor.rim.builder.RimUnsignedBuilder;
 import com.intel.bkp.fpgacerts.cbor.rim.parser.RimSignedParser;
 import com.intel.bkp.fpgacerts.cbor.service.CoRimHandler;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.FwIdField;
-import com.intel.bkp.fpgacerts.dice.tcbinfo.MeasurementType;
-import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfo;
-import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoConstants;
-import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoField;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoKey;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurement;
+import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurementsAggregator;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoValue;
 import com.intel.bkp.fpgacerts.dp.DistributionPointConnector;
-import com.intel.bkp.fpgacerts.ect.ECTMap;
-import com.intel.bkp.fpgacerts.ect.IECTMapStorage;
 import com.intel.bkp.fpgacerts.model.Family;
 import com.intel.bkp.fpgacerts.verification.EvidenceVerifier;
 import com.intel.bkp.fpgacerts.verification.VerificationResult;
 import com.intel.bkp.test.DiceX509GeneratorUtil;
-import com.intel.bkp.test.FileUtils;
 import com.intel.bkp.test.KeyGenUtils;
 import com.intel.bkp.test.LoggerTestUtil;
 import com.intel.bkp.test.rim.XrimGenerator;
@@ -134,47 +126,12 @@ public class CoRIMHandlerIT {
         "302E69BA6E3FAC340A57561234E88BFEB2FE373BCE4D4A28C244809CB467C31CA39874CD0D3F346FCA2A9AE874A1D66B";
     private static final String LAYER_1_DIGEST =
         "32883E2526F54EA21FBF99642A8F56E787A0319D1D0E2AF84C36352E9A760EE80EA6C427098D17D26F65723C0C1C66EA";
-    private final List<String> trustedRootHash = List.of("A1B5D25D0C2F991EB5B3CBD408717B3A9296BE6E90D60997E29FEB3694F60D80",
-        "9DB7D8D004D650B40ED993F2B665E19DA65BD065D7BBD35D6C1439C4B4201259");
-    private static final String TYPE = MeasurementType.FIRMWARE_VERSION.getOid();
-    private static final String VENDOR = TcbInfoConstants.VENDOR;
-    private static final String VERSION = "release-2023.28.1.2";
-    private static final int LAYER = 1;
+
     private static final String FAMILY_AGILEX = Family.AGILEX.getFamilyName();
-    private final List<ECTMap> acsECTMapList = new ArrayList<>();
+
+    private final TcbInfoMeasurementsAggregator tcbInfoAggregator = new TcbInfoMeasurementsAggregator();
+
     private static X509Certificate rootCertificate;
-
-    private static String removeSlashPatterns(String jsonString) {
-        // Regex matches: slash + spaces + non-slash chars + spaces + slash
-        String pattern = "/\\s*[^/]+\\s*/";
-
-        // Remove all occurrences of the pattern
-        return jsonString.replaceAll(pattern, "");
-    }
-
-    private IECTMapStorage prepareAppraisalPolicies(String policyTemplate, ECTMap.CMType cmType) throws Exception {
-        String jsonWithPattern = FileUtils.readFromResourcesAsString(TEST_FOLDER_INTEGRATION, policyTemplate);
-        String cleanedJson = removeSlashPatterns(jsonWithPattern);
-        AppraisalPolicy appraisalPolicies = AppraisalPolicyParser.instance().parse(cleanedJson);
-        var policies = Optional.ofNullable(appraisalPolicies)
-            .map(AppraisalPolicy::getPolicies)
-            .stream()
-            .flatMap(List::stream)
-            .map(policy -> new TcbInfoMeasurement(policy))
-            .toList();
-        final var policyECTMap = ECTMap.createPolicyECTMap(policies, trustedRootHash, cmType);
-        return policyECTMap;
-    }
-
-    private TcbInfo prepareTcbInfoWithVersion(String type, String vendor, Integer layer, String version) {
-        final Map<TcbInfoField, Object> map = Map.of(
-            TcbInfoField.TYPE, type,
-            TcbInfoField.VENDOR, vendor,
-            TcbInfoField.LAYER, layer,
-            TcbInfoField.VERSION, version
-        );
-        return new TcbInfo(map);
-    }
 
     @Test
     void verify_Agilex_CoRim_WithDp_Success() throws Exception {
@@ -188,12 +145,10 @@ public class CoRIMHandlerIT {
         try (var appContextStaticMock = mockStatic(AppContext.class)) {
             when(AppContext.instance()).thenReturn(appContext);
             final EvidenceVerifier sutWithMockedDpConnector = new EvidenceVerifier(new RimHandlersProvider());
-            final var policyECTMap = prepareAppraisalPolicies("appraisal_policy_agilex.txt", ECTMap.CMType.ENDORSEMENTS);
-            sutWithMockedDpConnector.setPolicyECTMapStorage(policyECTMap);
 
             // when
             final VerificationResult result =
-                sutWithMockedDpConnector.verify(acsECTMapList, refMeasurementsAgilexCoRim);
+                sutWithMockedDpConnector.verify(tcbInfoAggregator, refMeasurementsAgilexCoRim);
 
             // then
             assertEquals(VerificationResult.PASSED, result);
@@ -213,12 +168,10 @@ public class CoRIMHandlerIT {
         try (var appContextStaticMock = mockStatic(AppContext.class)) {
             when(AppContext.instance()).thenReturn(appContext);
             final EvidenceVerifier sutWithMockedDpConnector = new EvidenceVerifier(new RimHandlersProvider());
-            final var policyECTMap = prepareAppraisalPolicies("appraisal_policy_agilex.txt", ECTMap.CMType.ENDORSEMENTS);
-            sutWithMockedDpConnector.setPolicyECTMapStorage(policyECTMap);
 
             // when
             final VerificationResult result =
-                sutWithMockedDpConnector.verify(acsECTMapList, unsignedStandalone);
+                sutWithMockedDpConnector.verify(tcbInfoAggregator, unsignedStandalone);
 
             // then
             assertEquals(VerificationResult.PASSED, result);
@@ -234,6 +187,7 @@ public class CoRIMHandlerIT {
         // given
         final KeyPair keyPair = KeyGenUtils.genEc384();
         final TestDataDTO testData = params.getData().prepare(keyPair);
+        tcbInfoAggregator.add(testData.getDeviceData());
         final var dpConnector = mockDesignDistributionPointData(testData.getDpLinks());
         final var rootFingerprint = mockDiceChain(keyPair, dpConnector, testData.getCerLink());
         if (testData.getCerLink() != null) {
@@ -246,27 +200,10 @@ public class CoRIMHandlerIT {
         try (var appContextStaticMock = mockStatic(AppContext.class)) {
             when(AppContext.instance()).thenReturn(appContext);
             final EvidenceVerifier sutWithMockedDpConnector = new EvidenceVerifier(new RimHandlersProvider());
-            IECTMapStorage policyECTMap = null;
-            if (params.getData().isFirmwareOnly()) {
-                TcbInfo fwTcbInfo = prepareTcbInfoWithVersion(TYPE, VENDOR, LAYER, VERSION);
-                final var tcbInfoMeasurements =
-                    List.of(new TcbInfoMeasurement(fwTcbInfo));
-                policyECTMap = ECTMap.createPolicyECTMap(tcbInfoMeasurements, List.of(rootFingerprint),
-                    ECTMap.CMType.ENDORSEMENTS);
-            } else {
-                TcbInfo fwTcbInfo = prepareTcbInfoWithVersion(TYPE, VENDOR, LAYER, VERSION);
-                TcbInfo designTcbInfo = prepareTcbInfoWithVersion("6086480186F84D010F048149", VENDOR, 2, "");
-                final var tcbInfoMeasurements =
-                    List.of(new TcbInfoMeasurement(fwTcbInfo), new TcbInfoMeasurement(designTcbInfo));
-                policyECTMap = ECTMap.createPolicyECTMap(tcbInfoMeasurements, List.of(rootFingerprint),
-                    ECTMap.CMType.ENDORSEMENTS);
-            }
-            sutWithMockedDpConnector.setPolicyECTMapStorage(policyECTMap);
-            acsECTMapList.addAll(ECTMap.createAeECTMap(testData.getDeviceData(), List.of(rootFingerprint)).getAddition());
 
             // when - then
             assertTrue(X509CertificateUtils.isSelfSigned(rootCertificate));
-            final var result = sutWithMockedDpConnector.verify(acsECTMapList, testData.getTestData());
+            final var result = sutWithMockedDpConnector.verify(tcbInfoAggregator, testData.getTestData());
 
             // then
             assertEquals(VerificationResult.PASSED, result);
@@ -282,6 +219,8 @@ public class CoRIMHandlerIT {
         final var data = new DesignRimWithNestedLocatorToItself(nestedLocatorToItselfPath);
         final TestDataDTO testData = data.prepare(keyPair);
         Files.write(Path.of(nestedLocatorToItselfPath), data.getDesignSignedRimData());
+
+        tcbInfoAggregator.add(testData.getDeviceData());
         final var dpConnector = mockDesignDistributionPointData(testData.getDpLinks());
         final var rootFingerprint = mockDiceChain(keyPair, dpConnector, testData.getCerLink());
         if (testData.getCerLink() != null) {
@@ -295,17 +234,9 @@ public class CoRIMHandlerIT {
         try (var appContextStaticMock = mockStatic(AppContext.class)) {
             when(AppContext.instance()).thenReturn(appContext);
             final EvidenceVerifier sutWithMockedDpConnector = new EvidenceVerifier(new RimHandlersProvider());
-            TcbInfo fwTcbInfo = prepareTcbInfoWithVersion(TYPE, VENDOR, LAYER, VERSION);
-            TcbInfo designTcbInfo = prepareTcbInfoWithVersion("6086480186F84D010F048149", VENDOR, 2, "");
-            final var tcbInfoMeasurements =
-                List.of(new TcbInfoMeasurement(fwTcbInfo), new TcbInfoMeasurement(designTcbInfo));
-            final var policyECTMap = ECTMap.createPolicyECTMap(tcbInfoMeasurements, List.of(rootFingerprint),
-                ECTMap.CMType.ENDORSEMENTS);
-            sutWithMockedDpConnector.setPolicyECTMapStorage(policyECTMap);
-            acsECTMapList.addAll(ECTMap.createAeECTMap(testData.getDeviceData(), List.of(rootFingerprint)).getAddition());
 
             // when
-            final var result = sutWithMockedDpConnector.verify(acsECTMapList, testData.getTestData());
+            final var result = sutWithMockedDpConnector.verify(tcbInfoAggregator, testData.getTestData());
 
             // then
             assertEquals(VerificationResult.PASSED, result);
@@ -319,6 +250,7 @@ public class CoRIMHandlerIT {
         final KeyPair keyPair = KeyGenUtils.genEc384();
         final var params = new DesignRimWithInvalidLinkedItemTestData();
         final TestDataDTO testData = params.prepare(keyPair);
+        tcbInfoAggregator.add(testData.getDeviceData());
         final var dpConnector = mockDesignDistributionPointData(testData.getDpLinks());
         final var rootFingerprint = mockDiceChain(keyPair, dpConnector, testData.getCerLink());
 
@@ -329,7 +261,7 @@ public class CoRIMHandlerIT {
 
             // when - then
             assertTrue(X509CertificateUtils.isSelfSigned(rootCertificate));
-            final var result = sutWithMockedDpConnector.verify(acsECTMapList, testData.getTestData());
+            final var result = sutWithMockedDpConnector.verify(tcbInfoAggregator, testData.getTestData());
 
             // then
             assertEquals(VerificationResult.ERROR, result);
@@ -444,7 +376,7 @@ public class CoRIMHandlerIT {
                     Optional.of(new FwIdField(hashAlg, LAYER_1_DIGEST))).build()
             )
         );
-        acsECTMapList.addAll(ECTMap.createAeECTMap(measurements, trustedRootHash).getAddition());
+        tcbInfoAggregator.add(measurements);
     }
 
     private static String readEvidence() throws Exception {

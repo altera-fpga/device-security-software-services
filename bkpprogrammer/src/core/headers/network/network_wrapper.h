@@ -52,7 +52,7 @@ protected:
 
 public:
     virtual ~NetworkWrapper() = default;
-    virtual void init(const Config& config, const std::string& endpoint) = 0;
+    virtual void init(Config config, std::string endpoint) = 0;
     virtual void perform(const std::string &postData, std::string &receivedData) = 0;
 };
 
@@ -62,6 +62,7 @@ private:
     template <typename T>
     void setCurlOptionWithErrorHandling(CURL *handle, CURLoption option, T parameter);
     const long httpCodeOk = 200;
+    const static inline std::string acceptedCiphers = "ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256";
     const static inline std::string transactionIdHeaderField = "X-Request-TransactionId";
     const static inline std::vector<std::string> additionalHeaders =
     {
@@ -88,7 +89,7 @@ public:
     explicit CurlWrapper(std::shared_ptr<Logger> logger_, std::shared_ptr<TransactionIdManager> txIdMgr_);
     CurlWrapper(const CurlWrapper &L) = delete;
     CurlWrapper &operator=(const CurlWrapper &L) = delete;
-    void init(const Config& config, const std::string& endpoint) override;
+    void init(Config config, std::string endpoint) override;
     void perform(const std::string &postData, std::string &receivedData) override;
     ~CurlWrapper();
 };

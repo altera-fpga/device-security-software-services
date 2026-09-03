@@ -102,7 +102,7 @@ class GetDeviceAttestationComponentSpdmTest {
 
         // when
         final var ex = assertThrows(VerifierRuntimeException.class, () ->
-            sutSpdm.perform(appContext, REF_MEASUREMENT, null, DEVICE_ID));
+            sutSpdm.perform(appContext, REF_MEASUREMENT, DEVICE_ID));
 
         // then
         assertEquals(expectedExMessage, ex.getMessage());
@@ -118,7 +118,7 @@ class GetDeviceAttestationComponentSpdmTest {
         // when
         final VerifierRuntimeException ex =
             assertThrows(VerifierRuntimeException.class,
-                () -> sutSpdm.perform(appContext, REF_MEASUREMENT, null, DEVICE_ID));
+                () -> sutSpdm.perform(appContext, REF_MEASUREMENT, DEVICE_ID));
 
         // then
         assertEquals(expectedErrorMessage, ex.getMessage());
@@ -135,7 +135,7 @@ class GetDeviceAttestationComponentSpdmTest {
         // when
         final VerifierRuntimeException ex =
             assertThrows(VerifierRuntimeException.class,
-                () -> sutSpdm.perform(appContext, REF_MEASUREMENT, null, DEVICE_ID));
+                () -> sutSpdm.perform(appContext, REF_MEASUREMENT, DEVICE_ID));
 
         // then
         assertEquals(expectedErrorMessage, ex.getMessage());
@@ -148,13 +148,13 @@ class GetDeviceAttestationComponentSpdmTest {
         final var attestationResult = VerificationResult.PASSED;
         final var expectedResult = VerifierExchangeResponse.OK;
         when(spdmGetVersionMessageSender.send()).thenReturn(SPDM_SUPPORTED_VERSION);
-        when(spdmDiceAttestationComponent.perform(REF_MEASUREMENT, null, DEVICE_ID)).thenReturn(attestationResult);
+        when(spdmDiceAttestationComponent.perform(REF_MEASUREMENT, DEVICE_ID)).thenReturn(attestationResult);
 
         // when
-        final var actualResult = sutSpdm.perform(appContext, REF_MEASUREMENT, null, DEVICE_ID);
+        final var actualResult = sutSpdm.perform(appContext, REF_MEASUREMENT, DEVICE_ID);
 
         // then
         assertEquals(expectedResult, actualResult);
-        verify(spdmDiceAttestationComponent).perform(REF_MEASUREMENT, null, DEVICE_ID);
+        verify(spdmDiceAttestationComponent).perform(REF_MEASUREMENT, DEVICE_ID);
     }
 }

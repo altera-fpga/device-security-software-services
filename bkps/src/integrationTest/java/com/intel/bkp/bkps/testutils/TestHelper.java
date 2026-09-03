@@ -113,26 +113,6 @@ public class TestHelper {
                                                                         KeyWrappingType keyWrappingType,
                                                                         Qek qek,
                                                                         byte[] aesCcertData) {
-        return createServiceConfigurationEntity(overbuildMax, storageType,
-            sealingKeyManager,
-            requireIidUds,
-            pufType,
-            keyWrappingType,
-            qek,
-            aesCcertData,
-            true,
-            null);
-    }
-
-    public static ServiceConfiguration createServiceConfigurationEntity(Integer overbuildMax, StorageType storageType,
-                                                                        SealingKeyManager sealingKeyManager,
-                                                                        boolean requireIidUds,
-                                                                        PufType pufType,
-                                                                        KeyWrappingType keyWrappingType,
-                                                                        Qek qek,
-                                                                        byte[] aesCcertData,
-                                                                        boolean autoFetchFirmwareCorim,
-                                                                        Long appraisalPolicyId) {
 
         ConfidentialData confidentialData = new ConfidentialData();
         confidentialData.setImportMode(ImportMode.PLAINTEXT);
@@ -171,9 +151,7 @@ public class TestHelper {
             .overbuildMax(overbuildMax)
             .overbuildCurrent(2)
             .confidentialData(confidentialData)
-            .attestationConfig(attestationConfig)
-            .autoFetchFirmwareCorim(autoFetchFirmwareCorim)
-            .appraisalPolicyId(appraisalPolicyId);
+            .attestationConfig(attestationConfig);
     }
 
     private static String getEncryptedAesKey(SealingKeyManager sealingKeyManager, byte[] aesContent) {

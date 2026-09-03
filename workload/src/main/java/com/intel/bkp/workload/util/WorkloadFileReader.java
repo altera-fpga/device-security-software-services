@@ -36,7 +36,6 @@ import com.intel.bkp.workload.exceptions.WorkloadAppException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HexFormat;
@@ -54,17 +53,6 @@ public class WorkloadFileReader {
         final Path filePath = Path.of(fileName);
         try {
             return HexFormat.of().formatHex(Files.readAllBytes(filePath));
-        } catch (IOException e) {
-            throw new WorkloadAppException("Failed to read file: " + filePath, e);
-        }
-    }
-
-    public String readFileAsString(String fileName) {
-        log.debug("[WORKLOAD] Reading file: {}", fileName);
-        final Path filePath = Path.of(fileName);
-        try {
-            final var rawBytes = Files.readAllBytes(filePath);
-            return new String(rawBytes, StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new WorkloadAppException("Failed to read file: " + filePath, e);
         }

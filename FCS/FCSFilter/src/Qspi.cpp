@@ -57,7 +57,7 @@ bool Qspi::callFcs(uint32_t commandCode,
     VerifierProtocol verifierProtocol;
     verifierProtocol.setCommandCode(commandCode);
     verifierProtocol.setIncomingPayload(inBuffer);
-    if (!fcsCommunication->runCommandCode(std::move(verifierProtocol), outBuffer, statusReturnedFromFcs))
+    if (!fcsCommunication->runCommandCode(verifierProtocol, outBuffer, statusReturnedFromFcs))
     {
         Logger::log(functionName + ": FCS call failed.", Error);
         status = false;
@@ -65,7 +65,7 @@ bool Qspi::callFcs(uint32_t commandCode,
     if (status && statusReturnedFromFcs != 0)
     {
         std::string err_desc = decode_sdm_response_error_code(statusReturnedFromFcs);
-        Logger::log(std::move(err_desc), Error);
+        Logger::log(err_desc, Error);
         status = false;
     }
 

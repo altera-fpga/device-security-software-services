@@ -33,14 +33,12 @@
 package com.intel.bkp.fpgacerts.dice.tcbinfo;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
 import static com.intel.bkp.fpgacerts.utils.ToStringUtils.includeIfNonNull;
 
-@Builder
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

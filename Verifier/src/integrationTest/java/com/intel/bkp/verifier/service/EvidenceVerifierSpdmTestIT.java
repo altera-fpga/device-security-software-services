@@ -37,7 +37,6 @@ import com.code_intelligence.jazzer.junit.FuzzTest;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurement;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurementsAggregator;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoValue;
-import com.intel.bkp.fpgacerts.ect.ECTMap;
 import com.intel.bkp.fpgacerts.measurements.SpdmMeasurementResponseProvider;
 import com.intel.bkp.fpgacerts.measurements.mapping.SpdmMeasurementResponseToTcbInfoMapper;
 import com.intel.bkp.fpgacerts.verification.EvidenceVerifier;
@@ -51,7 +50,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static com.intel.bkp.test.FileUtils.readFromResources;
@@ -63,13 +61,16 @@ public class EvidenceVerifierSpdmTestIT {
 
     private static final int MAX_FUZZ_STR_LEN = 1000;
     private static final String TEST_FOLDER_INTEGRATION = "integration/spdm/";
+
     private static final String FILENAME_AGILEX_RIM = "hps_fpga_signed_enc_test.rim";
+
     private static final String FILENAME_AGILEX_RIM_WITH_PR_REGION = "ghrd_agfd023r25a2e2vr0_pr.rim";
+
     private static final String FILENAME_AGILEX_RIM_FUZZ = "hps_fpga_signed_enc_test_fuzz.rim";
+
     private static final String FILENAME_AGILEX_RESPONSE = "measurements_hps_fpga_signed_enc_test.bin";
+
     private static final String FILENAME_AGILEX_RESPONSE_WITH_PR_REGION = "measurements_ghrd_agfd023r25a2e2vr0_pr.bin";
-    private final List<String> trustedRootHash = List.of("A1B5D25D0C2F991EB5B3CBD408717B3A9296BE6E90D60997E29FEB3694F60D80",
-        "9DB7D8D004D650B40ED993F2B665E19DA65BD065D7BBD35D6C1439C4B4201259");
 
     private static String refMeasurementsAgilex;
     private static String refMeasurementsAgilexWithPrRegion;
@@ -80,7 +81,6 @@ public class EvidenceVerifierSpdmTestIT {
     private final SpdmMeasurementResponseToTcbInfoMapper measurementMapper =
         new SpdmMeasurementResponseToTcbInfoMapper();
     private final TcbInfoMeasurementsAggregator tcbInfoMeasurementsAggregator = new TcbInfoMeasurementsAggregator();
-    private final List<ECTMap> acsECTMapList = new ArrayList<>();
 
     private final EvidenceVerifier sut = new EvidenceVerifier(new RimHandlersProvider());
 
@@ -144,12 +144,14 @@ public class EvidenceVerifierSpdmTestIT {
     @FuzzTest
     void verify_Spdm_Agilex_Fuzz(FuzzedDataProvider data) {
         // given
+        final var tcbInfoMeasurementsAggregator = new TcbInfoMeasurementsAggregator();
         final List<TcbInfoMeasurement> tcbInfosFromDevice = measurementMapper.map(responseAgilex);
+
         fuzzRandomTcbInfoMeasurement(data, tcbInfosFromDevice);
-        acsECTMapList.addAll(ECTMap.createAeECTMap(tcbInfosFromDevice, trustedRootHash).getAddition());
+        tcbInfoMeasurementsAggregator.add(tcbInfosFromDevice);
 
         // when
-        final var result = sut.verify(acsECTMapList, refMeasurementsAgilexFuzz);
+        final var result = sut.verify(tcbInfoMeasurementsAggregator, refMeasurementsAgilexFuzz);
 
         // then
         assertEquals(VerificationResult.FAILED, result);
@@ -158,10 +160,10 @@ public class EvidenceVerifierSpdmTestIT {
     @Test
     void verify_Spdm_Agilex() {
         // given
-        acsECTMapList.addAll(ECTMap.createAeECTMap(measurementMapper.map(responseAgilex), trustedRootHash).getAddition());
+        tcbInfoMeasurementsAggregator.add(measurementMapper.map(responseAgilex));
 
         // when
-        final var result = sut.verify(acsECTMapList, refMeasurementsAgilex);
+        final var result = sut.verify(tcbInfoMeasurementsAggregator, refMeasurementsAgilex);
 
         // then
         assertEquals(VerificationResult.PASSED, result);
@@ -170,11 +172,11 @@ public class EvidenceVerifierSpdmTestIT {
     @Test
     void verify_Spdm_AgilexWithPrRegion() {
         // given
-        acsECTMapList.addAll(ECTMap.createAeECTMap(measurementMapper.map(responseAgilexWithPrRegion), trustedRootHash).getAddition());
+        tcbInfoMeasurementsAggregator.add(measurementMapper.map(responseAgilexWithPrRegion));
 
         // when
         final var result =
-            sut.verify(acsECTMapList, refMeasurementsAgilexWithPrRegion);
+            sut.verify(tcbInfoMeasurementsAggregator, refMeasurementsAgilexWithPrRegion);
 
         // then
         assertEquals(VerificationResult.PASSED, result);

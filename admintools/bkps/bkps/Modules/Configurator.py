@@ -56,8 +56,6 @@ class ConfigurationDTO:
     rom_versions = None
     test_program = None  # boolean
     key_name = None
-    auto_fetch_firmware_corim = None # boolean
-    appraisal_policy_id = None
 
     def __init__(self):
         pass
@@ -83,10 +81,6 @@ class ConfigurationDTO:
         if 'qek' in parsed['confidentialData']:
             self.qek_value = parsed['confidentialData']['qek']['value']
             self.key_name = parsed['confidentialData']['qek']['keyName']
-        if 'autoFetchFirmwareCorim' in parsed:
-            self.auto_fetch_firmware_corim = parsed['autoFetchFirmwareCorim']
-        if 'appraisalPolicyId' in parsed:
-            self.appraisal_policy_id = parsed['appraisalPolicyId']
         self.aes_key_value = parsed['confidentialData']['aesKey']['value']
         self.e_fuses_public_value = parsed['attestationConfig']['efusesPublic']['value']
         self.e_fuses_public_mask = parsed['attestationConfig']['efusesPublic']['mask']
@@ -104,8 +98,6 @@ class ConfigurationDTO:
         self.corim_url = self.input_corim_url()
         self.overbuild_max = self.input_overbuild_counter()
         self.test_program = self.input_test_program()
-        self.auto_fetch_firmware_corim = self.input_auto_fetch_firmware_corim()
-        self.appraisal_policy_id = self.input_appraisal_policy_id()
 
         self.aes_key_value = self.input_aes_key_value()
         self.qek_value = self.input_qek_value()
@@ -262,22 +254,6 @@ class ConfigurationDTO:
             if is_test_program.upper() in ("Y", "N"):
                 return is_test_program.upper() == "Y"
 
-    @staticmethod
-    def input_auto_fetch_firmware_corim():
-        while True:
-            is_auto_fetch_firmware_corim = input('Will this Configuration be used for auto fetching firmware corim (Y/N): ')
-            if is_auto_fetch_firmware_corim.upper() in ("Y", "N"):
-                return is_auto_fetch_firmware_corim.upper() == "Y"
-
-    @staticmethod
-    def input_appraisal_policy_id():
-        default = 0
-        while True:
-            usr_input = input('Enter appraisal policy ID. Default: 0 for None: ')
-            if usr_input and len(usr_input) > 0 and check_number(usr_input):
-                return int(usr_input)
-            elif not usr_input or len(usr_input) == 0:
-                return default
 
 class Configurator:
     requester = None
@@ -308,9 +284,6 @@ class Configurator:
 
         self.overbuild_dto['max'] = int(self.dto.overbuild_max)
         self.init_configuration['overbuild'] = self.overbuild_dto
-
-        self.init_configuration['autoFetchFirmwareCorim'] = self.dto.auto_fetch_firmware_corim
-        self.init_configuration['appraisalPolicyId'] = self.dto.appraisal_policy_id
 
         self.init_configuration['requireIidUds'] = self.dto.require_iid_uds
         self.init_configuration['testModeSecrets'] = self.dto.test_mode_secrets

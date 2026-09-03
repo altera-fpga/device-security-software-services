@@ -32,7 +32,6 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef FCS_COMMUNICATION_SPDM_H
 #define FCS_COMMUNICATION_SPDM_H
 
-#include <dlfcn.h>
 #include "FcsCommunication.h"
 #include "altera_fcs-lib.h"
 #include "altera_fcs_structs.h"
@@ -41,12 +40,7 @@ class FcsCommunicationFcsLib: public FcsCommunication
 {
     public:
         FcsCommunicationFcsLib() { initLibrary(); }
-        ~FcsCommunicationFcsLib() {
-            if (libFcsLibrary != (LIBFCS_LIB)(nullptr))
-            {
-                dlclose(libFcsLibrary);
-            }
-        }
+        ~FcsCommunicationFcsLib() {}
         bool runCommandCode(VerifierProtocol verifierProtocol, std::vector<uint8_t>& responseBuffer, int32_t& statusReturnedFromFcs);
         bool getChipId(std::vector<uint8_t>& outBuffer, int32_t &fcsStatus);
         bool getJtagIdCode(std::vector<uint8_t>& outBuffer, int32_t& fcsStatus);

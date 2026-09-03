@@ -28,8 +28,7 @@
 #
 #  ***************************************************************************
 
-from Modules.Utilities import is_hex_x_bytes_long, read_file, check_file_soft, is_json
-import re
+from Modules.Utilities import is_hex_x_bytes_long, read_file, check_file_soft
 
 class RequestMethodMapper:
     requester = None
@@ -150,28 +149,7 @@ class RequestMethodMapper:
             family_id = params.get('FAMILY_ID')
             uid = params.get('UID')
             self.requester.prefetch_status(uid, family_id)
-        elif params.get('appraisal-policy'):
-            if params.get('list'):
-                self.requester.list_appraisal_policies()
-            elif params.get('get') and params.get('ID'):
-                self.requester.get_appraisal_policy(params.get('ID'))
-            elif params.get('create') or params.get('update'):
-                data = self.requester.prepare_payload_from_file(params.get('--input'))
-                data = re.sub(r"/\s*[^/]+\s*/", "", data)
-                if not is_json(data):
-                    print('Payload for appraisalPolicy is not in JSON format')
-                else:
-                    if params.get('create'):
-                        self.requester.create_appraisal_policy(data)
-                    elif params.get('update'):
-                        self.requester.update_appraisal_policy(data, params.get('ID'))
-            elif params.get('delete') and params.get('ID'):
-                self.requester.delete_appraisal_policy(params.get('ID'))
-        elif params.get('attestation-file'):
-            if params.get('upload'):
-                self.requester.upload_attestation_file(params.get('--input'))
-            elif params.get('delete'):
-                self.requester.delete_attestation_file(params.get('PATH'))
+
 
     @staticmethod
     def show_system_reboot_info():

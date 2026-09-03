@@ -1,5 +1,5 @@
-openssl.version=3.5.5
-libspdm.version=3.8.2
+openssl.version=3.1.4
+libspdm.version=3.2.0
 boost.version=1.84.0
-libcurl.version=8.12.1
+libcurl.version=8.5.0
 gtest.version=1.14.0

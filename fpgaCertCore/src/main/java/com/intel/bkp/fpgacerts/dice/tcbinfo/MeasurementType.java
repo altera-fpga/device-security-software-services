@@ -39,8 +39,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum MeasurementType {
     ROM_EXTENSION(0, 10),
-    CMF(1, 11),
-    FIRMWARE_VERSION(1, 200);
+    CMF(1, 11);
 
     @Getter
     private final Integer layer;

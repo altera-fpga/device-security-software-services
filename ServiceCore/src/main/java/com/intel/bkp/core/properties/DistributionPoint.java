@@ -47,8 +47,6 @@ public class DistributionPoint {
 
     private String mainPath;
     private String attestationCertBasePath;
-    private String rimDataBasePath;
-    private String rimDataBasePathV2;
     private String zipBasePath;
     private String[] trustedRootHash;
     private Proxy proxy;

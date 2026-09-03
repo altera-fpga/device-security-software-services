@@ -30,6 +30,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************
 */
 
+#include <dlfcn.h>
 #include <cassert>
 #include <deque>
 #include "FcsCommunicationFcsLib.h"

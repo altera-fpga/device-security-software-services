@@ -120,10 +120,10 @@ std::string JtagHelperImpl::encode_command(const std::string &decodedCmd) {
     catch (const std::exception &ex) {
         std::string exceptionMessage(ex.what());
         std::string internalMessage = str_utils::concat_strings(
-                {"Encoding of command failed with message: ", std::move(exceptionMessage)});
+                {"Encoding of command failed with message: ", exceptionMessage});
         // If something happens during encoding responses from Device, the flow shall not be halted by Programmer
         // All responses should be collected and send back to BKPS
-        LOG(L_ERROR, std::move(internalMessage));
+        LOG(L_ERROR, internalMessage);
     }
     return "";
 }
@@ -136,8 +136,8 @@ std::string JtagHelperImpl::decode_command(const std::string &encodedCmd) {
     catch (const std::exception &ex) {
         std::string exceptionMessage(ex.what());
         std::string internalMessage = str_utils::concat_strings(
-                {"Decoding of command [ ", encodedCmd, " ] failed with message: ", std::move(exceptionMessage)});
+                {"Decoding of command [ ", encodedCmd, " ] failed with message: ", exceptionMessage});
         // If something happens during decoding message from BKPS, the whole flow should stop.
-        throw BkpBase64Exception(std::move(internalMessage));
+        throw BkpBase64Exception(internalMessage);
     }
 }

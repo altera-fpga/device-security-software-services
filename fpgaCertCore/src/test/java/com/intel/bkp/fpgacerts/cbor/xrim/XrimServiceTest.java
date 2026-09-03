@@ -33,10 +33,11 @@
 package com.intel.bkp.fpgacerts.cbor.xrim;
 
 import ch.qos.logback.classic.Level;
+import com.intel.bkp.fpgacerts.cbor.LocatorItem;
+import com.intel.bkp.fpgacerts.cbor.LocatorType;
 import com.intel.bkp.fpgacerts.cbor.exception.CborParserException;
 import com.intel.bkp.fpgacerts.cbor.exception.XrimVerificationException;
 import com.intel.bkp.fpgacerts.cbor.rim.RimUnsigned;
-import com.intel.bkp.fpgacerts.cbor.rim.parser.RimUnsignedParser;
 import com.intel.bkp.fpgacerts.cbor.signer.CborSignatureVerifier;
 import com.intel.bkp.fpgacerts.dp.DistributionPointConnector;
 import com.intel.bkp.test.KeyGenUtils;
@@ -71,17 +72,6 @@ import static org.mockito.Mockito.when;
 class XrimServiceTest {
 
     private static final String DENY_MANIFEST_KEY_ID = "51ac25b8dc58405cb4c94772120ba68a";
-    private static final String issuerKeyId = "66273F6BE6F8AD62668E676877E035B23495EE08";
-    private static final String digest0 = "C8E658DF2AA43CE3FE6011C9E0B5595C0ADC07FA5742BAFC14D715403B17CA55A4C15EE6B368"
-        + "DBC473ED9098A97A8CE5";
-    private static final String digest1 = "637293C2FDADC183C0593C0333768BA5738EBB4AF4E12A5E501A9692BCF32950DC960F1B15DA"
-        + "4D4B9710E4C677075C08";
-    private static final String digest2 = "33DFE9033F9F8069AA2ECEB3555694D4C0C096F6D95084C27976E449750B385B93538F623B06"
-        + "993B1C5C3733C1E87EA8";
-    private static final String layer0Digest = "62B5B4E8690F14CB3F5846CD29B350680800DA6880FDD558983B3B31FEFC73ECED1324A"
-        + "F54E3C3711EF2786B33507414C066C61648898F04837B3FFFD58905ED";
-    private static final String layer1Digest = "E55C006CAA9D792E020012D4CDA5A31A2BE259271F01A088287AD070F7A5FFBF5AEA613"
-        + "F21FA657D4ED2AA07E601E707";
     private static final KeyPair KEY_PAIR = KeyGenUtils.genEc384();
     private static final RimUnsigned UNSIGNED_RIM = RimGenerator.instance()
         .publicKey(KEY_PAIR.getPublic())
@@ -104,35 +94,6 @@ class XrimServiceTest {
     @BeforeEach
     void setup() {
         loggerTestUtil = LoggerTestUtil.instance(sut.getClass());
-    }
-
-    private static byte[] generateUnsignedRim(boolean designRim,
-                                              boolean newCorimFormat,
-                                              boolean includeProfile) {
-        final byte[] unsigned = RimGenerator.instance()
-            .signed(false)
-            .design(designRim)
-            .newCorimFormat(newCorimFormat)
-            .issuerKeyId(issuerKeyId)
-            .expectedDigest0(digest0)
-            .expectedDigest1(digest1)
-            .expectedDigest2(digest2)
-            .layer0Digest(layer0Digest)
-            .layer1Digest(layer1Digest)
-            .includeProfile(includeProfile)
-            .generate();
-        return unsigned;
-    }
-
-    @Test
-    void verifyXRimAndEnsureRimIsNotRevoked_NewCorimFormat_Passed() {
-        // given
-        final RimUnsigned unsignedRim = RimUnsignedParser.instance().parse(generateUnsignedRim(false, true, false));
-
-        // when-then
-        assertDoesNotThrow(
-            () -> sut.verifyXRimAndEnsureRimIsNotRevoked(unsignedRim, KEY_PAIR.getPublic(), RESTRICT_UNSIGNED)
-        );
     }
 
     @Test
@@ -248,7 +209,10 @@ class XrimServiceTest {
     @Test
     void verifyXRimAndEnsureRimIsNotRevoked_WithRestrictedUnsigned_WithNoXrimLocator_ThrowsException() {
         // given
-        final RimUnsigned unsignedRim = RimUnsignedParser.instance().parse(generateUnsignedRim(false, false, true));
+        final RimUnsigned unsignedRim = RimUnsigned.builder()
+            .locators(
+                List.of(new LocatorItem(LocatorType.CORIM, DP_URL + "/agilex_L1_Mog-JSb1TqIfv5lkKo9W54egMZ0d.corim")))
+            .build();
 
         // when-then
         final var ex = assertThrows(XrimVerificationException.class,
@@ -262,7 +226,10 @@ class XrimServiceTest {
     @Test
     void verifyXRimAndEnsureRimIsNotRevoked_WithAllowedUnsigned_WithNoXrimLocator_LogsSkipped() {
         // given
-        final RimUnsigned unsignedRim = RimUnsignedParser.instance().parse(generateUnsignedRim(false, false, true));
+        final RimUnsigned unsignedRim = RimUnsigned.builder()
+            .locators(
+                List.of(new LocatorItem(LocatorType.CORIM, DP_URL + "/agilex_L1_Mog-JSb1TqIfv5lkKo9W54egMZ0d.corim")))
+            .build();
 
         // when-then
         assertDoesNotThrow(

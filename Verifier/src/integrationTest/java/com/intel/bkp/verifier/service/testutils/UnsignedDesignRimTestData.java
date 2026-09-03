@@ -39,7 +39,6 @@ import com.intel.bkp.fpgacerts.cbor.rim.comid.ComidEntity;
 import com.intel.bkp.fpgacerts.cbor.rim.comid.ComidId;
 import com.intel.bkp.fpgacerts.cbor.rim.comid.ReferenceTriple;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.FwIdField;
-import com.intel.bkp.fpgacerts.dice.tcbinfo.MeasurementType;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoKey;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoMeasurement;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.TcbInfoValue;
@@ -125,8 +124,8 @@ public class UnsignedDesignRimTestData extends TestDataBase {
                         .measurementMap(measurementMap(0, 7, LAYER_0_INDEX1_DIGEST))
                         .build()))
                 .endorsedTriples(List.of(ReferenceTriple.builder()
-                    .environmentMap(environmentMap(MeasurementType.FIRMWARE_VERSION.getOid(), 1))
-                    .measurementMap(versionMap("release-2023.28.1.2", "3"))
+                    .environmentMap(environmentMap("6086480186F84D010F048148", 1))
+                    .measurementMap(versionMap("release-2023.28.1.1", "3"))
                     .build()))
                 .build())
             .build();
@@ -170,14 +169,10 @@ public class UnsignedDesignRimTestData extends TestDataBase {
                         .build(),
                     ReferenceTriple.builder()
                         .environmentMap(environmentMap(FAMILY_AGILEX, 1, 0))
-                        .measurementMap(measurementMap(0, 7, LAYER_1_DIGEST)).build(),
-                    ReferenceTriple.builder()
-                        .environmentMap(environmentMap(MeasurementType.FIRMWARE_VERSION.getOid(), 1))
-                        .measurementMap(versionMap("release-2023.28.1.2", "3"))
-                        .build()))
+                        .measurementMap(measurementMap(0, 7, LAYER_1_DIGEST)).build()))
                 .endorsedTriples(List.of(ReferenceTriple.builder()
-                    .environmentMap(environmentMap("6086480186F84D010F048149", 2))
-                    .measurementMap(versionMap("", null))
+                    .environmentMap(environmentMap("6086480186F84D010F048148", 1))
+                    .measurementMap(versionMap("release-2023.28.1.1", "3"))
                     .build()))
                 .build())
             .build();

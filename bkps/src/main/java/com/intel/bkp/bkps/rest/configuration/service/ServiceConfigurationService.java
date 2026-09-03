@@ -39,10 +39,8 @@ import com.intel.bkp.bkps.domain.AesKey;
 import com.intel.bkp.bkps.domain.Qek;
 import com.intel.bkp.bkps.domain.ConfidentialData;
 import com.intel.bkp.bkps.domain.enumeration.ImportMode;
-import com.intel.bkp.bkps.exception.AppraisalPolicyNotFound;
 import com.intel.bkp.bkps.exception.ProvisioningGenericException;
 import com.intel.bkp.bkps.exception.ServiceConfigurationNotFound;
-import com.intel.bkp.bkps.repository.AppraisalPolicyRepository;
 import com.intel.bkp.bkps.repository.ServiceConfigurationRepository;
 import com.intel.bkp.bkps.rest.configuration.model.dto.ServiceConfigurationDTO;
 import com.intel.bkp.bkps.rest.configuration.model.dto.ServiceConfigurationDetailsDTO;
@@ -104,7 +102,6 @@ public class ServiceConfigurationService {
     private final AesCtrEncryptionKeyProviderImpl aesCtrEncryptionKeyProvider;
     private final SealingKeyManager sealingKeyManager;
     private final ServiceConfigurationImportManager serviceConfigurationImportManager;
-    private final AppraisalPolicyRepository appraisalPolicyRepository;
 
     @Setter(AccessLevel.PACKAGE)
     private PsgAesKeyBuilderFactory psgAesKeyBuilderFactory = new PsgAesKeyBuilderFactory();
@@ -132,10 +129,6 @@ public class ServiceConfigurationService {
         final Qek qek = config.getConfidentialData().getQek();
         if (PsgAesKeyType.SDM_1_5.equals(aesKeyBuilder.getAesKeyType())) {
             validateAESAndQek(qek);
-            if (config.getAppraisalPolicyId() != null && config.getAppraisalPolicyId() != 0) {
-                appraisalPolicyRepository.findById(config.getAppraisalPolicyId())
-                    .orElseThrow(AppraisalPolicyNotFound::new);
-            }
         }
 
         encryptConfidentialData(config.getConfidentialData());

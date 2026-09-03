@@ -36,7 +36,6 @@ import com.intel.bkp.fpgacerts.cbor.rim.Comid;
 import com.intel.bkp.fpgacerts.cbor.rim.comid.Claims;
 import com.intel.bkp.fpgacerts.cbor.rim.comid.ComidEntity;
 import com.intel.bkp.fpgacerts.cbor.rim.comid.ComidId;
-import com.intel.bkp.fpgacerts.cbor.rim.comid.ConditionalEndorsedTriple;
 import com.intel.bkp.fpgacerts.cbor.rim.comid.Digest;
 import com.intel.bkp.fpgacerts.cbor.rim.comid.EnvironmentMap;
 import com.intel.bkp.fpgacerts.cbor.rim.comid.MeasurementMap;
@@ -58,32 +57,10 @@ class RimCoMIDBuilderTest {
     private final RimCoMIDBuilder sut = RimCoMIDBuilder.instance();
 
     @Test
-    void build_WithNewCorimFormat_Success() {
-        // given
-        final var data = "A301A1005051F505F82911480B9F44B8A614FF2B180281A200714669726D77617265206D616E6966657374028100"
-            + "04A2008282A100A40169696E74656C2E636F6D02664167696C65780300040081A101A201D90228000281820758403BD9C16922C"
-            + "D93CC29F8FE27107FC6456068FC0504A8B84476EA5F2A2342D07B794957152DDE6A7D857C8176BC35FB629BF5B6F6726DC15FC0"
-            + "1FB9AC3074BE2C82A100A40169696E74656C2E636F6D02664167696C65780301040081A101A201D902280002818207583032883"
-            + "E2526F54EA21FBF99642A8F56E787A0319D1D0E2AF84C36352E9A760EE80EA6C427098D17D26F65723C0C1C66EA0A828282A100"
-            + "A40169696E74656C2E636F6D02664167696C65780300040081A101A201D90228000281820758403BD9C16922CD93CC29F8FE271"
-            + "07FC6456068FC0504A8B84476EA5F2A2342D07B794957152DDE6A7D857C8176BC35FB629BF5B6F6726DC15FC01FB9AC3074BE2C"
-            + "82A100A40169696E74656C2E636F6D02664167696C65780301040081A101A201D902280002818207583032883E2526F54EA21FB"
-            + "F99642A8F56E787A0319D1D0E2AF84C36352E9A760EE80EA6C427098D17D26F65723C0C1C66EA8182A100A300D86F4C60864801"
-            + "86F84D010F0481480169696E74656C2E636F6D030181A101A100A2007372656C656173652D323032332E32382E312E310103";
-        final Comid entity = prepareEntity(true);
-
-        // when
-        final byte[] actual = sut.build(entity);
-
-        // then
-        assertEquals(data, toHex(actual));
-    }
-
-    @Test
     void build_Success() throws Exception {
         // given
         final byte[] cborData = FileUtils.readFromResources(TEST_FOLDER, "rim_unsigned_comid.cbor");
-        final Comid entity = prepareEntity(false);
+        final Comid entity = prepareEntity();
 
         // when
         final byte[] actual = sut.build(entity);
@@ -111,68 +88,7 @@ class RimCoMIDBuilderTest {
         assertEquals(data, toHex(result));
     }
 
-    private static Comid prepareEntity(boolean newCorimFormat) {
-        List<ReferenceTriple> referenceTriples = List.of(ReferenceTriple.builder()
-                                                    .environmentMap(EnvironmentMap.builder()
-                                                        .vendor("intel.com")
-                                                        .model("Agilex")
-                                                        .layer(0)
-                                                        .index(0)
-                                                        .build())
-                                                    .measurementMap(MeasurementMap.builder()
-                                                        .svn(0)
-                                                        .digests(List.of(Digest.builder()
-                                                            .algorithm(7)
-                                                            .value("3BD9C16922CD93CC29F8FE27107FC6456068FC0504A8B84476EA5F2A2342D07B794957152DDE6A"
-                                                                + "7D857C8176BC35FB629BF5B6F6726DC15FC01FB9AC3074BE2C")
-                                                            .build()))
-                                                        .build())
-                                                    .build(),
-                                                ReferenceTriple.builder()
-                                                    .environmentMap(EnvironmentMap.builder()
-                                                        .vendor("intel.com")
-                                                        .model("Agilex")
-                                                        .layer(1)
-                                                        .index(0)
-                                                        .build())
-                                                    .measurementMap(MeasurementMap.builder()
-                                                        .svn(0)
-                                                        .digests(List.of(Digest.builder()
-                                                            .algorithm(7)
-                                                            .value("32883E2526F54EA21FBF99642A8F56E787A0319D1D0E2AF84C36352E9A760EE80EA6C42709"
-                                                                + "8D17D26F65723C0C1C66EA")
-                                                            .build()))
-                                                        .build())
-                                                    .build());
-    List<ReferenceTriple> endorsedTriples = List.of(ReferenceTriple.builder()
-                                                .environmentMap(EnvironmentMap.builder()
-                                                    .classId("6086480186F84D010F048148")
-                                                    .vendor("intel.com")
-                                                    .layer(1)
-                                                    .build())
-                                                .measurementMap(MeasurementMap.builder()
-                                                    .version(MeasurementVersion.builder()
-                                                        .version("release-2023.28.1.1")
-                                                        .versionScheme("3")
-                                                        .build())
-                                                    .build())
-                                                .build());
-        if (newCorimFormat) {
-            return Comid.builder()
-                .id(ComidId.builder().value("51F505F82911480B9F44B8A614FF2B18").build())
-                .entities(List.of(ComidEntity.builder()
-                    .entityName("Firmware manifest")
-                    .roles(List.of(0))
-                    .build()))
-                .claims(Claims.builder()
-                    .referenceTriples(referenceTriples)
-                    .conditionalEndorsedTriples(ConditionalEndorsedTriple.builder()
-                        .conditions(referenceTriples)
-                        .endorsements(endorsedTriples)
-                        .build())
-                    .build())
-                .build();
-        }
+    private static Comid prepareEntity() {
         return Comid.builder()
             .id(ComidId.builder().value("51F505F82911480B9F44B8A614FF2B18").build())
             .entities(List.of(ComidEntity.builder()
@@ -180,8 +96,52 @@ class RimCoMIDBuilderTest {
                 .roles(List.of(0))
                 .build()))
             .claims(Claims.builder()
-                .referenceTriples(referenceTriples)
-                .endorsedTriples(endorsedTriples)
+                .referenceTriples(List.of(
+                    ReferenceTriple.builder()
+                        .environmentMap(EnvironmentMap.builder()
+                            .vendor("intel.com")
+                            .model("Agilex")
+                            .layer(0)
+                            .index(0)
+                            .build())
+                        .measurementMap(MeasurementMap.builder()
+                            .svn(0)
+                            .digests(List.of(Digest.builder()
+                                .algorithm(7)
+                                .value("3BD9C16922CD93CC29F8FE27107FC6456068FC0504A8B84476EA5F2A2342D07B794957152DDE6A"
+                                    + "7D857C8176BC35FB629BF5B6F6726DC15FC01FB9AC3074BE2C")
+                                .build()))
+                            .build())
+                        .build(),
+                    ReferenceTriple.builder()
+                        .environmentMap(EnvironmentMap.builder()
+                            .vendor("intel.com")
+                            .model("Agilex")
+                            .layer(1)
+                            .index(0)
+                            .build())
+                        .measurementMap(MeasurementMap.builder()
+                            .svn(0)
+                            .digests(List.of(Digest.builder()
+                                .algorithm(7)
+                                .value("32883E2526F54EA21FBF99642A8F56E787A0319D1D0E2AF84C36352E9A760EE80EA6C42709"
+                                    + "8D17D26F65723C0C1C66EA")
+                                .build()))
+                            .build())
+                        .build()))
+                .endorsedTriples(List.of(ReferenceTriple.builder()
+                    .environmentMap(EnvironmentMap.builder()
+                        .classId("6086480186F84D010F048148")
+                        .vendor("intel.com")
+                        .layer(1)
+                        .build())
+                    .measurementMap(MeasurementMap.builder()
+                        .version(MeasurementVersion.builder()
+                            .version("release-2023.28.1.1")
+                            .versionScheme("3")
+                            .build())
+                        .build())
+                    .build()))
                 .build())
             .build();
     }

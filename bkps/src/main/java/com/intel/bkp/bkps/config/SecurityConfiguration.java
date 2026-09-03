@@ -85,7 +85,7 @@ public class SecurityConfiguration {
         // @formatter:off
         http
             .cors(Customizer.withDefaults())
-            .csrf(csrf -> csrf.ignoringRequestMatchers(PATH.matcher("/h2-console/**")).disable())
+            .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**").disable())
             .exceptionHandling(cfg -> cfg.accessDeniedHandler(problemHandler).authenticationEntryPoint(problemHandler))
             .headers(cfg -> cfg.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
             .sessionManagement(cfg -> cfg.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

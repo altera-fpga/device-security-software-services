@@ -45,9 +45,7 @@ public class SpdmDiceAttestationComponent extends SpdmDiceAttestationComponentBa
 
     public SpdmDiceAttestationComponent(SpdmProtocol spdmProtocol) {
         super(spdmProtocol, new SpdmChainSearcher(spdmProtocol), new RimHandlersProvider(),
-            new RimUrlProvider(new DistributionPointAddressProvider(AppContext.instance().getDpPathRim())),
-            new RimUrlProvider(new DistributionPointAddressProvider(AppContext.instance().getDpPathRimV2())),
-            AppContext.instance().getDpConnector());
+            new RimUrlProvider(new DistributionPointAddressProvider(AppContext.instance().getDpPathCer())));
     }
 
     @Override

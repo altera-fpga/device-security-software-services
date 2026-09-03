@@ -75,8 +75,6 @@ class CacheCrlFetcherTest {
         applicationProperties.setDistributionPoint(new DistributionPoint(
             "https://tsci.intel.com/",
             "content/IPCS/certs/",
-            "content/IPCS/rims/",
-            "content/IPCS/rims_v2/",
             "content/IPCS/",
             null,
             null

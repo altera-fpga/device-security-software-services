@@ -45,7 +45,7 @@ class Commands:
         signing-key > upload (--id ID) (--single SINGLE_FILE) (--multi MULTI_FILE) | activate (--id ID)
         root-signing-key add (-i FILE | --input FILE)
         service-import-pub-key (get [-o FILE | --output FILE])
-        configuration > create | update (--id ID) (--interactive | --json (-i FILE | --input FILE)
+        configuration > create | update (--id ID)) (--interactive | --json (-i FILE | --input FILE)
         configuration > list | get (--id ID) | delete (--id ID)
         prefetch (--familyId FAMILY_ID) (--deviceId UID) [--pdi PDI] [--deviceIdErCert CERT_FILE]
         prefetch-status [--deviceId UID] [--familyId FAMILY_ID]
@@ -53,9 +53,6 @@ class Commands:
         communication > import [-i FILE | --input FILE] | list | delete [--id ALIAS]
         user > create [-i FILE | --input FILE] [-o FILE | --output FILE] | initial-create [-i FILE | --input FILE] [-o FILE | --output FILE]
         user > list | role-set [--id ID] [--role ROLE] | role-unset [--id ID] [--role ROLE] | delete [--id ID]
-        appraisal-policy > create | update (--id ID) (-i FILE | --input FILE)
-        appraisal-policy > list | get (--id ID) | delete (--id ID)
-        attestation-file > upload [-i ZIP_FILE | --input ZIP_FILE] | delete [--path PATH]
         """
 
     available_user_roles = 'ROLE_SUPER_ADMIN,ROLE_ADMIN,ROLE_PROGRAMMER,ROLE_VIEWER'
@@ -79,7 +76,7 @@ class Commands:
         --detailed    SLA version of health.
         -i FILE --input FILE    Input file path.
         -o FILE --output FILE    Output file path.
-        --id ID     Configuration/Appraisal Policy identifier
+        --id ID     Configuration identifier
         --pdi PDI   Platform identifier
         --deviceIdErCert CERT_FILE  Path to enrollment cert or PEM cert in plaintext\n\n    """.format(help_requests, available_user_roles)
 
@@ -105,9 +102,7 @@ class Commands:
         'communication',
         'user',
         'prefetch',
-        'prefetch-status',
-        'appraisal-policy',
-        'attestation-file'
+        'prefetch-status'
     ]
 
     runner_cfg = os.path.dirname(os.path.realpath(__file__)) + '/../runner-config.json'

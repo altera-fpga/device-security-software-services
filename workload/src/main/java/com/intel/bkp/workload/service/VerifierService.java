@@ -85,14 +85,12 @@ public class VerifierService {
     private int performGet(AppArgument appArgs, VerifierExchange verifierExchange) {
         final WorkloadFileReader fileReader = getFileReader();
         final String refMeasurementFilePath = appArgs.getRefMeasurement();
-        final String appraisalPolicyFilePath = appArgs.getAppraisalPolicy();
 
         verifyParam(refMeasurementFilePath != null
             && fileReader.exists(refMeasurementFilePath), INVALID_REF_MEASUREMENT);
 
         final VerifierExchangeResponseDTO result = verifierExchange.getDeviceAttestation(
-            appArgs.getTransportId(), fileReader.readFile(refMeasurementFilePath),
-            appraisalPolicyFilePath == null ? null : fileReader.readFileAsString(appraisalPolicyFilePath));
+            appArgs.getTransportId(), fileReader.readFile(refMeasurementFilePath));
         final int returnCode = result.getStatus();
         log.info("[WORKLOAD] Get device attestation result for deviceId {}: {}", result.getDeviceId(),
             returnCode);

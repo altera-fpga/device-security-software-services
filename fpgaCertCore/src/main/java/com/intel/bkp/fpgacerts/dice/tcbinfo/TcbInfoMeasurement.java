@@ -32,7 +32,6 @@
 
 package com.intel.bkp.fpgacerts.dice.tcbinfo;
 
-import com.intel.bkp.fpgacerts.appraisalpolicy.Policy;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -49,11 +48,6 @@ public class TcbInfoMeasurement {
     public TcbInfoMeasurement(TcbInfo tcbInfo) {
         key = TcbInfoKey.from(tcbInfo);
         value = TcbInfoValue.from(tcbInfo);
-    }
-
-    public TcbInfoMeasurement(Policy policy) {
-        key = TcbInfoKey.from(policy);
-        value = TcbInfoValue.from(policy);
     }
 
     public static List<TcbInfoMeasurement> asMeasurements(List<TcbInfo> tcbInfos) {

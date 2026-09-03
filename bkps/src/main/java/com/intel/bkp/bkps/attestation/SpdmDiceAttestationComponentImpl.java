@@ -32,7 +32,6 @@
 
 package com.intel.bkp.bkps.attestation;
 
-import com.intel.bkp.fpgacerts.dp.IDistributionPointConnector;
 import com.intel.bkp.fpgacerts.rim.IRimHandlersProvider;
 import com.intel.bkp.fpgacerts.rim.RimUrlProvider;
 import com.intel.bkp.fpgacerts.spdm.SpdmDiceAttestationComponentBase;
@@ -43,9 +42,8 @@ public class SpdmDiceAttestationComponentImpl extends SpdmDiceAttestationCompone
     private final boolean withMeasurementsSignatureVerification;
 
     public SpdmDiceAttestationComponentImpl(SpdmProtocol spdmProtocol, SpdmChainSearcher spdmChainSearcher,
-                                            IRimHandlersProvider rimHandlersProvider, RimUrlProvider rimUrlProvider,
-                                            RimUrlProvider newRimUrlProvider, IDistributionPointConnector dpConnector) {
-        super(spdmProtocol, spdmChainSearcher, rimHandlersProvider, rimUrlProvider, newRimUrlProvider, dpConnector);
+                                            IRimHandlersProvider rimHandlersProvider, RimUrlProvider rimUrlProvider) {
+        super(spdmProtocol, spdmChainSearcher, rimHandlersProvider, rimUrlProvider);
         this.withMeasurementsSignatureVerification = spdmProtocol.isMeasurementsRequestSignature();
     }
 

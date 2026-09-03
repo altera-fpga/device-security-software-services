@@ -32,7 +32,6 @@
 
 package com.intel.bkp.fpgacerts.dice.tcbinfo;
 
-import com.intel.bkp.fpgacerts.appraisalpolicy.Policy;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -60,16 +59,6 @@ public class TcbInfoKey {
     private TcbInfoKey(Integer layer) {
         this.layer = layer;
         this.vendor = TcbInfoConstants.VENDOR;
-    }
-
-    public static TcbInfoKey from(Policy policy) {
-        var builder = builder();
-        return Optional.ofNullable(policy.getEnvironment())
-                .map(env -> builder.type(env.getClassId())
-                                   .vendor(env.getVendor())
-                                   .layer(env.getLayer())
-                            .build())
-                .orElse(null);
     }
 
     public static TcbInfoKey from(MeasurementType measurementType) {

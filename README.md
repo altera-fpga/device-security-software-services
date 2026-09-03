@@ -30,13 +30,13 @@ Otherwise, default versions will be used.
 Refer to below table for more details on currently supported dependencies for build-dependencies.bat.
 
 | Name           | Supported Value | Download Source |
-|:------------------|:----------------|:------------------------------------------------------------------------------------------------------------------------------|
-| always_build              | 1               |
-| openssl.version              | 3.5.5           | https://github.com/openssl/openssl.git
-| libspdm.version              | 3.8.2           | https://github.com/DMTF/libspdm.git
-| libcurl.version              | 8.12.1          | https://curl.se
-| boost.version              | 1.84.0          | https://github.com/boostorg/boost/releases
-| gtest.version              | 1.14.0          | https://github.com/google/googletest.git
+|:------------------|:-----------|:------------------------------------------------------------------------------------------------------------------------------|
+| always_build              | 1 |
+| openssl.version              | 3.1.4 | https://github.com/openssl/openssl.git
+| libspdm.version              | 3.2.0 | https://github.com/DMTF/libspdm.git
+| libcurl.version              | 8.5.0 | https://curl.se
+| boost.version              | 1.84.0 | https://github.com/boostorg/boost/releases
+| gtest.version              | 1.14.0 | https://github.com/google/googletest.git
 
 Produced binaries can be found in ./out_windows folder.
 

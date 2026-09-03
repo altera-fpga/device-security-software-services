@@ -32,8 +32,6 @@
 
 package com.intel.bkp.fpgacerts.dice.tcbinfo;
 
-import com.intel.bkp.fpgacerts.appraisalpolicy.Measurement;
-import com.intel.bkp.fpgacerts.appraisalpolicy.Policy;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.vendorinfo.MaskedVendorInfo;
 import com.intel.bkp.fpgacerts.dice.tcbinfo.vendorinfo.MaskedVendorInfoFactory;
 import lombok.AllArgsConstructor;
@@ -74,16 +72,6 @@ public class TcbInfoValue {
     private Optional<MaskedVendorInfo> maskedVendorInfo = Optional.empty();
     @Builder.Default
     private Optional<String> flags = Optional.empty();
-
-    public static TcbInfoValue from(Policy policy) {
-        var builder = builder();
-        return Optional.ofNullable(policy.getElementList())
-                .map(elementList -> elementList.get(0))
-                .map(Measurement::getVersion)
-                .map(version -> builder.version(Optional.ofNullable(version))
-                                .build())
-                .orElse(null);
-    }
 
     public static TcbInfoValue from(TcbInfo tcbInfo) {
         return TcbInfoValue.builder()

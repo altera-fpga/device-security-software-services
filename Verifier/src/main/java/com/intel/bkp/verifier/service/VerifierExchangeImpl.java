@@ -92,7 +92,7 @@ public class VerifierExchangeImpl implements VerifierExchange {
     }
 
     @Override
-    public VerifierExchangeResponseDTO getDeviceAttestation(String transportId, String refMeasurementHex, String appraisalPolicy) {
+    public VerifierExchangeResponseDTO getDeviceAttestation(String transportId, String refMeasurementHex) {
         var attestationResult = new VerifierExchangeResponseDTO(ERROR.getCode(), "");
 
         try (AppContext appContext = AppContext.instance()) {
@@ -101,7 +101,7 @@ public class VerifierExchangeImpl implements VerifierExchange {
 
             try {
                 transportLayer.initialize(transportId);
-                attestationResult = getProtocol().getAttestationInternal(refMeasurementHex, appraisalPolicy);
+                attestationResult = getProtocol().getAttestationInternal(refMeasurementHex);
             } catch (Exception e) {
                 log.error("Device attestation failed: {}", e.getMessage());
                 log.debug("Stacktrace: ", e);

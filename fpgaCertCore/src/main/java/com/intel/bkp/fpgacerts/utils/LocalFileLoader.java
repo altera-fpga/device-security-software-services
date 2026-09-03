@@ -44,9 +44,7 @@ public class LocalFileLoader {
 
     public static Optional<byte[]> load(URI uri) {
         try {
-            Path path = Path.of(
-                uri.getAuthority() == null ? uri.getPath() : uri.getAuthority() + uri.getPath()
-            );
+            Path path = toFilesystemPath(uri);
 
             if (!Files.exists(path) || Files.isDirectory(path)) {
                 log.error("Failed to read local file: {}. File does not exist or is directory.", uri);
@@ -59,5 +57,13 @@ public class LocalFileLoader {
             log.debug("Stacktrace: ", e);
             return Optional.empty();
         }
+    }
+
+    private static Path toFilesystemPath(URI uri) {
+        final String authority = uri.getAuthority();
+        if (authority == null || authority.isEmpty()) {
+            return Path.of(uri);
+        }
+        return Path.of(authority + uri.getPath());
     }
 }

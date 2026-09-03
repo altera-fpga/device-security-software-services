@@ -51,9 +51,6 @@ Usage:
   runner.py communication (import [-i FILE | --input FILE] | list | delete [--id ALIAS])
   runner.py user (create [-i FILE | --input FILE] [-o FILE | --output FILE] | initial-create (--token TOKEN) [-i FILE | --input FILE] [-o FILE | --output FILE])
   runner.py user (list | role-set [--id ID] [--role ROLE] | role-unset [--id ID] [--role ROLE] | delete [--id ID])
-  runner.py appraisal-policy (create | update (--id ID)) (-i FILE | --input FILE)
-  runner.py appraisal-policy (list | get (--id ID) | delete (--id ID))
-  runner.py attestation-file (upload [-i ZIP_FILE | --input ZIP_FILE] | delete [--path PATH])
   runner.py (-h | --help)
   runner.py --version
   runner.py
@@ -62,7 +59,6 @@ Arguments:
   ROLE   user role from available [ROLE_SUPER_ADMIN, ROLE_ADMIN, ROLE_PROGRAMMER, ROLE_VIEWER]
   ID     signing key id or configuration id or user id
   FILE   path to file
-  ZIP_FILE    Zip file that contains the file to upload to the BKPS prefetch table, CERT|CRL|CORIM
   TOKEN  Token for creating initial user.
   QUERY  query parameters (inside double quotes if using '&' to specify multiple params, e.g. "page=0&size=50&sort=id,desc")
   SINGLE_FILE    path to single root customer certificate chain in QKY format (S10)
@@ -70,8 +66,7 @@ Arguments:
   FAMILY_ID     device family identifier (as hex, eg. 0x32, 0x34, 0x35)
   UID           hex encoded device id (eg. 0102030405060708)
   PDI           hex encoded platform device identifier (exists since SM)
-  CERT_FILE     path to enrollment deviceID certificate in PEM format or PEM in plaintext
-  PATH          path on BKPS prefetch table to be deleted\n
+  CERT_FILE     path to enrollment deviceID certificate in PEM format or PEM in plaintext\n
 
 Options:
   -h --help                 Show this screen.

@@ -39,6 +39,7 @@ import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
 
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -118,6 +119,16 @@ public class FileUtils {
         assert fileUrl != null : "File in resources is not found: %s".formatted(fullFilePath);
 
         return fileUrl.getPath();
+    }
+
+    @SneakyThrows
+    public static URI getUriFromResources(String pathToFolderInResources, String filename) {
+        final String fullFilePath = PathUtils.buildPath(pathToFolderInResources, filename);
+        final URL fileUrl = Thread.currentThread().getContextClassLoader().getResource(fullFilePath);
+
+        assert fileUrl != null : "File in resources is not found: %s".formatted(fullFilePath);
+
+        return fileUrl.toURI();
     }
 
     public static String readFromResourcesAsString(String pathToFolderInResources, String filename) throws Exception {

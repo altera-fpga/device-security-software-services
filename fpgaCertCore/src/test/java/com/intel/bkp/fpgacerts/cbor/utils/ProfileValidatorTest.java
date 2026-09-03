@@ -69,6 +69,14 @@ class ProfileValidatorTest {
     @Test
     void verify_WithEmptyProfile_ThrowsException() {
         // when-then
-        assertDoesNotThrow(() -> ProfileValidator.verify(List.of()));
+        final var ex = assertThrows(RimVerificationException.class,
+            () -> ProfileValidator.verify(List.of()));
+
+        // then
+        final String expected = """
+            CoRIM verification failed:\s
+            Detected unsupported profile: NONE.
+            Supported profile: 2.16.840.1.113741.1.15.6 (6086480186F84D010F06)""";
+        assertEquals(expected.replaceAll("\r", "").replaceAll("\n", ""), ex.getMessage().replaceAll("\r", "").replaceAll("\n", ""));
     }
 }

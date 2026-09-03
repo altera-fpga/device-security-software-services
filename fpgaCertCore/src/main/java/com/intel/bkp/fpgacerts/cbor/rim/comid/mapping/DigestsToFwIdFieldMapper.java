@@ -65,13 +65,9 @@ public class DigestsToFwIdFieldMapper {
         );
     }
 
-    public static int getAlgorithmId(HashAlgorithmRegistry hashAlgorithmRegistry) {
-        return hashAlgorithmRegistry.getId();
-    }
-
     @Getter(value = AccessLevel.PACKAGE)
     @RequiredArgsConstructor
-    public enum HashAlgorithmRegistry {
+    enum HashAlgorithmRegistry {
         SHA256(1, NISTObjectIdentifiers.id_sha256.getId()),
         SHA384(7, NISTObjectIdentifiers.id_sha384.getId()),
         SHA512(8, NISTObjectIdentifiers.id_sha512.getId());
@@ -79,21 +75,12 @@ public class DigestsToFwIdFieldMapper {
         private final int id;
         private final String oid;
 
-        public static String getOidById(int id) {
+        static String getOidById(int id) {
             return Arrays.stream(values())
                 .filter(alg -> alg.id == id)
                 .map(alg -> alg.oid)
                 .findFirst()
                 .orElseThrow(() -> FwidHashAlgNotSupported.fromHashAlgId(id));
-        }
-
-        public static int getIdByOid(String oid) {
-            return Arrays.stream(values())
-                .filter(alg -> alg.oid.equals(oid))
-                .map(alg -> alg.id)
-                .findFirst()
-                .orElseThrow(() -> FwidHashAlgNotSupported.fromHashAlgOid(oid))
-                .intValue();
         }
     }
 }

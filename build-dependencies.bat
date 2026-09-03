@@ -30,7 +30,7 @@ for /f "delims=" %%x in (config.txt) do (
 :: Two batch files are needed and both live in the same
 :: VC\Auxiliary\Build\ directory of any given VS install:
 ::   * vcvarsamd64_x86.bat  (x64-hosted cross-compiler targeting x86)
-::   * vcvarsall.bat		(parametric entry point; called with "x64")
+::   * vcvarsall.bat        (parametric entry point; called with "x64")
 :: ---------------------------------------------------------------------------
 set "VCVARS_BAT="
 set "VCVARS_X86_BAT="
@@ -38,7 +38,7 @@ set "CMAKE_EXE="
 set "NMAKE_EXE="
 
 if not defined BUILD_VERSION (
-	set "BUILD_VERSION=1.0.0"
+    set "BUILD_VERSION=1.0.0"
 )
 
 if defined VS_BUILD_DIR (
@@ -61,53 +61,53 @@ if errorlevel 1 (
 
 :: Check if vcvarsall.bat has been loaded
 if "%VisualStudioVersion%"=="" (
-	echo Error: vcvarsall.bat has not been loaded. Please run this script in a developer command prompt.
-	exit /b 1
+    echo Error: vcvarsall.bat has not been loaded. Please run this script in a developer command prompt.
+    exit /b 1
 )
 
 :: Map Visual Studio versions to CMake Generator version
 set "CMAKE_VS_ARCH=-A x64"
 if "%VisualStudioVersion%"=="18.0" (
-	set "CMAKE_VS_GENERATOR=Visual Studio 18 2026"
+    set "CMAKE_VS_GENERATOR=Visual Studio 18 2026"
 ) else if "%VisualStudioVersion%"=="17.0" (
-	set "CMAKE_VS_GENERATOR=Visual Studio 17 2022"
+    set "CMAKE_VS_GENERATOR=Visual Studio 17 2022"
 ) else if "%VisualStudioVersion%"=="16.0" (
-	set "CMAKE_VS_GENERATOR=Visual Studio 16 2019"
+    set "CMAKE_VS_GENERATOR=Visual Studio 16 2019"
 ) else if "%VisualStudioVersion%"=="15.0" (
-	set "CMAKE_VS_GENERATOR=Visual Studio 15 2017 Win64"
-	set "CMAKE_VS_ARCH="
+    set "CMAKE_VS_GENERATOR=Visual Studio 15 2017 Win64"
+    set "CMAKE_VS_ARCH="
 ) else (
-	 :: Generic guess for older or future generators
-	 set "CMAKE_VS_GENERATOR=Visual Studio %VisualStudioVersion%"
+     :: Generic guess for older or future generators
+     set "CMAKE_VS_GENERATOR=Visual Studio %VisualStudioVersion%"
  )
 
  :: Auto detect toolset used as a visual studio version can have non-unique toolset
  for /f "tokens=1,2 delims=." %%A in ("%VCToolsVersion%") do (
  	set "_minor=%%B"
 
-	:: Enable local environment manipulation to slice the string safely
-	setlocal enabledelayedexpansion
-	set "_first_minor=!_minor:~0,1!"
+    :: Enable local environment manipulation to slice the string safely
+    setlocal enabledelayedexpansion
+    set "_first_minor=!_minor:~0,1!"
 
-	:: Pass the variables cleanly past the endlocal boundary
-	for /f "tokens=1,2" %%X in ("!_first_minor! %%A") do (
-		endlocal
-		set "BOOST_TOOLSET=vc%%Y%%X"
-		set "BOOST_B2_TOOLSET=msvc-%%Y.%%X"
-		set "CMAKE_VS_TOOLSET=v%%Y%%X"
-	)
+    :: Pass the variables cleanly past the endlocal boundary
+    for /f "tokens=1,2" %%X in ("!_first_minor! %%A") do (
+        endlocal
+        set "BOOST_TOOLSET=vc%%Y%%X"
+        set "BOOST_B2_TOOLSET=msvc-%%Y.%%X"
+        set "CMAKE_VS_TOOLSET=v%%Y%%X"
+    )
  )
 
 echo ===================================================
 echo MSVC Full Toolset Version:  %VCToolsVersion%
 echo Visual Studio IDE Version:  %VSCMD_VER%
-echo Target Architecture:		%VSCMD_ARG_TGT_ARCH%
-echo Windows SDK Version:		%WindowsSDKVersion%
-echo BOOST_TOOLSET			   %BOOST_TOOLSET%
-echo BOOST_B2_TOOLSET			%BOOST_B2_TOOLSET%
-echo CMAKE_VS_GENERATOR		  %CMAKE_VS_GENERATOR%
-echo CMAKE_VS_TOOLSET			%CMAKE_VS_TOOLSET%
-echo CMake generator			 %CMAKE_VS_GENERATOR%  %CMAKE_VS_ARCH%  (toolset %CMAKE_VS_TOOLSET%)
+echo Target Architecture:        %VSCMD_ARG_TGT_ARCH%
+echo Windows SDK Version:        %WindowsSDKVersion%
+echo BOOST_TOOLSET               %BOOST_TOOLSET%
+echo BOOST_B2_TOOLSET            %BOOST_B2_TOOLSET%
+echo CMAKE_VS_GENERATOR          %CMAKE_VS_GENERATOR%
+echo CMAKE_VS_TOOLSET            %CMAKE_VS_TOOLSET%
+echo CMake generator             %CMAKE_VS_GENERATOR%  %CMAKE_VS_ARCH%  (toolset %CMAKE_VS_TOOLSET%)
 echo ===================================================
 
 set "VS_INSTALL_ROOT=!VS_BUILD_DIR!\..\..\.."
@@ -132,10 +132,10 @@ if not exist "!NMAKE_EXE!" (
 if not defined NMAKE_EXE goto :probe_nmake_exe
 
 echo [vcvars] VS install root  : %VS_INSTALL_ROOT%
-echo [vcvars] cmake.exe		: %CMAKE_EXE%
-echo [vcvars] nmake.exe		: %NMAKE_EXE%
+echo [vcvars] cmake.exe        : %CMAKE_EXE%
+echo [vcvars] nmake.exe        : %NMAKE_EXE%
 echo [vcvars] Build scripts dir : %VS_BUILD_DIR%
-echo [vcvars] vcvarsall.bat	 : %VCVARS_BAT%
+echo [vcvars] vcvarsall.bat     : %VCVARS_BAT%
 echo [vcvars] vcvarsamd64_x86.bat: %VCVARS_X86_BAT%
 
 if not exist "%dependencies_dir%" mkdir "%dependencies_dir%"
@@ -199,9 +199,9 @@ If Defined libspdm.version (
 		cd build
 		set "custom_defines=-DLIBSPDM_MAX_MESSAGE_BUFFER_SIZE=20000 -DLIBSPDM_MAX_CERT_CHAIN_BLOCK_LEN=15000 -DLIBSPDM_MAX_CERT_CHAIN_SIZE=18000 -DLIBSPDM_MAX_MEASUREMENT_RECORD_SIZE=15000"
 		set "algorithms_enabled=-DLIBSPDM_RECORD_TRANSCRIPT_DATA_SUPPORT=1"
-		set "algorithms_disabled=-DLIBSPDM_ENABLE_CAPABILITY_CHUNK_CAP=0 -DLIBSPDM_ENABLE_CAPABILITY_CSR_CAP=0 -DLIBSPDM_ENABLE_CAPABILITY_HBEAT_CAP=0 -DLIBSPDM_ENABLE_CAPABILITY_PSK_CAP=0 -DLIBSPDM_ENABLE_CAPABILITY_CHAL_CAP=0 -DLIBSPDM_ENABLE_CAPABILITY_ENDPOINT_INFO_CAP=0"
+        set "algorithms_disabled=-DLIBSPDM_ENABLE_CAPABILITY_CHUNK_CAP=0 -DLIBSPDM_ENABLE_CAPABILITY_CSR_CAP=0 -DLIBSPDM_ENABLE_CAPABILITY_HBEAT_CAP=0 -DLIBSPDM_ENABLE_CAPABILITY_PSK_CAP=0 -DLIBSPDM_ENABLE_CAPABILITY_CHAL_CAP=0"
 		set openssl_include_dir="%dependencies_dir%\openssl_%openssl.version%_windows_x64\include"
-		"%CMAKE_EXE%" -G"NMake Makefiles" -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DARCH=x64 -DTOOLCHAIN=VS2015 -DTARGET=Release -DDISABLE_TESTS=1 -DCRYPTO=openssl -DCMAKE_C_FLAGS="!custom_defines! !algorithms_enabled! !algorithms_disabled! -I!openssl_include_dir! /GL- /wd4565" -DENABLE_BINARY_BUILD=1 -DCOMPILED_LIBCRYPTO_PATH="%current_dir%\openssl_%openssl.version%_windows_x64\lib_static\libcrypto_static.lib" -DCOMPILED_LIBSSL_PATH="%current_dir%\openssl_%openssl.version%_windows_x64\lib_static\libssl_static.lib" ..
+		"%CMAKE_EXE%" -G"NMake Makefiles" -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DARCH=x64 -DTOOLCHAIN=VS2015 -DTARGET=Release -DDISABLE_TESTS=1 -DCRYPTO=openssl -DCMAKE_C_FLAGS="!custom_defines! !algorithms_enabled! !algorithms_disabled! -I!openssl_include_dir!" -DENABLE_BINARY_BUILD=1 -DCOMPILED_LIBCRYPTO_PATH="%current_dir%\openssl_%openssl.version%_windows_x64\lib_static\libcrypto_static.lib" -DCOMPILED_LIBSSL_PATH="%current_dir%\openssl_%openssl.version%_windows_x64\lib_static\libssl_static.lib" ..
 		"%NMAKE_EXE%"
 		cd "%dependencies_dir%"
 		xcopy libspdm\include libspdm_%libspdm.version%_windows_x64\include /E /Y /I || exit /b 1
@@ -227,30 +227,12 @@ If Defined libcurl.version (
 		@RD /S /Q curl-%libcurl.version%
 		@RD /S /Q libcurl_%libcurl.version%_windows_x64
 		If not exist "openssl" goto build_openssl
-		curl --ssl-no-revoke https://curl.se/download/curl-%libcurl.version%.tar.gz --output curl-%libcurl.version%.tar.gz
+		curl https://curl.se/download/curl-%libcurl.version%.tar.gz --output curl-%libcurl.version%.tar.gz
 		tar -xzf curl-%libcurl.version%.tar.gz
-		cd curl-%libcurl.version%
-		mkdir build
-		cd build
-		cmake -G "NMake Makefiles" ^
-			-DCMAKE_BUILD_TYPE=Release ^
-			-DBUILD_SHARED_LIBS=ON ^
-			-DBUILD_CURL_EXE=OFF ^
-			-DENABLE_MANUAL=OFF ^
-			-DBUILD_LIBCURL_DOCS=OFF ^
-			-DBUILD_MISC_DOCS=OFF ^
-			-DCURL_USE_OPENSSL=ON ^
-			-DOPENSSL_ROOT_DIR=%dependencies_dir%\openssl_%openssl.version%_windows_x64 ^
-			-DCURL_USE_SCHANNEL=OFF ^
-			-DENABLE_IPV6=ON ^
-			-DCURL_USE_LIBPSL=OFF ^
-			-DCMAKE_INSTALL_PREFIX=%dependencies_dir%\libcurl_%libcurl.version%_windows_x64 ^
-			..
-		cmake --build . --config Release
-		cmake --install . --config Release
-		if exist %dependencies_dir%\libcurl_%libcurl.version%_windows_x64\bin\libcurl.dll xcopy /Y %dependencies_dir%\libcurl_%libcurl.version%_windows_x64\bin\libcurl.dll %dependencies_dir%\libcurl_%libcurl.version%_windows_x64\lib\
-		if exist %dependencies_dir%\libcurl_%libcurl.version%_windows_x64\lib\libcurl_imp.lib copy /Y %dependencies_dir%\libcurl_%libcurl.version%_windows_x64\lib\libcurl_imp.lib %dependencies_dir%\libcurl_%libcurl.version%_windows_x64\lib\libcurl.lib
+		cd curl-%libcurl.version%\winbuild
+		"%NMAKE_EXE%" /f Makefile.vc mode=dll WITH_SSL=dll ENABLE_SCHANNEL=no DEBUG=no GEN_PDB=no MACHINE=x64 WITH_DEVEL=../../openssl_%openssl.version%_windows_x64
 		cd "%dependencies_dir%"
+		xcopy curl-%libcurl.version%\builds\libcurl-vc-x64-release-dll-ssl-dll-ipv6-sspi libcurl_%libcurl.version%_windows_x64\ /E /Y /I || exit /b 1
 		powershell Compress-Archive -Path libcurl_%libcurl.version%_windows_x64\* -DestinationPath libcurl-%libcurl.version%-windows-x64.zip
 		set libcurl_exists=1
 	)
@@ -258,7 +240,7 @@ If Defined libcurl.version (
 
 :: ====== boost ======
 If Defined boost.version (
-	If exist boost_%boost.version%_windows_x64 (
+    If exist boost_%boost.version%_windows_x64 (
 		If Defined always_build (
 			set boost_exists=0
 		) else (
@@ -269,7 +251,7 @@ If Defined boost.version (
 		echo building boost...
 		@RD /S /Q boost-%boost.version%
 		@RD /S /Q boost_%boost.version%_windows_x64
-		curl -L --ssl-no-revoke https://github.com/boostorg/boost/releases/download/boost-%boost.version%/boost-%boost.version%.tar.gz --output boost_%boost.version%.tar.gz
+		curl -L https://github.com/boostorg/boost/releases/download/boost-%boost.version%/boost-%boost.version%.tar.gz --output boost_%boost.version%.tar.gz
 		tar -xzf boost_%boost.version%.tar.gz
 		cd boost-%boost.version%
 		cmd /c .\bootstrap.bat %BOOST_TOOLSET%
@@ -285,7 +267,7 @@ If Defined boost.version (
 )
 
 If Defined gtest.version (
-	If exist googletest_%gtest.version%_windows_x64 (
+    If exist googletest_%gtest.version%_windows_x64 (
 		If Defined always_build (
 			set gtest_exists=0
 		) else (
@@ -359,36 +341,36 @@ call gradlew.bat -Pprod -Paws -Pversion=%BUILD_VERSION% -Dversion=%BUILD_VERSION
 ::Copy result files
 :: -----------------------------------------------------------------
 ::   out\
-::	   Verifier-<ver>.jar
-::	   workload-<ver>.jar
-::	   bkps-<ver>.jar
-::	   bkps-<ver>.sql
-::	   config.properties
-::	   spdm_wrapper\wrapper\libspdm_wrapper.dll
-::	   bkpprogrammer\
-::		   <other bkpprogrammer runtime DLLs>
+::       Verifier-<ver>.jar
+::       workload-<ver>.jar
+::       bkps-<ver>.jar
+::       bkps-<ver>.sql
+::       config.properties
+::       spdm_wrapper\wrapper\libspdm_wrapper.dll
+::       bkpprogrammer\
+::           <other bkpprogrammer runtime DLLs>
 :: -----------------------------------------------------------------
 @RD /S /Q "%output_dir%"
 mkdir "%output_dir%"
 
 :: --- Java artifacts (jars): flatten into %output_dir% ----------------
-call xcopy bkps\build\libs\*.jar							"%output_dir%" /E /Y /I || exit /b 1
-call xcopy Verifier\build\libs\*.jar						"%output_dir%" /E /Y /I || exit /b 1
-call xcopy workload\build\libs\*.jar						"%output_dir%" /E /Y /I || exit /b 1
+call xcopy bkps\build\libs\*.jar                            "%output_dir%" /E /Y /I || exit /b 1
+call xcopy Verifier\build\libs\*.jar                        "%output_dir%" /E /Y /I || exit /b 1
+call xcopy workload\build\libs\*.jar                        "%output_dir%" /E /Y /I || exit /b 1
 
 :: --- SQL schema: flatten into %output_dir% ---------------------------
-call xcopy bkps\*.sql						   "%output_dir%" /E /Y /I || exit /b 1
+call xcopy bkps\*.sql                           "%output_dir%" /E /Y /I || exit /b 1
 
 :: --- Verifier runtime config.properties ------------------------------
-call xcopy Verifier\src\main\resources\config.properties				"%output_dir%" /E /Y /I || exit /b 1
+call xcopy Verifier\src\main\resources\config.properties                "%output_dir%" /E /Y /I || exit /b 1
 
 :: --- SPDM wrapper native library ----
 if not exist "%output_dir%\spdm_wrapper\wrapper" mkdir "%output_dir%\spdm_wrapper\wrapper"
-call xcopy spdm_wrapper\build\wrapper\Release\*.dll		 "%output_dir%\spdm_wrapper\wrapper" /E /Y /I || exit /b 1
+call xcopy spdm_wrapper\build\wrapper\Release\*.dll         "%output_dir%\spdm_wrapper\wrapper" /E /Y /I || exit /b 1
 
 :: --- BKPS Programmer native artifacts ------
 if not exist "%output_dir%\bkpprogrammer" mkdir "%output_dir%\bkpprogrammer"
-call xcopy bkpprogrammer\build\Release\*.dll				"%output_dir%\bkpprogrammer" /E /Y /I || exit /b 1
+call xcopy bkpprogrammer\build\Release\*.dll                "%output_dir%\bkpprogrammer" /E /Y /I || exit /b 1
 
 echo.
 echo ============================================================
@@ -412,25 +394,25 @@ set "_tmp=!_tmp:"=!"
 set "%~1=!_tmp!"
 set "_tmp="
 if not defined %~1 (
-	echo		 [warn] Empty input is not allowed. Please enter a value.
+	echo         [warn] Empty input is not allowed. Please enter a value.
 	goto :_prompt_nonempty_loop
 )
 exit /b 0
 
 :_prompt_vs_script_path
 echo [vcvars] Visual Studio was not found automatically.
-echo		 Enter the full parent path to %~2 and %~3,
-echo		 e.g. "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build"
-echo		 Tip: set %~1=... in your environment to skip this prompt next time.
+echo         Enter the full parent path to %~2 and %~3,
+echo         e.g. "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build"
+echo         Tip: set %~1=... in your environment to skip this prompt next time.
 call :_prompt_nonempty %~1 "%~2 and %~3 path: "
 exit /b 0
 
 :_prompt_tool_exe
 echo [vcvars] WARNING: VS-bundled %~2 not found at:
-echo		 !%~1!
-echo		 Install the "%~3" component in the
-echo		 Visual Studio Installer to bundle %~2 with your VS install.
-echo		 Enter the full path that contains %~2
+echo         !%~1!
+echo         Install the "%~3" component in the
+echo         Visual Studio Installer to bundle %~2 with your VS install.
+echo         Enter the full path that contains %~2
 call :_prompt_nonempty %~1 "%~2 path: "
 exit /b 0
 

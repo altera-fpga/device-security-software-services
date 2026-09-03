@@ -34,6 +34,7 @@ package com.intel.bkp.bkps.security;
 
 import com.intel.bkp.bkps.config.TrustStoreProperties;
 import com.intel.bkp.core.interfaces.ICustomKeyStore;
+import org.apache.commons.lang3.SystemUtils;
 import org.springframework.stereotype.Service;
 
 import javax.net.ssl.TrustManagerFactory;
@@ -85,10 +86,12 @@ public class KeyStoreWrapper implements ICustomKeyStore {
     public void store() throws IOException, CertificateException, KeyStoreException, NoSuchAlgorithmException {
         try (OutputStream outputStream = this.trustStoreProperties.getLocation().getOutputStream()) {
             this.keyStore.store(outputStream, this.trustStoreProperties.getPassword().toCharArray());
-            Set<PosixFilePermission> permissions = Stream
-                .of(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE)
-                .collect(Collectors.toSet());
-            Files.setPosixFilePermissions(Path.of(this.trustStoreProperties.getLocation().getPath()), permissions);
+            if (!SystemUtils.IS_OS_WINDOWS) {
+                Set<PosixFilePermission> permissions = Stream
+                    .of(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE)
+                    .collect(Collectors.toSet());
+                Files.setPosixFilePermissions(Path.of(this.trustStoreProperties.getLocation().getPath()), permissions);
+            }
         }
     }
 

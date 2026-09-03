@@ -50,9 +50,7 @@ public class ProfileValidator {
     public static final String EXPECTED_PROFILE = "6086480186F84D010F06"; // oid: 2.16.840.1.113741.1.15.6
 
     public static void verify(List<String> profiles) {
-        if (profiles != null
-            && !profiles.isEmpty()
-            && isUnsupportedProfile(profiles)) {
+        if (isUnsupportedProfile(profiles)) {
             final String actualProfiles = describeActualProfiles(profiles);
             final String expectedProfile = describeExpectedProfile();
             throw new RimVerificationException("%nDetected unsupported profile: %s.%nSupported profile: %s"
@@ -77,7 +75,7 @@ public class ProfileValidator {
     }
 
     private static boolean isUnsupportedProfile(List<String> profiles) {
-        return !profiles.contains(EXPECTED_PROFILE);
+        return profiles.isEmpty() || !profiles.contains(EXPECTED_PROFILE);
     }
 
     private static String describe(String profile) {

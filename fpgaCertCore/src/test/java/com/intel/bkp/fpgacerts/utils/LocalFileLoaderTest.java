@@ -63,10 +63,10 @@ class LocalFileLoaderTest {
     @Test
     void load_WithExistingFile_ReturnsContent() {
         // given
-        final String existing = "file://" + FileUtils.getPathFromResources(TEST_FOLDER, "fw_rim_signed.rim");
+        final URI existing = FileUtils.getUriFromResources(TEST_FOLDER, "fw_rim_signed.rim");
 
         // when
-        final Optional<byte[]> response = LocalFileLoader.load(toUri(existing));
+        final Optional<byte[]> response = LocalFileLoader.load(existing);
 
         // then
         assertNotEquals(Optional.empty(), response);

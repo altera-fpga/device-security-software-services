@@ -44,10 +44,8 @@ import com.intel.bkp.bkps.domain.enumeration.SealingKeyStatus;
 import com.intel.bkp.bkps.repository.SealingKeyRepository;
 import com.intel.bkp.bkps.repository.ServiceConfigurationRepository;
 import com.intel.bkp.bkps.rest.RestUtil;
-import com.intel.bkp.bkps.rest.configuration.model.dto.AppraisalPolicyDTO;
 import com.intel.bkp.bkps.rest.configuration.model.dto.ServiceConfigurationDTO;
 import com.intel.bkp.bkps.rest.configuration.model.mapper.ServiceConfigurationMapper;
-import com.intel.bkp.bkps.rest.configuration.service.AppraisalPolicyService;
 import com.intel.bkp.bkps.rest.configuration.service.ServiceConfigurationService;
 import com.intel.bkp.bkps.rest.errors.ApplicationExceptionHandler;
 import com.intel.bkp.bkps.testutils.TestHelper;
@@ -57,7 +55,6 @@ import com.intel.bkp.core.psgcertificate.enumerations.StorageType;
 import com.intel.bkp.core.security.ISecurityProvider;
 import com.intel.bkp.crypto.aesctr.AesCtrQekIvProvider;
 import com.intel.bkp.crypto.constants.SecurityKeyType;
-import com.intel.bkp.test.FileUtils;
 import com.intel.bkp.test.enumeration.ResourceDir;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
@@ -82,13 +79,11 @@ import static com.intel.bkp.bkps.rest.RestUtil.createFormattingConversionService
 import static com.intel.bkp.bkps.rest.configuration.ConfigurationResource.CONFIGURATION;
 import static com.intel.bkp.bkps.rest.configuration.ConfigurationResource.CONFIGURATION_DETAIL;
 import static com.intel.bkp.bkps.rest.configuration.ConfigurationResource.CONFIG_NODE;
-import static com.intel.bkp.test.FileUtils.TEST_FOLDER;
 import static com.intel.bkp.test.FileUtils.loadBinary;
 import static com.intel.bkp.test.FileUtils.loadFile;
 import static com.intel.bkp.utils.HexConverter.fromHex;
 import static com.intel.bkp.utils.HexConverter.toHex;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -108,7 +103,6 @@ public class AesCtrEncryptionKeyTest {
     private static final StorageType STORAGE_TYPE = StorageType.PUFSS;
     private static final String SEALING_KEYNAME = "SealingKey";
     private static String ENCRYPTION_KEY;
-    private Qek qek;
 
     @Autowired
     private SealingKeyRepository sealingKeyRepository;
@@ -143,9 +137,6 @@ public class AesCtrEncryptionKeyTest {
     @Autowired
     private EntityManager em;
 
-    @Autowired
-    private AppraisalPolicyService appraisalPolicyService;
-
     private MockMvc restMockMvc;
 
     private ServiceConfiguration serviceConfiguration;
@@ -170,7 +161,7 @@ public class AesCtrEncryptionKeyTest {
             .setConversionService(createFormattingConversionService())
             .setMessageConverters(jacksonMessageConverter).build();
 
-        qek = new Qek();
+        Qek qek = new Qek();
         qek.setKeyName(TestHelper.DEFAULT_KEY_NAME);
         qekContent = loadBinary(ResourceDir.ROOT, "aes_testmode1.qek");
         qek.setValue(toHex(qekContent));
@@ -215,8 +206,6 @@ public class AesCtrEncryptionKeyTest {
             .andExpect(jsonPath("$.pufType").value(PUF_TYPE.toString()))
             .andExpect(jsonPath("$.overbuild.max").value(1))
             .andExpect(jsonPath("$.overbuild.currentValue").value(2))
-            .andExpect(jsonPath("$.autoFetchFirmwareCorim").value(true))
-            .andExpect(jsonPath("$.appraisalPolicyId").value(0L))
             .andExpect(jsonPath("$.confidentialData.importMode").value(ImportMode.PLAINTEXT.toString()))
             .andExpect(jsonPath("$.confidentialData.aesKey.storage").value(STORAGE_TYPE.toString()))
             .andExpect(jsonPath("$.confidentialData.aesKey.keyWrappingType").value(KEY_WRAPPING_TYPE.name()))
@@ -252,8 +241,6 @@ public class AesCtrEncryptionKeyTest {
         assertEquals(TestHelper.DEFAULT_NAME, testServiceConfiguration.getName());
         assertEquals(PufType.EFUSE, testServiceConfiguration.getPufType());
         assertEquals(DEFAULT_OVERBUILD_MAX, testServiceConfiguration.getOverbuildMax());
-        assertTrue(testServiceConfiguration.isAutoFetchFirmwareCorim());
-        assertEquals(0L, testServiceConfiguration.getAppraisalPolicyId());
 
         final AesKey aesKey = testServiceConfiguration.getConfidentialData().getAesKey();
         assertEquals(StorageType.EFUSES, aesKey.getStorage());
@@ -290,8 +277,6 @@ public class AesCtrEncryptionKeyTest {
         assertEquals(TestHelper.DEFAULT_NAME, testServiceConfiguration.getName());
         assertEquals(PUF_TYPE, testServiceConfiguration.getPufType());
         assertEquals(DEFAULT_OVERBUILD_MAX, testServiceConfiguration.getOverbuildMax());
-        assertTrue(testServiceConfiguration.isAutoFetchFirmwareCorim());
-        assertEquals(0L, testServiceConfiguration.getAppraisalPolicyId());
 
         final AesKey aesKey = testServiceConfiguration.getConfidentialData().getAesKey();
         assertEquals(STORAGE_TYPE, aesKey.getStorage());
@@ -327,8 +312,6 @@ public class AesCtrEncryptionKeyTest {
         assertEquals(TestHelper.DEFAULT_NAME, testServiceConfiguration.getName());
         assertEquals(PUF_TYPE, testServiceConfiguration.getPufType());
         assertEquals(DEFAULT_OVERBUILD_MAX, testServiceConfiguration.getOverbuildMax());
-        assertTrue(testServiceConfiguration.isAutoFetchFirmwareCorim());
-        assertEquals(0L, testServiceConfiguration.getAppraisalPolicyId());
 
         final AesKey aesKey = testServiceConfiguration.getConfidentialData().getAesKey();
         assertEquals(STORAGE_TYPE, aesKey.getStorage());
@@ -359,68 +342,6 @@ public class AesCtrEncryptionKeyTest {
                     .andExpect(status().isInternalServerError())
                     .andReturn();
         assertEquals("QEK encryption key with key alias name (%s) does not exist in BKPS HSM".formatted(wrongKeyName), result.getResolvedException().getCause().getMessage());
-
-        // Validate the ServiceConfiguration in the database
-        List<ServiceConfiguration> serviceConfigurationList = serviceConfigurationRepository.findAll();
-        assertEquals(databaseSizeBeforeCreate, serviceConfigurationList.size());
-    }
-
-    @Test
-    @Transactional
-    public void createServiceConfigurationWithAppraisalPolicy() throws Exception {
-        prepareSealingKey();
-        prepareAesKey(SecurityKeyType.AES_CTR, TestHelper.DEFAULT_KEY_NAME, ENCRYPTION_KEY, "AES/CTR/NoPadding");
-        prepareAppraisalPolicy();
-        int databaseSizeBeforeCreate = serviceConfigurationRepository.findAll().size();
-        // Create the ServiceConfiguration
-        final var serviceConfigurationWithPolicy = TestHelper.createServiceConfigurationEntity(
-            DEFAULT_OVERBUILD_MAX, STORAGE_TYPE, null, false, PUF_TYPE, KEY_WRAPPING_TYPE, qek, aesKeyContent, true, 1L);
-        ServiceConfigurationDTO serviceConfigurationDTO = serviceConfigurationMapper.toDto(serviceConfigurationWithPolicy);
-        serviceConfigurationDTO.getConfidentialData().getAesKey().setTestProgram(true);
-        restMockMvc.perform(post(CONFIG_NODE + CONFIGURATION)
-                .contentType(RestUtil.APPLICATION_JSON_UTF8)
-                .content(RestUtil.convertObjectToJsonBytes(serviceConfigurationDTO)))
-            .andExpect(status().isCreated());
-
-        // Validate the ServiceConfiguration in the database
-        List<ServiceConfiguration> serviceConfigurationList = serviceConfigurationRepository.findAll();
-        assertEquals(databaseSizeBeforeCreate + 1, serviceConfigurationList.size());
-        ServiceConfiguration testServiceConfiguration = serviceConfigurationList.get(
-            serviceConfigurationList.size() - 1);
-        assertEquals(TestHelper.DEFAULT_NAME, testServiceConfiguration.getName());
-        assertEquals(PUF_TYPE, testServiceConfiguration.getPufType());
-        assertEquals(DEFAULT_OVERBUILD_MAX, testServiceConfiguration.getOverbuildMax());
-        assertTrue(testServiceConfiguration.isAutoFetchFirmwareCorim());
-        assertEquals(1L, testServiceConfiguration.getAppraisalPolicyId());
-
-        final AesKey aesKey = testServiceConfiguration.getConfidentialData().getAesKey();
-        assertEquals(STORAGE_TYPE, aesKey.getStorage());
-        assertEquals(KEY_WRAPPING_TYPE, aesKey.getKeyWrappingType());
-        aesGcmSealingKeyProvider.initialize(securityService.getKeyFromSecurityObject(SEALING_KEYNAME));
-        final byte[] decryptedAesContent = aesGcmSealingKeyProvider.decrypt(fromHex(aesKey.getValue()));
-        assert Arrays.equals(aesKeyContent, decryptedAesContent);
-        assertEquals(false, aesKey.getTestProgram());
-        final Qek qek = testServiceConfiguration.getConfidentialData().getQek();
-        assertEquals(TestHelper.DEFAULT_KEY_NAME, qek.getKeyName());
-        final byte[] decryptedQekValue = aesGcmSealingKeyProvider.decrypt(fromHex(qek.getValue()));
-        assert Arrays.equals(qekContent, decryptedQekValue);
-    }
-
-    @Test
-    @Transactional
-    public void createServiceConfigurationWithInvalidAppraisalPolicyId_FailedSave() throws Exception {
-        prepareSealingKey();
-        prepareAesKey(SecurityKeyType.AES_CTR, TestHelper.DEFAULT_KEY_NAME, ENCRYPTION_KEY, "AES/CTR/NoPadding");
-        int databaseSizeBeforeCreate = serviceConfigurationRepository.findAll().size();
-        // Create the ServiceConfiguration
-        final var serviceConfigurationWithPolicy = TestHelper.createServiceConfigurationEntity(
-            DEFAULT_OVERBUILD_MAX, STORAGE_TYPE, null, false, PUF_TYPE, KEY_WRAPPING_TYPE, qek, aesKeyContent, true, 2L);
-        ServiceConfigurationDTO serviceConfigurationDTO = serviceConfigurationMapper.toDto(serviceConfigurationWithPolicy);
-        serviceConfigurationDTO.getConfidentialData().getAesKey().setTestProgram(true);
-        restMockMvc.perform(post(CONFIG_NODE + CONFIGURATION)
-                .contentType(RestUtil.APPLICATION_JSON_UTF8)
-                .content(RestUtil.convertObjectToJsonBytes(serviceConfigurationDTO)))
-            .andExpect(status().isNotFound());
 
         // Validate the ServiceConfiguration in the database
         List<ServiceConfiguration> serviceConfigurationList = serviceConfigurationRepository.findAll();
@@ -483,15 +404,5 @@ public class AesCtrEncryptionKeyTest {
         securityService.importSecretKey(SEALING_KEYNAME, key);
 
         assert securityService.existsSecurityObject(SEALING_KEYNAME);
-    }
-
-    private void prepareAppraisalPolicy() throws Exception {
-        final var appraisalPolicy = new AppraisalPolicyDTO();
-        appraisalPolicy.setName("appraisal_policy_1");
-        appraisalPolicy.setContent(FileUtils.readFromResourcesAsString(TEST_FOLDER, "test_appraisal_policy.txt"));
-
-        appraisalPolicyService.save(appraisalPolicy);
-
-        assert appraisalPolicyService.exists(1L);
     }
 }

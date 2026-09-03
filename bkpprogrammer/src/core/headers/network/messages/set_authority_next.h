@@ -76,8 +76,7 @@ public:
     };
     void parseFromResponseJson(std::string jsonString) override
     {
-        boost::json::value jsonValue{};
-        jsonValue = boost::json::parse(jsonString);
+        boost::json::value jsonValue = boost::json::parse(jsonString);
         parseFromResponseJsonCommon(jsonValue);
         response.context.value = jsonValue.at(fields::context).at(fields::context_value).as_string();
 

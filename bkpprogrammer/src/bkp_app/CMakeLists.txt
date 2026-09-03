@@ -66,7 +66,6 @@ target_link_libraries(${TARGET_NAME} PRIVATE
     bkpprog
 )
 
-
 add_custom_command(
         TARGET ${TARGET_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy

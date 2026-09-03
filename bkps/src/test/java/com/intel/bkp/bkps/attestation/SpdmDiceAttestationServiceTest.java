@@ -63,8 +63,7 @@ class SpdmDiceAttestationServiceTest {
 
     private static final String UID = "01030405060708";
     private static final String URL = "some/url.com";
-    private static final AttestationParams ATTESTATION_PARAMS = new AttestationParams(
-        true, true, URL, false, 0L);
+    private static final AttestationParams ATTESTATION_PARAMS = new AttestationParams(true, true, URL);
     private static final Integer SLOT_ID = 3;
 
     @Mock
@@ -82,7 +81,7 @@ class SpdmDiceAttestationServiceTest {
     @Test
     void performAttestationAndGetSlotId_WhenVerificationPassed_ReturnsSlotId() {
         // given
-        final var params = new AttestationParams(true, true, URL, false, 0L);
+        final var params = new AttestationParams(true, true, URL);
         when(componentFactory.get(spdmProtocol, params)).thenReturn(component);
         when(rimFetcher.fetchAsHex(URL)).thenReturn(Optional.of("rimContentInHex"));
         mockAttestation(PASSED);
@@ -113,7 +112,7 @@ class SpdmDiceAttestationServiceTest {
     @Test
     void performAttestationAndGetSlotId_WhenRimUrlMissing_Throws() {
         // given
-        final var paramsWithEmptyUrl = new AttestationParams(true, true, null, false, 0L);
+        final var paramsWithEmptyUrl = new AttestationParams(true, true, null);
         when(componentFactory.get(spdmProtocol, paramsWithEmptyUrl)).thenReturn(component);
         // when
         final var ex = assertThrows(SpdmAttestationException.class,
@@ -143,7 +142,7 @@ class SpdmDiceAttestationServiceTest {
             Supplier<String> supplier = invocation.getArgument(0);
             supplier.get();
             return new SpdmAttestationResult(result, SLOT_ID);
-        }).when(component).perform(ArgumentMatchers.<Supplier<String>>any(), eq(""), eq(fromHex(UID)));
+        }).when(component).perform(ArgumentMatchers.<Supplier<String>>any(), eq(fromHex(UID)));
     }
 
 }

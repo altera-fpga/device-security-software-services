@@ -4,10 +4,8 @@
     "overbuild": {
         "max": -1
     },
-    "autoFetchFirmwareCorim": true,
-    "appraisalPolicyId": 0,
     "testModeSecrets": true,
-    "corimUrl": "",
+    "corimUrl": "https://tsci.altera.com/content/IPCS/certs/agilexb_L1_rc6aifvOGS5y36VlYi_3FPnCte1X.corim",
     "confidentialData": {
         "importMode": "ENCRYPTED",
         "aesKey": {

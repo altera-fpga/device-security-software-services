@@ -32,9 +32,6 @@
 
 package com.intel.bkp.bkps.attestation;
 
-import com.intel.bkp.bkps.exception.AppraisalPolicyNotFound;
-import com.intel.bkp.bkps.repository.AppraisalPolicyRepository;
-import com.intel.bkp.bkps.rest.configuration.service.AppraisalPolicyService;
 import com.intel.bkp.fpgacerts.exceptions.SpdmAttestationException;
 import com.intel.bkp.fpgacerts.spdm.SpdmAttestationResult;
 import com.intel.bkp.protocol.spdm.jna.model.SpdmProtocol;
@@ -53,8 +50,6 @@ public class SpdmDiceAttestationService {
 
     private final SpdmDiceAttestationComponentFactory componentFactory;
     private final RimFetcher rimFetcher;
-    private final AppraisalPolicyRepository appraisalPolicyRepository;
-    private final AppraisalPolicyService appraisalPolicyService;
 
     public Integer performAttestationAndGetSlotId(SpdmProtocol spdmProtocol, String uid, AttestationParams params) {
         final SpdmAttestationResult result = performAttestation(spdmProtocol, uid, params);
@@ -68,29 +63,12 @@ public class SpdmDiceAttestationService {
 
     private SpdmAttestationResult performAttestation(SpdmProtocol spdmProtocol, String uid, AttestationParams params) {
         final var attestationComponent = componentFactory.get(spdmProtocol, params);
-        // Get Appraisal policy
-        String policyContent = "";
-        if (params.appraisalPolicyId() != 0) {
-            // Get appraisal policy from database
-            if (appraisalPolicyRepository.existsById(params.appraisalPolicyId())) {
-                policyContent = appraisalPolicyService.findOneForDetails(params.appraisalPolicyId())
-                    .orElseThrow(AppraisalPolicyNotFound::new);
-            } else {
-                throw new AppraisalPolicyNotFound();
-            }
-        }
-        return attestationComponent.perform(getRimSupplier(params.corimUrl(), params.autoFetchFirmwareCorim()),
-                                            policyContent,
-                                            fromHex(uid));
+        return attestationComponent.perform(getRimSupplier(params.corimUrl()), fromHex(uid));
     }
 
-    private Supplier<String> getRimSupplier(String rimUrl, boolean autoFetchFirmwareCorim) {
+    private Supplier<String> getRimSupplier(String rimUrl) {
         if (isBlank(rimUrl)) {
-            if (autoFetchFirmwareCorim) {
-                return null;
-            } else {
-                throw new SpdmAttestationException("Missing RIM URL - required for attestation");
-            }
+            throw new SpdmAttestationException("Missing RIM URL - required for attestation");
         }
 
         return () ->

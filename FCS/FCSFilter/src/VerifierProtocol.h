@@ -74,7 +74,7 @@ class VerifierProtocol
         {
             return incomingPayload;
         }
-        void setIncomingPayload(const std::vector<uint8_t>& payload)
+        void setIncomingPayload(std::vector<uint8_t> payload)
         {
             incomingPayload = payload;
         }
