@@ -29,8 +29,8 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***************************************************************************
 */
-#ifndef FCS_COMMUNICATION_SIGMA_H
-#define FCS_COMMUNICATION_SIGMA_H
+#ifndef FCS_COMMUNICATION_FCS_IOCTL_H
+#define FCS_COMMUNICATION_FCS_IOCTL_H
 
 #include "FcsCommunication.h"
 #include "altera_fcs-ioctl.h"
@@ -52,7 +52,6 @@ class FcsCommunicationFcsIoctl: public FcsCommunication
                 uint8_t certificateRequest,
                 std::vector<uint8_t>& outBuffer,
                 int32_t& fcsStatus);
-        static bool sigmaTeardown(uint32_t sessionId, int32_t& fcsStatus);
         static bool createAttestationSubkey(
                 std::vector<uint8_t> inBuffer,
                 std::vector<uint8_t>& outBuffer,
@@ -67,4 +66,4 @@ class FcsCommunicationFcsIoctl: public FcsCommunication
         static bool sendIoctl(altera_fcs_dev_ioctl* data, unsigned long CommandCode);
 };
 
-#endif /* FCS_COMMUNICATION_SIGMA_H */
+#endif /* FCS_COMMUNICATION_FCS_IOCTL_H */

@@ -40,8 +40,6 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <unordered_map>
 
 #define RESERVED_BYTES_COUNT 4
-#define SIGMA_TEARDOWN_MAGIC 0xb852e2a4
-#define SIGMA_TEARDOWN_SESSIONID_OFFSET 4
 
 // Certificate request field consists of last 5 bits in word. The rest is reserved
 #define GET_ATT_CERT_CERTIFICATE_REQUEST_MASK 0xFF
@@ -67,14 +65,13 @@ class VerifierProtocol
             std::vector<uint8_t> &responseBuffer,
             const int returnCode);
         uint32_t getCommandCode();
-        uint32_t getSigmaTeardownSessionId();
         uint8_t getCertificateRequest();
 
         std::vector<uint8_t>& getIncomingPayload()
         {
             return incomingPayload;
         }
-        void setIncomingPayload(std::vector<uint8_t> payload)
+        void setIncomingPayload(const std::vector<uint8_t>& payload)
         {
             incomingPayload = payload;
         }
@@ -93,7 +90,6 @@ class VerifierProtocol
         size_t getPayloadOffset();
         static inline std::unordered_map<uint32_t, size_t> payloadSizeMap =
         {
-            { SDM_COMMAND_CODE::SIGMA_TEARDOWN, 8 },
             { SDM_COMMAND_CODE::GET_ATTESTATION_CERTIFICATE, 4 },
             { SDM_COMMAND_CODE::GET_CHIPID, 0 },
             { SDM_COMMAND_CODE::GET_DEVICE_IDENTITY, 0 },

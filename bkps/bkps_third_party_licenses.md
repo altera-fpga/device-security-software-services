@@ -1,7 +1,7 @@
 
 # BKPS dependency list
 ## Dependency License Report
-_2026-09-03 09:18:45 UTC_
+_2026-09-22 02:50:02 UTC_
 ## Apache 2
 
 **1** **Group:** `com.opencsv` **Name:** `opencsv` **Version:** `5.9` 
@@ -17,12 +17,12 @@ _2026-09-03 09:18:45 UTC_
 
 ## Apache License 2.0
 
-**3** **Group:** `io.swagger.core.v3` **Name:** `swagger-annotations` **Version:** `2.2.52` 
+**3** **Group:** `io.swagger.core.v3` **Name:** `swagger-annotations` **Version:** `2.2.53` 
 > - **Manifest Project URL**: [https://github.com/swagger-api/swagger-core/modules/swagger-annotations](https://github.com/swagger-api/swagger-core/modules/swagger-annotations)
 > - **Manifest License**: "Apache License 2.0";link="http://www.apache.org/licenses/LICENSE-2.0.html" (Not Packaged)
 > - **POM License**: Apache License 2.0 - [http://www.apache.org/licenses/LICENSE-2.0.html](http://www.apache.org/licenses/LICENSE-2.0.html)
-> - **Embedded license files**: [swagger-annotations-2.2.52.jar/META-INF/LICENSE](swagger-annotations-2.2.52.jar/META-INF/LICENSE) 
-    - [swagger-annotations-2.2.52.jar/META-INF/NOTICE](swagger-annotations-2.2.52.jar/META-INF/NOTICE)
+> - **Embedded license files**: [swagger-annotations-2.2.53.jar/META-INF/LICENSE](swagger-annotations-2.2.53.jar/META-INF/LICENSE) 
+    - [swagger-annotations-2.2.53.jar/META-INF/NOTICE](swagger-annotations-2.2.53.jar/META-INF/NOTICE)
 
 **4** **Group:** `io.undertow` **Name:** `undertow-core` **Version:** `2.3.24.Final` 
 > - **Manifest Project URL**: [http://www.jboss.org](http://www.jboss.org)
@@ -187,10 +187,10 @@ _2026-09-03 09:18:45 UTC_
 > - **Embedded license files**: [commons-collections4-4.4.jar/META-INF/LICENSE.txt](commons-collections4-4.4.jar/META-INF/LICENSE.txt) 
     - [commons-collections4-4.4.jar/META-INF/NOTICE.txt](commons-collections4-4.4.jar/META-INF/NOTICE.txt)
 
-**38** **Group:** `org.apache.httpcomponents.client5` **Name:** `httpclient5` **Version:** `5.6.2` 
+**38** **Group:** `org.apache.httpcomponents.client5` **Name:** `httpclient5` **Version:** `5.6.3` 
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0.txt](https://www.apache.org/licenses/LICENSE-2.0.txt)
-> - **Embedded license files**: [httpclient5-5.6.2.jar/META-INF/LICENSE](httpclient5-5.6.2.jar/META-INF/LICENSE) 
-    - [httpclient5-5.6.2.jar/META-INF/NOTICE](httpclient5-5.6.2.jar/META-INF/NOTICE)
+> - **Embedded license files**: [httpclient5-5.6.3.jar/META-INF/LICENSE](httpclient5-5.6.3.jar/META-INF/LICENSE) 
+    - [httpclient5-5.6.3.jar/META-INF/NOTICE](httpclient5-5.6.3.jar/META-INF/NOTICE)
 
 **39** **Group:** `org.apache.httpcomponents.core5` **Name:** `httpcore5` **Version:** `5.4.3` 
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0.txt](https://www.apache.org/licenses/LICENSE-2.0.txt)

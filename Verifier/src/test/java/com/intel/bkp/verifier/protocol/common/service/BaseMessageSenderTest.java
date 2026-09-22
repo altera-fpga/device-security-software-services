@@ -50,7 +50,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class BaseMessageSenderTest {
 
-    private static final CommandIdentifier COMMAND_IDENTIFIER = CommandIdentifier.SIGMA_TEARDOWN;
+    private static final CommandIdentifier COMMAND_IDENTIFIER = CommandIdentifier.GET_CHIPID;
     private static final byte[] COMMAND = new byte[4];
     private static final byte[] RESPONSE = new byte[8];
     private static final byte[] RESULT = new byte[12];

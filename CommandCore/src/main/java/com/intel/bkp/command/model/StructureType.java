@@ -35,8 +35,6 @@ package com.intel.bkp.command.model;
 import com.intel.bkp.command.maps.CertificateResponseEndiannessMapImpl;
 import com.intel.bkp.command.maps.CreateSubKeyRspEndiannessMapImpl;
 import com.intel.bkp.command.maps.GetMeasurementRspEndiannessMapImpl;
-import com.intel.bkp.command.maps.SigmaEncEndiannessMapImpl;
-import com.intel.bkp.command.maps.SigmaM2EndiannessMapImpl;
 import com.intel.bkp.core.endianness.EndiannessActor;
 import com.intel.bkp.core.endianness.IStructureType;
 import com.intel.bkp.core.interfaces.IEndiannessMap;
@@ -46,8 +44,6 @@ import java.util.function.Function;
 
 @RequiredArgsConstructor
 public enum StructureType implements IStructureType {
-    SIGMA_M2(SigmaM2EndiannessMapImpl::new),
-    SIGMA_ENC_RESP(SigmaEncEndiannessMapImpl::new),
     CERTIFICATE_RESP(CertificateResponseEndiannessMapImpl::new),
     CREATE_ATTESTATION_SUBKEY_RSP(CreateSubKeyRspEndiannessMapImpl::new),
     GET_MEASUREMENT_RSP(GetMeasurementRspEndiannessMapImpl::new);

@@ -55,7 +55,7 @@ bool handleIncomingMessage(
         return false;
     }
     int32_t statusReturnedFromFcs = -1;
-    fcsCommunication->runCommandCode(verifierProtocol, responseBuffer, statusReturnedFromFcs);
+    fcsCommunication->runCommandCode(std::move(verifierProtocol), responseBuffer, statusReturnedFromFcs);
 
     return true;
 }

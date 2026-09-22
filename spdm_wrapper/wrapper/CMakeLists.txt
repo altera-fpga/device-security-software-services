@@ -15,7 +15,8 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
             ${LIBSPDM_LIB_DIR}/libcryptlib_openssl.a
             ${LIBSPDM_LIB_DIR}/libplatform_lib.a
             ${LIBSPDM_LIB_DIR}/libdebuglib_null.a
-            ${LIBSPDM_LIB_DIR}/libmemlib.a)
+            ${LIBSPDM_LIB_DIR}/libmemlib.a
+            ${LIBSPDM_LIB_DIR}/libmalloclib.a)
 else()
     target_link_libraries(libspdm_wrapper PRIVATE
             ${LIBSPDM_LIB_DIR}/spdm_requester_lib.lib

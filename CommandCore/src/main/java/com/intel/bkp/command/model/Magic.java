@@ -38,10 +38,6 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum Magic {
-    SIGMA_M1(0x2C46DCE6),
-    SIGMA_M3(0xBFED8507),
-    SIGMA_ENC(0x50D7114F),
-    SIGMA_TEARDOWN(0xB852E2A4),
     CREATE_SUBKEY(0x7464B514),
     GET_MEASUREMENT(0x06C9E162),
     CREATE_SUBKEY_RSP(0x9F808257),

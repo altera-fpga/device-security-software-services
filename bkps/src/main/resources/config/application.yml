@@ -44,9 +44,9 @@ server:
     ssl:
         enabled: true
         client-auth: want
-        ciphers: TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+        ciphers: TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384
         protocol: TLS
-        enabled-protocols: TLSv1.2
+        enabled-protocols: TLSv1.2,TLSv1.3
     servlet:
         context-path: /
         session:

@@ -34,7 +34,13 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "fcntl.h"
 #include "Logger.h"
 
+#include <algorithm>
+#include <cstdio>
+#include <cstring>
 #include <fstream>
+#include <iterator>
+#include <mutex>
+#include <string>
 #include <vector>
 
 #include "FcsSimulator.h"
@@ -47,6 +53,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define CHIPID_HIGH 0x0782C6CC
 
 const uint32_t IDCODE = 0x6341D0DD;
+
 
 int ioctl(int fileDescriptor, unsigned long int commandCode, altera_fcs_dev_ioctl *data) {
     Logger::log("ioctl() mock called", Debug);
@@ -65,14 +72,6 @@ int ioctl(int fileDescriptor, unsigned long int commandCode, altera_fcs_dev_ioct
             data->status = 0;
         }
         break;
-        case (ALTERA_FCS_DEV_PSGSIGMA_TEARDOWN_CMD): {
-            if (data->com_paras.tdown.sid != FcsSimulator::expectedSessionId) {
-                data->status = -1;
-            } else {
-                data->status = 0;
-            }
-        }
-        break;
         case (ALTERA_FCS_DEV_ATTESTATION_SUBKEY_CMD): {
             if (data->com_paras.subkey.rsp_data_sz < ATTESTATION_SUBKEY_RSP_MAX_SZ) {
                 errno = EINVAL;
@@ -81,7 +80,7 @@ int ioctl(int fileDescriptor, unsigned long int commandCode, altera_fcs_dev_ioct
             if (data->com_paras.subkey.cmd_data_sz != FcsSimulator::expectedCreateSubkeyCommandLength) {
                 data->status = -1;
             } else {
-                std::vector <uint8_t> buffer(ATTESTATION_SUBKEY_RSP_MAX_SZ, 0x7E); //0111 1110
+                std::vector<uint8_t> buffer(ATTESTATION_SUBKEY_RSP_MAX_SZ, 0x7E);
                 std::copy(buffer.begin(), buffer.end(), data->com_paras.subkey.rsp_data);
                 data->com_paras.subkey.rsp_data_sz = buffer.size();
                 data->status = 0;
@@ -96,7 +95,7 @@ int ioctl(int fileDescriptor, unsigned long int commandCode, altera_fcs_dev_ioct
             if (data->com_paras.measurement.cmd_data_sz != FcsSimulator::expectedGetMeasurementCommandLength) {
                 data->status = -1;
             }
-            std::vector <uint8_t> buffer(FcsSimulator::expectedGetMeasurementResponseLength, 0x7E); //0111 1110
+            std::vector<uint8_t> buffer(FcsSimulator::expectedGetMeasurementResponseLength, 0x7E);
             std::copy(buffer.begin(), buffer.end(), data->com_paras.subkey.rsp_data);
             data->com_paras.measurement.rsp_data_sz = buffer.size();
             data->status = 0;
@@ -116,17 +115,18 @@ int ioctl(int fileDescriptor, unsigned long int commandCode, altera_fcs_dev_ioct
             std::vector<uint8_t> inputBuffer;
             uint8_t* dataPtr = static_cast<uint8_t*>(data->com_paras.mbox_send_cmd.cmd_data);
             inputBuffer.assign(dataPtr, dataPtr + data->com_paras.mbox_send_cmd.cmd_data_sz);
-            std::vector<uint8_t> outputBuffer;
 
             switch (data->com_paras.mbox_send_cmd.mbox_cmd) {
                 case (GET_IDCODE): {
                     Logger::log("SpdmSimulator::getIdCode called", Debug);
-                    memcpy(data->com_paras.mbox_send_cmd.rsp_data, &IDCODE, sizeof(IDCODE));
-                    data->com_paras.mbox_send_cmd.rsp_data_sz = sizeof(IDCODE);
+                    uint32_t idCode = loadIdCodeOnce();
+                    std::memcpy(data->com_paras.mbox_send_cmd.rsp_data, &idCode, 4);
+                    data->com_paras.mbox_send_cmd.rsp_data_sz = 4;
                     data->status = 0;
                 }
                 break;
                 default: {
+                    std::vector<uint8_t> outputBuffer;
                     Logger::log("SpdmSimulator::sendCommand called", Debug);
                     int status = SpdmSimulator::sendCommand(data->com_paras.mbox_send_cmd.mbox_cmd, inputBuffer, outputBuffer);
                     Logger::logWithReturnCode("SpdmSimulator::sendCommand", status, Debug);
@@ -147,7 +147,7 @@ int ioctl(int fileDescriptor, unsigned long int commandCode, altera_fcs_dev_ioct
             if (data->com_paras.certificate.c_request != (int) FcsSimulator::expectedCertificateRequest) {
                 data->status = -1;
             }
-            std::vector <uint8_t> buffer(FcsSimulator::expectedGetAttCertResponseLength, 0x7E); //0111 1110
+            std::vector<uint8_t> buffer(FcsSimulator::expectedGetAttCertResponseLength, 0x7E);
             std::copy(buffer.begin(), buffer.end(), data->com_paras.certificate.rsp_data);
             data->com_paras.certificate.rsp_data_sz = buffer.size();
             data->status = 0;

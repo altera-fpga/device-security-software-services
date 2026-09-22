@@ -35,29 +35,6 @@ package com.intel.bkp.command.model;
 import com.intel.bkp.core.endianness.IStructureField;
 
 public enum StructureField implements IStructureField {
-    /* =========== Sigma ENC Response Message =========== */
-    SIGMA_ENC_RESERVED_HEADER,
-    SIGMA_ENC_MAGIC,
-    SIGMA_ENC_SDM_SESSION_ID,
-    SIGMA_ENC_MSG_RESP_COUNTER,
-    SIGMA_ENC_PAYLOAD_LEN,
-    SIGMA_ENC_INITIAL_IV,
-    SIGMA_ENC_ENCRYPTED_PAYLOAD,
-    SIGMA_ENC_MAC,
-
-    /* =========== Sigma M2 Message =========== */
-    SIGMA_M2_RESERVED_HEADER,
-    SIGMA_M2_MAGIC,
-    SIGMA_M2_SDM_SESSION_ID,
-    SIGMA_M2_DEVICE_UNIQUE_ID,
-    SIGMA_M2_ROM_VERSION_NUM,
-    SIGMA_M2_SDM_FW_BUILD_ID,
-    SIGMA_M2_SDM_FW_SECURITY_VERSION_NUM,
-    SIGMA_M2_PUBLIC_EFUSE_VALUES,
-    SIGMA_M2_DEVICE_DH_PUB_KEY,
-    SIGMA_M2_BKPS_DH_PUB_KEY,
-    SIGMA_M2_SIGNATURE,
-    SIGMA_M2_MAC,
 
     /* =========== Certificate Response =========== */
     CERTIFICATE_PROCESS_STATUS,

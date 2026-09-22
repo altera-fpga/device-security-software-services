@@ -1,12 +1,12 @@
 [versions]
 apache-commons-cli = "1.11.0"
-apache-commons-codec = "1.22.0"
+apache-commons-codec = "1.22.1"
 apache-commons-csv = "1.14.1"
 apache-commons-dbutils = "1.8.1"
 apache-commons-io = "2.22.0"
 apache-commons-lang = "3.20.0"
 apache-commons-text = "1.15.0"
-apache-httpclient5 = "5.6.2"
+apache-httpclient5 = "5.6.3"
 # Must match the httpcore5 version required by apache-httpclient5. Spring Boot's BOM pins an older
 # httpcore5 (missing org.apache.hc.core5.io.IOFunction), so we override the managed version below.
 apache-httpcore5 = "5.4.3"
@@ -16,7 +16,7 @@ bouncycastle = "1.77"
 cbor = "4.5.6"
 failsafe = "3.3.2"
 google-jib = "3.5.4"
-gradle-versions = "0.54.0"
+gradle-versions = "0.61.0"
 hamcrest-library = "3.0"
 hazelcast = "5.7.0"
 hibernate = "6.6.2.Final"
@@ -28,7 +28,7 @@ jazzer = "0.30.0"
 jna = "5.19.1"
 junit = "6.1.2"
 junit5PluginVersion = "1.2.1"
-logback = "1.5.38"
+logback = "1.6.1"
 logstash-logback-encoder = "9.0"
 lombok-plugin = "9.5.0"
 lombok-mapstruct-binding = "0.2.0"
@@ -47,8 +47,8 @@ spring-dependency-management = "1.1.6"
 spring-restdocs = "3.0.5"
 springdoc-openapi = "2.8.9"
 sqlite-plugin = "0.2"
-sqlite-jdbc = "3.53.2.0"
-swagger-annotations = "2.2.52"
+sqlite-jdbc = "3.53.2.1"
+swagger-annotations = "2.2.53"
 testcontainers = "1.21.4"
 webjars-bootstrap = "5.3.3"
 webjars-client = "1.5.1"
@@ -156,7 +156,7 @@ webjars = ["webjars-locator", "webjars-client", "webjars-websocket", "webjars-bo
 asciidoctor-convert = { id = "org.asciidoctor.jvm.convert", version.ref = "asciidoctor" }
 asciidoctor-pdf = { id = "org.asciidoctor.jvm.pdf", version.ref = "asciidoctor" }
 google-jib = { id = "com.google.cloud.tools.jib", version.ref = "google-jib" }
-gradle-versions = { id = "com.github.ben-manes.versions", version.ref = "gradle-versions" }
+gradle-versions = { id = "io.github.ben-manes.versions", version.ref = "gradle-versions" }
 lombok = { id = "io.freefair.lombok", version.ref = "lombok-plugin" }
 modernizer = { id = "com.github.andygoossens.modernizer", version.ref = "modernizer" }
 pitest = { id = "info.solidsoft.pitest", version.ref = "pitest" }

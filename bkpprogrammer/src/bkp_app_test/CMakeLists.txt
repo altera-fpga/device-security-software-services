@@ -70,5 +70,16 @@ target_link_libraries(${TARGET_NAME} PRIVATE
         )
 target_link_libraries(${TARGET_NAME} PRIVATE dl)
 
+# Ensure the test binary loads the bundled OpenSSL / libcurl at runtime instead
+# of the system libssl.so.3 / libcrypto.so.3, which on Debian bullseye ships
+# OpenSSL 3.0.x and lacks the OPENSSL_3.2.0 symbol version required by the
+# newer bundled libcurl.
+set_target_properties(${TARGET_NAME} PROPERTIES
+    BUILD_RPATH   "${OPENSSL_LIB_DIR};${LIBCURL_LIB_DIR}"
+    INSTALL_RPATH "${OPENSSL_LIB_DIR};${LIBCURL_LIB_DIR}"
+    SKIP_BUILD_RPATH FALSE)
+
 add_test(NAME bkp_app_test_suite COMMAND bkp_app_test)
+set_tests_properties(bkp_app_test_suite PROPERTIES
+    ENVIRONMENT "LD_LIBRARY_PATH=${OPENSSL_LIB_DIR}:${LIBCURL_LIB_DIR}:$ENV{LD_LIBRARY_PATH}")
 
