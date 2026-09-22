@@ -104,7 +104,7 @@ public class ProvisioningProgrammerMessageDTOReaderTest {
 
     private ProvContextWithFlow getProvContextWithFlow() {
         ProvContextWithFlow provContextWithFlow = new ProvContextWithFlow();
-        provContextWithFlow.setFlowStage(FlowStage.SIGMA_AUTH_DATA);
+        provContextWithFlow.setFlowStage(FlowStage.SET_AUTHORITY_SESSION);
         return provContextWithFlow;
     }
 }

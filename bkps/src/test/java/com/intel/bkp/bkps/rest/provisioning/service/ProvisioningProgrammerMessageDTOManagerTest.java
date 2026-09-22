@@ -68,7 +68,7 @@ public class ProvisioningProgrammerMessageDTOManagerTest {
     void getReader_Success() throws Exception {
         // given
         ProvContextWithFlow provContextWithFlow = new ProvContextWithFlow();
-        provContextWithFlow.setFlowStage(FlowStage.SIGMA_AUTH_DATA);
+        provContextWithFlow.setFlowStage(FlowStage.SET_AUTHORITY_SESSION);
         when(contextEncryptionProvider.decrypt(any()))
             .thenReturn(RestUtil.convertObjectToJsonBytes(provContextWithFlow));
 
