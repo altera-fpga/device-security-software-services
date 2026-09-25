@@ -1,0 +1,29 @@
+# BKPS Demo Automation Tool - Python Dependencies
+# Install with: pip install -r requirements.txt
+#
+# For headless / server installs (CLI only, no GUI):
+#   pip install -r requirements-cli.txt
+
+# GUI framework (not needed for CLI-only / headless installs)
+# On headless Linux, also install system display libraries:
+#   Ubuntu/Debian: sudo apt-get install -y libgl1 libegl1 libglib2.0-0
+#   RHEL/Fedora:   sudo dnf install -y mesa-libGL mesa-libEGL glib2
+PySide6>=6.4.0
+
+# Cryptography and security
+# Intel admin-tools/runner.py uses the legacy ecdsa API.
+ecdsa>=0.13,<=0.18
+cryptography>=3.4
+pyOpenSSL>=21.0.0
+pycryptodome>=3.10.0
+
+# Intel admin-tools/runner.py imports pkg_resources directly.
+setuptools>=65.0,<72
+
+# CLI utilities
+docopt>=0.6.2
+requests>=2.28.0
+packaging>=23.0
+
+# Database connectivity (binary wheel — no system libpq needed)
+psycopg2-binary>=2.9.0

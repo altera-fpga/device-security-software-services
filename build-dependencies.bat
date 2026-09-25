@@ -128,24 +128,14 @@ if "%VisualStudioVersion%"=="18.0" (
 	 set "CMAKE_VS_GENERATOR=Visual Studio %VisualStudioVersion%"
  )
 
- :: Auto detect toolset used as a visual studio version can have non-unique toolset
- for /f "tokens=1,2 delims=." %%A in ("%VCToolsVersion%") do (
- 	set "_minor=%%B"
+set "v=%VCToolsVersion%"
+if defined v (
+    set "BOOST_TOOLSET=vc%v:~0,2%%v:~3,1%"
+    set "BOOST_B2_TOOLSET=msvc-%v:~0,2%.%v:~3,1%"
+    set "CMAKE_VS_TOOLSET=v%v:~0,2%%v:~3,1%"
+)
 
-	:: Enable local environment manipulation to slice the string safely
-	setlocal enabledelayedexpansion
-	set "_first_minor=!_minor:~0,1!"
-
-	:: Pass the variables cleanly past the endlocal boundary
-	for /f "tokens=1,2" %%X in ("!_first_minor! %%A") do (
-		endlocal
-		set "BOOST_TOOLSET=vc%%Y%%X"
-		set "BOOST_B2_TOOLSET=msvc-%%Y.%%X"
-		set "CMAKE_VS_TOOLSET=v%%Y%%X"
-	)
- )
-
-:: BKPS UI compatibility mapping: Visual Studio 2022 uses v143.
+:: 17.0 maps to v143 for both 14.3x and 14.4x tool versions.
 if "%VisualStudioVersion%"=="17.0" (
     set "BOOST_TOOLSET=vc143"
     set "BOOST_B2_TOOLSET=msvc-14.3"
@@ -155,13 +145,13 @@ if "%VisualStudioVersion%"=="17.0" (
 echo ===================================================
 echo MSVC Full Toolset Version:  %VCToolsVersion%
 echo Visual Studio IDE Version:  %VSCMD_VER%
-echo Target Architecture:		%VSCMD_ARG_TGT_ARCH%
-echo Windows SDK Version:		%WindowsSDKVersion%
-echo BOOST_TOOLSET			   %BOOST_TOOLSET%
-echo BOOST_B2_TOOLSET			%BOOST_B2_TOOLSET%
-echo CMAKE_VS_GENERATOR		  %CMAKE_VS_GENERATOR%
-echo CMAKE_VS_TOOLSET			%CMAKE_VS_TOOLSET%
-echo CMake generator			 %CMAKE_VS_GENERATOR%  %CMAKE_VS_ARCH%  (toolset %CMAKE_VS_TOOLSET%)
+echo Target Architecture:        %VSCMD_ARG_TGT_ARCH%
+echo Windows SDK Version:        %WindowsSDKVersion%
+echo BOOST_TOOLSET               %BOOST_TOOLSET%
+echo BOOST_B2_TOOLSET            %BOOST_B2_TOOLSET%
+echo CMAKE_VS_GENERATOR          %CMAKE_VS_GENERATOR%
+echo CMAKE_VS_TOOLSET            %CMAKE_VS_TOOLSET%
+echo CMake generator             %CMAKE_VS_GENERATOR%  %CMAKE_VS_ARCH%  (toolset %CMAKE_VS_TOOLSET%)
 echo ===================================================
 
 set "VS_INSTALL_ROOT=!VS_BUILD_DIR!\..\..\.."
@@ -333,10 +323,10 @@ If Defined boost.version (
 		echo building boost...
 		if exist boost @RD /S /Q boost
 		if exist boost_%boost.version%_windows_x64 @RD /S /Q boost_%boost.version%_windows_x64
-		call :_fetch_and_verify "boost_!boost_version_string!.tar.gz" "!boost.url!" "!boost.sha256!" "!boost.tarball!"
+		call :_fetch_and_verify "boost-!boost_version_string!.tar.gz" "!boost.url!" "!boost.sha256!" "!boost.tarball!"
 		if errorlevel 1 exit /b 1
 		mkdir "boost"
-		tar -xzf "boost_!boost_version_string!.tar.gz" -C "boost" --strip-components=1
+		tar -xzf "boost-!boost_version_string!.tar.gz" -C "boost" --strip-components=1
 		if errorlevel 1 (
 			echo [ERROR] Failed to unpack boost_!boost_version_string!.tar.gz
 			exit /b 1
@@ -626,7 +616,7 @@ if not "!_local!"=="" (
 		exit /b 1
 	)
 	echo Downloading !_dest! from !_url!
-	curl.exe -L --fail --retry 3 -o "!_dest!" "!_url!"
+	curl.exe -L --ssl-no-revoke --fail --retry 3 -o "!_dest!" "!_url!"
 	if errorlevel 1 (
 		echo [ERROR] Failed to download !_dest!
 		exit /b 1
