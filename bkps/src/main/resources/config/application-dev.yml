@@ -68,8 +68,8 @@ application:
 
 service:
     protocol:
-        sigma: false
-        spdm: true
+        sigma: ${ENABLE_SIGMA_PROTOCOL:false}
+        spdm: ${ENABLE_SPDM_PROTOCOL:true}
 
 lib-spdm-params:
     wrapper-library-path: ${LIBSPDM_WRAPPER_LIBRARY_PATH:}

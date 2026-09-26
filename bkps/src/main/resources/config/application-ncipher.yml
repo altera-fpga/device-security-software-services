@@ -1,0 +1,17 @@
+application:
+    security-provider-params:
+        provider:
+            name: nCipherKM
+            file-based: false
+            class-name: com.ncipher.provider.km.nCipherKM
+        security:
+            key-store-name: nCipher.sworld
+            password: ${SECURITY_PROVIDER_PASSWORD}
+            input-stream-param: ${JCEKS_PATH:/etc/bkps/secrets/ncipher-keystore.jks}
+        key-types:
+            rsa:
+                cipher-type: RSA/ECB/OAEPWithSHA384AndMGF1Padding
+            aes:
+                cipher-type: AES/GCM/NoPadding
+            ec:
+                key-name: ECDSA

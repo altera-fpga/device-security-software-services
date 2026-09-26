@@ -32,11 +32,6 @@
 # ***************************************************************************
 #
 
-OPENSSL_VERSION="3.1.4"
-BOOST_VERSION="1.84.0"
-LIBCURL_VERSION="8.5.0"
-GTEST_VERSION="1.14.0"
-LIBSPDM_VERSION="3.2.0"
 MINIMUM_JAVA_VERSION="17.0.0"
 BUILD_VERSION="${BUILD_VERSION:-0.0.1}"
 
@@ -69,6 +64,12 @@ CURRENT_SCRIPT_PATH=$(dirname "$0")
 cd "$CURRENT_SCRIPT_PATH" || exit 1
 CURRENT_SCRIPT_PATH=$(pwd)
 printf "\n\n+++++++++++++++++++++++++++++++++ Current script path: %s ++++++++++++++++++++++++++++\n\n" "${CURRENT_SCRIPT_PATH}"
+
+DEPENDENCIES_CONFIG="${CURRENT_SCRIPT_PATH}/config.txt"
+if [[ ! -f "${DEPENDENCIES_CONFIG}" ]]; then
+    echo "ERROR: config.txt not found: ${DEPENDENCIES_CONFIG}"
+    exit 1
+fi
 
 OUT_PATH=${CURRENT_SCRIPT_PATH}/out
 SPDM_WRAPPER_PATH=${CURRENT_SCRIPT_PATH}/spdm_wrapper
@@ -399,6 +400,7 @@ function copy_files_to_docker_bkpprogrammer() {
     docker cp "${BKPPROGRAMMER_PATH}/src/." "${CONTAINER_ID}:${BKPPROG_DOCKER_BUILD_DIR}/src" || return 1
     docker cp "${BKPPROGRAMMER_PATH}/CMakeLists.txt" "${CONTAINER_ID}:${BKPPROG_DOCKER_BUILD_DIR}" || return 1
     docker cp "${CURRENT_SCRIPT_PATH}/build-dependencies.sh" "${CONTAINER_ID}:/" || return 1
+    docker cp "${DEPENDENCIES_CONFIG}" "${CONTAINER_ID}:/config.txt" || return 1
     docker cp "${FCS_PATH}/." "${CONTAINER_ID}:/FCS" || return 1
 }
 
@@ -410,7 +412,8 @@ function run_build_fcs() {
 }
 
 function run_build_bkpprogrammer() {
-    docker exec --interactive "${CONTAINER_ID}" ../build-dependencies.sh OPENSSL_AARCH64_VERSION="${OPENSSL_VERSION}" BOOST_AARCH64_VERSION="${BOOST_VERSION}" LIBCURL_AARCH64_VERSION="${LIBCURL_VERSION}" || return 1
+    docker exec --interactive "${CONTAINER_ID}" sed -i 's/aarch64=false/aarch64=true/g' /config.txt || return 1
+    docker exec --interactive "${CONTAINER_ID}" ../build-dependencies.sh --config /config.txt || return 1
     docker exec --interactive "${CONTAINER_ID}" bash -c "mkdir -p build/MinSizeRel && cd build/MinSizeRel && cmake -DHPS_BUILD:BOOL=ON ../.. && cmake --build ." || return 1
 }
 
@@ -448,9 +451,97 @@ function check_error_code() {
     fi
 }
 
-DOCKER_REQUIRED=false
+BUILD_SELECTION="${BUILD_SELECTION:-full}"
+DOCKER_REQUIRED="${DOCKER_REQUIRED:-}"
+
+function include_bkpprogrammer() {
+    [[ "${BUILD_SELECTION}" == full || "${BUILD_SELECTION}" == bkp-with-bkpprogrammer ]]
+}
+
+function print_usage() {
+    cat <<'USAGE'
+Usage: ./build_ubuntu.sh [options]
+
+Build selection:
+  --full                       Build every module (default).
+  --bkp-with-bkpprogrammer     Build BKPS (JAR, SQL, SPDM wrapper) and BKPProgrammer.
+  --bkp-only                   Build only the BKPS JAR, SQL schema and SPDM wrapper.
+
+Docker-dependent builds:
+  --docker                  Enable them without prompting.
+  --no-docker               Disable them without prompting.
+                            With neither flag the script asks.
+
+Each option has an environment equivalent, so an unattended caller needs no
+terminal: BUILD_SELECTION=full|bkp-with-bkpprogrammer|bkp_only,
+DOCKER_REQUIRED=true|false.
+USAGE
+}
+
+function docker_dependent_components() {
+    local components=()
+    if [[ "${BUILD_SELECTION}" == full ]]; then
+        components+=("FCSServer")
+    fi
+    if include_bkpprogrammer; then
+        components+=("BKPProgrammer")
+    fi
+    echo "${components[*]}"
+}
+
+function parse_arguments() {
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --full) BUILD_SELECTION=full ;;
+            --bkp-with-bkpprogrammer) BUILD_SELECTION=bkp-with-bkpprogrammer ;;
+            --bkp-only) BUILD_SELECTION=bkp_only ;;
+            --docker) DOCKER_REQUIRED=true ;;
+            --no-docker) DOCKER_REQUIRED=false ;;
+            -h|--help) print_usage; exit 0 ;;
+            *)
+                print_error "Unknown option: $1"
+                print_usage
+                exit 1
+                ;;
+        esac
+        shift
+    done
+
+    case "${BUILD_SELECTION}" in
+        full|bkp-with-bkpprogrammer|bkp_only) ;;
+        *)
+            print_error "BUILD_SELECTION must be 'full', 'bkp-with-bkpprogrammer' or 'bkp_only', not '${BUILD_SELECTION}'"
+            exit 1
+            ;;
+    esac
+
+    if [[ "${DOCKER_REQUIRED}" != "" && "${DOCKER_REQUIRED}" != true && "${DOCKER_REQUIRED}" != false ]]; then
+        print_error "DOCKER_REQUIRED must be 'true' or 'false', not '${DOCKER_REQUIRED}'"
+        exit 1
+    fi
+
+    if include_bkpprogrammer && [[ "${DOCKER_REQUIRED}" == false ]]; then
+        print_error "BKPProgrammer is cross-compiled inside a container, so it cannot be built with Docker disabled."
+        print_error "Pass --bkp-only, or drop --no-docker."
+        exit 1
+    fi
+}
 
 function prompt_docker_required() {
+    local components
+    components=$(docker_dependent_components)
+
+    if [[ -z "${components}" ]]; then
+        DOCKER_REQUIRED=false
+        print_info "The selected build has no container-built component, so Docker is not needed."
+        return
+    fi
+
+    if [[ -n "${DOCKER_REQUIRED}" ]]; then
+        print_info "Docker-dependent builds: ${DOCKER_REQUIRED} (from the command line or environment)."
+        print_info "Container-built components in this selection: ${components}"
+        return
+    fi
     echo
     echo "Docker is optional."
     echo
@@ -534,17 +625,25 @@ function print_generated_files_summary() {
     find "${OUT_PATH}/spdm_wrapper" -type f \( -name "*.so" -o -name "*.so.*" -o -name "*.a" \) -printf "  %p\n" 2>/dev/null || true
     echo
 
-    if [[ "$DOCKER_REQUIRED" == true ]]; then
+    if [[ "$DOCKER_REQUIRED" == true && "${BUILD_SELECTION}" == full ]]; then
         echo "FCSServer artifacts:"
         find "${OUT_PATH}/FCS" -maxdepth 2 -type f -printf "  %p\n" 2>/dev/null || true
         echo
+    fi
 
+    if [[ "$DOCKER_REQUIRED" == true ]] && include_bkpprogrammer; then
         echo "BKPProgrammer artifacts:"
         find "${OUT_PATH}/bkpprogrammer" -maxdepth 1 -type f -printf "  %p\n" 2>/dev/null || true
         echo
-    else
+    fi
+
+    if [[ "$DOCKER_REQUIRED" != true ]]; then
         echo "Docker-dependent artifacts:"
         echo "  FCSServer and BKPProgrammer were skipped because Docker was not enabled."
+        echo
+    elif [[ "${BUILD_SELECTION}" != full ]] && ! include_bkpprogrammer; then
+        echo "Docker-dependent artifacts:"
+        echo "  None were selected."
         echo
     fi
 
@@ -554,12 +653,22 @@ function print_generated_files_summary() {
 }
 
 main() {
+    parse_arguments "$@"
+
     mkdir -p "${OUT_PATH}"
     check_error_code
 
-    prompt_docker_required          # <-- ask user first
+    print_info "Build selection: ${BUILD_SELECTION}"
+    if include_bkpprogrammer; then
+        print_info "BKPProgrammer: included"
+    else
+        print_info "BKPProgrammer: skipped"
+    fi
+
+    prompt_docker_required          # <-- ask only when not already answered
 
     install_package_if_does_not_exist tar
+    install_package_if_does_not_exist aria2
     install_package_if_does_not_exist wget
     install_package_if_does_not_exist cmake
     install_package_if_does_not_exist make
@@ -568,49 +677,66 @@ main() {
     install_package_if_does_not_exist perl
     install_package_if_does_not_exist python3
 
-    ./build-dependencies.sh OPENSSL_VERSION="${OPENSSL_VERSION}" LIBSPDM_VERSION="${LIBSPDM_VERSION}" \
-        BOOST_VERSION="${BOOST_VERSION}" LIBCURL_VERSION="${LIBCURL_VERSION}" \
-        GTEST_VERSION="${GTEST_VERSION}"
+    # Boost, libcurl and GoogleTest are consumed only by BKPProgrammer.
+    # build-dependencies.sh builds a package only when its version argument is
+    # present, so omitting the argument skips that package.
+    if include_bkpprogrammer; then
+        ./build-dependencies.sh --config "${DEPENDENCIES_CONFIG}"
+    else
+        ./build-dependencies.sh --config "${DEPENDENCIES_CONFIG}" --spdm-wrapper-only
+    fi
     check_error_code
 
     copy_dependencies "${SPDM_WRAPPER_PATH}" "${openssl_root_dir}"
     check_error_code
     copy_dependencies "${SPDM_WRAPPER_PATH}" "${libspdm_root_dir}"
     check_error_code
-    copy_dependencies "${BKPPROGRAMMER_PATH}" "${libcurl_root_dir}"
-    check_error_code
-    copy_dependencies "${BKPPROGRAMMER_PATH}" "${gtest_root_dir}"
-    check_error_code
-    copy_dependencies "${BKPPROGRAMMER_PATH}" "${boost_root_dir}"
-    check_error_code
-    copy_dependencies "${BKPPROGRAMMER_PATH}" "${openssl_root_dir}"
-    check_error_code
+    if include_bkpprogrammer; then
+        copy_dependencies "${BKPPROGRAMMER_PATH}" "${libcurl_root_dir}"
+        check_error_code
+        copy_dependencies "${BKPPROGRAMMER_PATH}" "${gtest_root_dir}"
+        check_error_code
+        copy_dependencies "${BKPPROGRAMMER_PATH}" "${boost_root_dir}"
+        check_error_code
+        copy_dependencies "${BKPPROGRAMMER_PATH}" "${openssl_root_dir}"
+        check_error_code
+    fi
 
     build_spdm_wrapper
     check_error_code
 
     if [[ "$DOCKER_REQUIRED" == true ]]; then   # <-- gate Docker-dependent builds
-        build_fcsserver
-        check_error_code
-        build_bkpprogrammer
-        check_error_code
+        if [[ "${BUILD_SELECTION}" == full ]]; then
+            build_fcsserver
+            check_error_code
+        fi
+        if include_bkpprogrammer; then
+            build_bkpprogrammer
+            check_error_code
+        fi
     fi
 
     check_java
     create_dummy_key_if_does_not_exist
     check_error_code
-    KEYSTORE_DUMMY_ALIAS=dummy ./gradlew -Pversion="${BUILD_VERSION}" -Dversion="${BUILD_VERSION}" clean build deploy
+    if [[ "${BUILD_SELECTION}" == full ]]; then
+        KEYSTORE_DUMMY_ALIAS=dummy ./gradlew -Pversion="${BUILD_VERSION}" -Dversion="${BUILD_VERSION}" clean build deploy
+    else
+        KEYSTORE_DUMMY_ALIAS=dummy ./gradlew -Pversion="${BUILD_VERSION}" -Dversion="${BUILD_VERSION}" clean :bkps:bootJar
+    fi
     check_error_code
     build_sql_schema
     check_error_code
     copy_bkps_jar
     check_error_code
-    cp ./workload/build/libs/* "${OUT_PATH}/"
-    check_error_code
-    cp ./Verifier/build/libs/* "${OUT_PATH}/"
-    check_error_code
-    cp ./Verifier/src/main/resources/config.properties "${OUT_PATH}/"
-    check_error_code
+    if [[ "${BUILD_SELECTION}" == full ]]; then
+        cp ./workload/build/libs/* "${OUT_PATH}/"
+        check_error_code
+        cp ./Verifier/build/libs/* "${OUT_PATH}/"
+        check_error_code
+        cp ./Verifier/src/main/resources/config.properties "${OUT_PATH}/"
+        check_error_code
+    fi
     printf "${LOG_OUTPUT}" "${OUT_PATH}"
     print_generated_files_summary
 }

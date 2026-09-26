@@ -49,7 +49,6 @@ TEST(CommandHeaderUT, parseTest)
     EXPECT_EQ(0x00, header.res1);
     EXPECT_EQ(0x00, header.res2);
 
-    //real world example - psgsigma_teardown
     input = std::vector<uint8_t> {0xd5, 0x30, 0x00, 0x12};
     header.parse(input);
     EXPECT_EQ(0xd5, header.code);
@@ -95,7 +94,6 @@ TEST(CommandHeaderUT, encodeTest)
     header.encode(output);
     EXPECT_EQ(expectedOutput, output);
 
-    //real world example - psgsigma_teardown
     expectedOutput = std::vector<uint8_t> {0xd5, 0x30, 0x00, 0x12};
     output = std::vector<uint8_t>(4, 0xFF); //fill buffer with FFs, to make sure that vector's initial content is cleared
     header.res1 = 0;

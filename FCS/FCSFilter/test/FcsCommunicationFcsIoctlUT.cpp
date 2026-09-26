@@ -32,15 +32,22 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "gtest/gtest.h"
 
+#include <cstdio>
+#include <fstream>
+#include <sys/stat.h>
+
 #include "FcsCommunicationFcsIoctl.h"
 #include "FcsSimulator.h"
+
+class FcsCommunicationFcsIoctlChipIdFixture : public ::testing::Test {
+};
 
 TEST(FcsCommunicationFcsIoctlUT, altera_fcs_dev_ioctlSizeTest)
 {
     EXPECT_EQ((size_t)256, sizeof(altera_fcs_dev_ioctl));
 }
 
-TEST(FcsCommunicationFcsIoctlUT, getChipIdTest)
+TEST_F(FcsCommunicationFcsIoctlChipIdFixture, getChipIdTest)
 {
     std::vector<uint8_t> expectedPayload {0x5A, 0xEC, 0xAC, 0x18, 0xCC, 0xC6, 0x82, 0x07};
     std::vector<uint8_t> payload;
@@ -50,15 +57,6 @@ TEST(FcsCommunicationFcsIoctlUT, getChipIdTest)
     EXPECT_EQ(expectedPayload, payload);
 }
 
-TEST(FcsCommunicationFcsIoctlUT, sigmaTeardownTest)
-{
-    FcsSimulator::expectedSessionId = 0xFFFFFFFF;
-    int32_t status;
-    EXPECT_TRUE(FcsCommunicationFcsIoctl::sigmaTeardown(FcsSimulator::expectedSessionId, status));
-    EXPECT_EQ(0, status);
-    EXPECT_TRUE(FcsCommunicationFcsIoctl::sigmaTeardown(0xAAAA, status));
-    EXPECT_EQ(-1, status);
-}
 
 TEST(FcsCommunicationFcsIoctlUT, createAttestationSubkeyTest)
 {

@@ -113,7 +113,6 @@ CurlWrapper::CurlWrapper(std::shared_ptr<Logger> logger_, std::shared_ptr<Transa
     setCurlOptionWithErrorHandling(curlHandle, CURLOPT_HEADERDATA, (void *)&transactionId);
 
     setCurlOptionWithErrorHandling(curlHandle, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
-    setCurlOptionWithErrorHandling(curlHandle, CURLOPT_SSL_CIPHER_LIST, acceptedCiphers.c_str());
 
     setCurlOptionWithErrorHandling(curlHandle, CURLOPT_FOLLOWLOCATION, true);
     setCurlOptionWithErrorHandling(curlHandle, CURLOPT_TIMEOUT, timeoutInSeconds);
@@ -124,7 +123,7 @@ CurlWrapper::CurlWrapper(std::shared_ptr<Logger> logger_, std::shared_ptr<Transa
     setCurlOptionWithErrorHandling(curlHandle, CURLOPT_VERBOSE, true);
 };
 
-void CurlWrapper::init(Config config, std::string endpoint)
+void CurlWrapper::init(const Config& config, const std::string& endpoint)
 {
     setCurlOptionWithErrorHandling(curlHandle, CURLOPT_CAINFO, config.caCertFilePath.c_str());
     setCurlOptionWithErrorHandling(curlHandle, CURLOPT_SSLCERT, config.clientCertFilePath.c_str());

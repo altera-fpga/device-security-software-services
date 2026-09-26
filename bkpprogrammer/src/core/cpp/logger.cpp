@@ -34,7 +34,7 @@
 
 void LoggerImpl::log(LogLevel_t level, std::string message) const {
     std::string transactionId = getTransactionId();
-    qc->log(level, str_utils::concat_strings( {transactionId, message} ));
+    qc->log(level, str_utils::concat_strings( {std::move(transactionId), std::move(message)} ));
 }
 
 std::string LoggerImpl::getTransactionId() const {

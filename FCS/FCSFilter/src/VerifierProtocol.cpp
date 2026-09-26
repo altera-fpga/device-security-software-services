@@ -79,9 +79,9 @@ bool VerifierProtocol::parseMessage(std::vector<uint8_t> &messageBuffer)
 size_t VerifierProtocol::getPayloadOffset()
 {
     size_t messageReservedBytesCount = 0;
-    if (incomingHeader.code == SDM_COMMAND_CODE::SIGMA_TEARDOWN
-        || incomingHeader.code == SDM_COMMAND_CODE::CREATE_ATTESTATION_SUBKEY
-        || incomingHeader.code == SDM_COMMAND_CODE::GET_MEASUREMENT)
+    if (incomingHeader.code == SDM_COMMAND_CODE::CREATE_ATTESTATION_SUBKEY
+        || incomingHeader.code == SDM_COMMAND_CODE::GET_MEASUREMENT
+        )
     {
         messageReservedBytesCount = RESERVED_BYTES_COUNT;
     }
@@ -103,18 +103,6 @@ bool VerifierProtocol::isPayloadSizeCorrect()
 
 bool VerifierProtocol::isMagicWordCorrect()
 {
-    if (incomingHeader.code == SDM_COMMAND_CODE::SIGMA_TEARDOWN)
-    {
-        uint32_t incomingMagic = Utils::decodeFromLittleEndianBuffer(
-            incomingPayload);
-        if (incomingMagic != SIGMA_TEARDOWN_MAGIC)
-        {
-            Logger::log("Incorrect sigma teardown magic: "
-                + std::to_string(incomingMagic), Error);
-            errorCode = invalidMagic;
-            return false;
-        }
-    }
     return true;
 }
 
@@ -169,22 +157,6 @@ uint32_t VerifierProtocol::getCommandCode()
     return incomingHeader.code;
 }
 
-uint32_t VerifierProtocol::getSigmaTeardownSessionId()
-{
-    //should never happen
-    if (getCommandCode() != SDM_COMMAND_CODE::SIGMA_TEARDOWN)
-    {
-        throw std::logic_error("Attempt to read SessionId from message of type other than sigmaTeardown");
-    }
-
-    //should never happen, as it is also checked during parsing
-    if (incomingPayload.size() < payloadSizeMap[SDM_COMMAND_CODE::SIGMA_TEARDOWN])
-    {
-        throw std::logic_error("getSigmaTeardownSessionId: Message Size too small");
-    }
-    return Utils::decodeFromLittleEndianBuffer(
-        incomingPayload, SIGMA_TEARDOWN_SESSIONID_OFFSET);
-}
 
 uint8_t VerifierProtocol::getCertificateRequest()
 {

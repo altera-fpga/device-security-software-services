@@ -10,8 +10,8 @@ service:
         signing-key-threshold-days: 1
         sealing-key-threshold-days: 1
     protocol:
-        sigma: false
-        spdm: true
+        sigma: ${ENABLE_SIGMA_PROTOCOL:false}
+        spdm: ${ENABLE_SPDM_PROTOCOL:true}
 
 application:
     distribution-point:
@@ -21,7 +21,9 @@ application:
         trusted-root-hash: >
             8F19C3380BA92615344ADF2C583DCFCD995844CF8C837FE2AEC8BB53CB43A800,
             A11BB90D6F9F4F2E5BE018699E4F75C37016458D4910398FF5F052B7120C678E,
-            8C17A32952D42FE6FD2C3BF3D2C621E3CBA6DF2401E47713FEA645435BE3CC31
+            8C17A32952D42FE6FD2C3BF3D2C621E3CBA6DF2401E47713FEA645435BE3CC31,
+            3F2092D74BF5981A6654B5C3576A094E47B660987C8BC4CA9FFD37995551D5F1,
+            9DB7D8D004D650B40ED993F2B665E19DA65BD065D7BBD35D6C1439C4B4201259
         proxy:
             host: ''
             port: 0

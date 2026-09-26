@@ -160,15 +160,6 @@ struct fcs_random_number_gen {
 	uint32_t rndm[8];
 };
 
-/**
- * struct fcs_psgsigma_teardown
- * @teardown
- * @sid: session ID
- */
-struct fcs_psgsigma_teardown {
-	bool teardown;
-	uint32_t sid;
-};
 
 /**
  * struct fcs_attestation_chipid
@@ -447,7 +438,6 @@ struct altera_fcs_dev_ioctl {
 		struct fcs_data_encryption	d_encryption;
 		struct fcs_data_decryption	d_decryption;
 		struct fcs_random_number_gen	rn_gen;
-		struct fcs_psgsigma_teardown	tdown;
 		struct fcs_attestation_chipid	c_id;
 		struct fcs_attestation_subkey	subkey;
 		struct fcs_attestation_measuerments	measurement;
@@ -491,8 +481,6 @@ struct altera_fcs_dev_ioctl {
  *
  * @ALTERA_FCS_DEV_RANDOM_NUMBER_GEN_CMD:
  *
- * @ALTERA_FCS_DEV_PSGSIGMA_TEARDOWN:
- *
  * @ALTERA_FCS_DEV_CHIP_ID:
  *
  * @ALTERA_FCS_DEV_ATTESTATION_SUBKEY:
@@ -521,8 +509,7 @@ enum altera_fcs_command_code {
 	ALTERA_FCS_DEV_DATA_ENCRYPTION_CMD = 0x7E,
 	ALTERA_FCS_DEV_DATA_DECRYPTION_CMD,
 	ALTERA_FCS_DEV_RANDOM_NUMBER_GEN_CMD,
-	ALTERA_FCS_DEV_PSGSIGMA_TEARDOWN_CMD = 0x88,
-	ALTERA_FCS_DEV_CHIP_ID_CMD,
+	ALTERA_FCS_DEV_CHIP_ID_CMD = 0x89,
 	ALTERA_FCS_DEV_ATTESTATION_SUBKEY_CMD,
 	ALTERA_FCS_DEV_ATTESTATION_MEASUREMENT_CMD,
 	ALTERA_FCS_DEV_ATTESTATION_GET_CERTIFICATE_CMD,
@@ -583,9 +570,6 @@ enum altera_fcs_command_code {
 	_IOWR(ALTERA_FCS_IOCTL, \
 	      ALTERA_FCS_DEV_RANDOM_NUMBER_GEN_CMD, struct altera_fcs_dev_ioctl)
 
-#define ALTERA_FCS_DEV_PSGSIGMA_TEARDOWN \
-	_IOWR(ALTERA_FCS_IOCTL, \
-	      ALTERA_FCS_DEV_PSGSIGMA_TEARDOWN_CMD, struct altera_fcs_dev_ioctl)
 
 #define ALTERA_FCS_DEV_CHIP_ID \
 	_IOWR(ALTERA_FCS_IOCTL, \

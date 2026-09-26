@@ -50,13 +50,6 @@ bool FcsCommunicationFcsIoctl::runCommandCode(VerifierProtocol verifierProtocol,
                 payloadFromFcs, statusReturnedFromFcs);
         }
         break;
-        case SDM_COMMAND_CODE::SIGMA_TEARDOWN:
-        {
-            fcsCallSucceeded = sigmaTeardown(
-                verifierProtocol.getSigmaTeardownSessionId(),
-                statusReturnedFromFcs);
-        }
-        break;
         case SDM_COMMAND_CODE::CREATE_ATTESTATION_SUBKEY:
         {
             fcsCallSucceeded = createAttestationSubkey(
@@ -88,9 +81,6 @@ bool FcsCommunicationFcsIoctl::runCommandCode(VerifierProtocol verifierProtocol,
             }
         }
         break;
-        case SDM_COMMAND_CODE::SIGMA_M1:
-        case SDM_COMMAND_CODE::SIGMA_M3:
-        case SDM_COMMAND_CODE::SIGMA_ENC:
         case SDM_COMMAND_CODE::MCTP:
         case SDM_COMMAND_CODE::GET_JTAG_IDCODE:
         case SDM_COMMAND_CODE::GET_DEVICE_IDENTITY:
@@ -188,21 +178,6 @@ bool FcsCommunicationFcsIoctl::getChipId(
     return true;
 }
 
-bool FcsCommunicationFcsIoctl::sigmaTeardown(uint32_t sessionId, int32_t& fcsStatus)
-{
-    Logger::log("Calling sigmaTeardown with session ID: "
-        + std::to_string(static_cast<int32_t>(sessionId)));
-    altera_fcs_dev_ioctl data = {};
-    data.com_paras.tdown.teardown = true;
-    data.com_paras.tdown.sid = sessionId;
-
-    if (!sendIoctl(&data, ALTERA_FCS_DEV_PSGSIGMA_TEARDOWN))
-    {
-        return false;
-    }
-    fcsStatus = data.status;
-    return true;
-}
 
 bool FcsCommunicationFcsIoctl::createAttestationSubkey(
     std::vector<uint8_t> inBuffer,

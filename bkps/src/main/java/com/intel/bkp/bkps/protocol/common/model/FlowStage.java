@@ -34,11 +34,6 @@ package com.intel.bkp.bkps.protocol.common.model;
 
 public enum FlowStage {
     PROTOCOL_DECISION,
-    SIGMA_CREATE_SESSION,
-    SIGMA_INIT_DATA,
-    SIGMA_AUTH_DATA,
-    SIGMA_ENC,
-    SIGMA_ENC_ASSET,
     PROV_RESULT,
     SPDM_GET_CHIPID,
     SPDM_SESSION,

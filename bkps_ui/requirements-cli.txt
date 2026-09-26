@@ -1,0 +1,26 @@
+# BKPS Demo Automation Tool - CLI / Headless Dependencies
+# For server installs, CI pipelines, or systems without a display.
+# Does NOT include PySide6 (GUI framework).
+#
+# Install with:
+#   pip install -r requirements-cli.txt
+#
+# To also install the GUI framework (requires a display at runtime):
+#   pip install -r requirements.txt
+
+# Cryptography and security
+ecdsa>=0.13,<=0.18
+cryptography>=3.4
+pyOpenSSL>=21.0.0
+pycryptodome>=3.10.0
+
+# Intel admin-tools/runner.py imports pkg_resources directly.
+setuptools>=65.0,<72
+
+# CLI utilities
+docopt>=0.6.2
+requests>=2.28.0
+packaging>=23.0
+
+# Database connectivity (binary wheel — no system libpq needed)
+psycopg2-binary>=2.9.0

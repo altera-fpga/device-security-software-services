@@ -56,7 +56,7 @@ private:
 public:
     GetNextMessage(std::string cfgId)
     {
-        request.cfgId = cfgId;
+        request.cfgId = std::move(cfgId);
     }
     std::string getEndpoint() override { return "/prov/v1/get_next"; }
     NetworkRequest& getRequest() override { return request; }
@@ -70,7 +70,8 @@ public:
     };
     void parseFromResponseJson(std::string jsonString) override
     {
-        boost::json::value jsonValue = boost::json::parse(jsonString);
+        boost::json::value jsonValue{};
+        jsonValue = boost::json::parse(jsonString);
         parseFromResponseJsonCommon(jsonValue);
         response.context.value = jsonValue.at(fields::context).at(fields::context_value).as_string();
 
