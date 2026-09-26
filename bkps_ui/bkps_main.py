@@ -177,22 +177,20 @@ def _require(extra: list, index: int, name: str) -> str:
     return extra[index]
 
 
-# CLI mode token ``bkps_only`` maps to Config ``bkps_build_mode=bkp_only``.
+# CLI selection maps onto Config ``bkps_build_mode`` / ``include_bkp_programmer``.
+# ``full`` always includes BKPProgrammer, matching the repository --full flag.
 _BUILD_ALL_CLI_MODES = {
-    "full": "full",
-    "bkps_only": "bkp_only",
+    "full": ("full", True),
+    "bkps_only": ("bkp_only", False),
+    "bkps_with_programmer": ("bkp_only", True),
 }
 
 
 def _apply_build_all_extras(cfg: Config, extra: list) -> None:
-    """
-    Defaults for this command (override conf): ``full``, programmer off.
-    """
-    cfg.bkps_build_mode = "full"
-    cfg.include_bkp_programmer = False
+    """Defaults for this command (override conf): ``bkps_only``, as in the GUI."""
+    cfg.bkps_build_mode, cfg.include_bkp_programmer = _BUILD_ALL_CLI_MODES["bkps_only"]
 
     mode_set = False
-    include_set = False
     for tok in extra:
         raw = (tok or "").strip()
         if not raw:
@@ -202,22 +200,15 @@ def _apply_build_all_extras(cfg: Config, extra: list) -> None:
             if mode_set:
                 print_error(
                     "Duplicate build mode for --build-all. "
-                    "Use exactly one of: full | bkps_only."
+                    "Use exactly one of: full | bkps_only | bkps_with_programmer."
                 )
                 sys.exit(1)
-            cfg.bkps_build_mode = _BUILD_ALL_CLI_MODES[low]
+            cfg.bkps_build_mode, cfg.include_bkp_programmer = _BUILD_ALL_CLI_MODES[low]
             mode_set = True
-            continue
-        if raw == "--include-programmer":
-            if include_set:
-                print_error("Duplicate --include-programmer for --build-all.")
-                sys.exit(1)
-            cfg.include_bkp_programmer = True
-            include_set = True
             continue
         print_error(
             f"Invalid --build-all argument: {raw!r}. "
-            "Usage: --build-all [full|bkps_only] [--include-programmer]"
+            "Usage: --build-all [full|bkps_only|bkps_with_programmer]"
         )
         sys.exit(1)
 
@@ -1030,15 +1021,13 @@ Installation Pipeline:
     --install-dependencies                 1. Check/Setup Dependencies
     --check-dependencies                   Re-check installed dependencies
     --auto-detect-prebuilt [--save]        Scan cfg.bkps_repo_dir for prebuilt artefacts
-    --build-all [full|bkps_only] [--include-programmer]
+    --build-all [full|bkps_only|bkps_with_programmer]
                                            2. Setup BKPS Repository (source build).
-                                           Defaults: full, programmer not included.
-                                           Examples:
+                                           Defaults to bkps_only. Examples:
                                              --build-all
                                              --build-all full
                                              --build-all bkps_only
-                                             --build-all full --include-programmer
-                                             --build-all bkps_only --include-programmer
+                                             --build-all bkps_with_programmer
     --setup-bkps-server                    3. Install Security Provider
                                            4. Create SSL Certificates
                                            5. Create BKPS Keystore
@@ -1166,7 +1155,7 @@ Workflow (individual steps, UI pipeline order):
     # Installation Pipeline
     python3 bkps_main.py --install-dependencies
     python3 bkps_main.py --build-all
-    python3 bkps_main.py --build-all [full|bkps_only] [--include-programmer]
+    python3 bkps_main.py --build-all [full|bkps_only|bkps_with_programmer]
     python3 bkps_main.py --setup-bkps-server
 
     # Server Pipeline

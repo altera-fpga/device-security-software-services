@@ -7,5 +7,3 @@ libcurl.version=8.12.1
 libcurl.sha256=7b40ea64947e0b440716a4d7f0b7aa56230a5341c8377d7b609649d4aea8dbcf
 gtest.version=1.14.0
 gtest.sha256=8ad598c73ad796e0d8280b082cebd82a630d73e73cd3c70057938a6501bba5d7
-mbedtls.version=2.16.6
-mbedtls.sha256=38ea2768669d04dab7fe7d1114e489378bf4f23e5b96271a3ed4cecd99a3f807

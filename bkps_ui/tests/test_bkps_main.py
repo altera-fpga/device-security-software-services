@@ -522,27 +522,25 @@ class MainDispatchCoverageTests(unittest.TestCase):
 
 
 class BuildAllExtrasTests(unittest.TestCase):
-    def test_defaults_full_without_programmer(self):
+    def test_defaults_to_bkps_only(self):
         cfg = Config()
-        cfg.bkps_build_mode = "bkp_only"
+        cfg.bkps_build_mode = "full"
         cfg.include_bkp_programmer = True
         main._apply_build_all_extras(cfg, [])
-        self.assertEqual(cfg.bkps_build_mode, "full")
+        self.assertEqual(cfg.bkps_build_mode, "bkp_only")
         self.assertFalse(cfg.include_bkp_programmer)
 
-    def test_mode_and_optional_include_programmer(self):
+    def test_mode_tokens(self):
         cfg = Config()
         main._apply_build_all_extras(cfg, ["bkps_only"])
         self.assertEqual(cfg.bkps_build_mode, "bkp_only")
         self.assertFalse(cfg.include_bkp_programmer)
 
-        main._apply_build_all_extras(cfg, ["full", "--include-programmer"])
+        main._apply_build_all_extras(cfg, ["full"])
         self.assertEqual(cfg.bkps_build_mode, "full")
         self.assertTrue(cfg.include_bkp_programmer)
 
-        main._apply_build_all_extras(
-            cfg, ["--include-programmer", "bkps_only"]
-        )
+        main._apply_build_all_extras(cfg, ["bkps_with_programmer"])
         self.assertEqual(cfg.bkps_build_mode, "bkp_only")
         self.assertTrue(cfg.include_bkp_programmer)
 
@@ -550,10 +548,10 @@ class BuildAllExtrasTests(unittest.TestCase):
         cfg = Config()
         for bad in (
             ["bkp_only"],
+            ["--include-programmer"],
             ["--no-programmer"],
             ["1.0"],
             ["full", "bkps_only"],
-            ["--include-programmer", "--include-programmer"],
             ["--bogus"],
             ["full", "extra"],
         ):
@@ -568,7 +566,7 @@ class BuildAllExtrasTests(unittest.TestCase):
                  patch.object(main, "build_all") as build:
                 main._dispatch(
                     "--build-all",
-                    ["bkps_only", "--include-programmer"],
+                    ["bkps_with_programmer"],
                     False,
                     True,
                 )

@@ -10,8 +10,8 @@ service:
         signing-key-threshold-days: 1
         sealing-key-threshold-days: 1
     protocol:
-        sigma: false
-        spdm: true
+        sigma: ${ENABLE_SIGMA_PROTOCOL:false}
+        spdm: ${ENABLE_SPDM_PROTOCOL:true}
 
 application:
     distribution-point:

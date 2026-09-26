@@ -48,6 +48,35 @@ To build each component manually, refer to README files:
 - [Verifier](./Verifier/README.md)
 - [FCS Server](./FCS/README.md)
 - [BKPProgrammer](./bkpprogrammer/README.md)
+- [BKPS UI](./bkps_ui/README.md)
+
+## BKPS UI demonstration tool
+
+`bkps_ui` is a BKPS automation tool with GUI and CLI modes. It helps users visualize how to set up BKPS correctly, from installation through BKP server setup, AES artifacts, BKP server configuration, and device provisioning. It includes the following pipelines, run in order:
+
+- **Installation** — install dependencies, set up the BKPS repository, security provider, SSL certificates, keystore, and BKPS configuration.
+- **Server** — initialize the database, start the BKPS server, create the super admin, authentication keys, and BKPS keys.
+- **AES** — generate QEK and ccert files.
+- **Configuration** — create a BKPS configuration, programmer user, and `bkp_options.txt`.
+- **Programming** — generate JIC, program JIC, BKP prefetch, PUF activate, set authority, and provision.
+
+**Disclaimer:** This tool is for demonstration purposes only.
+
+### Linux
+
+```bash
+cd bkps_ui
+./setup.sh && ./run.sh
+```
+
+### Windows
+
+```bat
+cd bkps_ui
+.\setup.bat && .\run.bat
+```
+
+`setup` creates a local Python virtual environment and installs required packages. `run` launches the GUI. Optional CLI usage and configuration details are in [bkps_ui/README.md](./bkps_ui/README.md).
 
 ## Release notes
 
