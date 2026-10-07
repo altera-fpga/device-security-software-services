@@ -11,7 +11,12 @@ import tempfile
 import time
 import sys
 from typing import Optional, Tuple
-from bkps_config import Config, DEVICE_FAMILIES
+from bkps_config import (
+    Config,
+    DEVICE_FAMILIES,
+    default_aes_config_filename,
+    is_spdm_softhsm_profile,
+)
 from bkps_printer import print_header, print_step, print_success, print_warning, print_error, print_info
 from bkps_runner import run, _ps_run, get_output, run_runner_tool as _runner
 from bkps_audit import audit_log
@@ -673,7 +678,7 @@ def prepare_aes_configuration_named(cfg: Config, config_name: str = None,
     """Copy the family template and inject the signed AES cert hex (and QEK hex when present).
 
     Args:
-        config_name: Output name; None writes ``agilex5_config.json`` in quartus_keys_dir, otherwise ``bkps_configs/{name}.json``.
+        config_name: Output name; None writes ``{profile}_config.json`` in quartus_keys_dir, otherwise ``bkps_configs/{name}.json``.
         corim_url: Optional override for the generated JSON ``corimUrl`` field.
     """
     print_header("Preparing AES Configuration")
@@ -720,8 +725,8 @@ def prepare_aes_configuration_named(cfg: Config, config_name: str = None,
         dest = os.path.join(configs_dir, config_name)
         print_info(f"Creating config: {config_name}")
     else:
-        # Default: in quartus_keys_dir
-        dest = os.path.join(keys_dir, "agilex5_config.json")
+        # Default: in quartus_keys_dir as {profile}_config.json
+        dest = os.path.join(keys_dir, default_aes_config_filename(profile))
 
     # Load template as JSON and update only required fields.
     if template:
@@ -804,8 +809,10 @@ def prepare_aes_configuration_named(cfg: Config, config_name: str = None,
 
 
 def validate_aes_configuration(cfg: Config) -> bool:
-    """Validate default agilex5_config.json in quartus_keys_dir. Returns True if valid."""
-    config_path = os.path.join(cfg.quartus_keys_dir, "agilex5_config.json")
+    """Validate default ``{profile}_config.json`` in quartus_keys_dir. Returns True if valid."""
+    config_path = os.path.join(
+        cfg.quartus_keys_dir, default_aes_config_filename(cfg.profile_name)
+    )
     return validate_aes_configuration_file(cfg, config_path)
 
 
@@ -885,8 +892,10 @@ def validate_aes_configuration_file(cfg: Config, config_path: str, parent_step=N
 
 
 def upload_aes_configuration(cfg: Config) -> None:
-    """Validate then upload default agilex5_config.json to BKPS."""
-    config_json = os.path.join(cfg.quartus_keys_dir, "agilex5_config.json")
+    """Validate then upload default ``{profile}_config.json`` to BKPS."""
+    config_json = os.path.join(
+        cfg.quartus_keys_dir, default_aes_config_filename(cfg.profile_name)
+    )
     upload_aes_configuration_file(cfg, config_json)
 
 
@@ -1097,14 +1106,14 @@ def run_prefetch(cfg: Config, family_id: str, device_id: str,
     """Send a prefetch request to BKPS for a specific device.
 
     Args:
-        family_id: Hex family ID (e.g. ``0x35`` for Agilex 5).
+        family_id: Hex family ID (e.g. ``0x36`` for related SPDM families).
         device_id: Device UID hex string.
         pdi: Optional PDI hex string.
         er_cert: Optional path to a DeviceID ER certificate file.
     """
     print_header("Running Prefetch")
     if not family_id:
-        raise ValueError("Family ID is required (e.g. 0x35)")
+        raise ValueError("Family ID is required (e.g. 0x36)")
     if not device_id:
         raise ValueError("Device ID is required (e.g. 0102030405060708)")
     args = ["prefetch", "--familyId", family_id, "--deviceId", device_id]
@@ -1308,7 +1317,7 @@ def create_bkp_config(cfg: Config, config_id_override: str = None) -> None:
         options += f"bkp_tls_prog_cert = \"{copied_prog_cert}\"\n"
         options += f"bkp_tls_prog_key = \"{copied_prog_key}\"\n"
 
-    if cfg.profile_name == "agilex5":
+    if is_spdm_softhsm_profile(cfg.profile_name):
         options += f"bkp_device_opn = {cfg.device_part}\n"
     with open(os.path.join(cm_dir, "bkp_options.txt"), "w") as f:
         f.write(options)

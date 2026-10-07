@@ -53,6 +53,7 @@ from bkps_softhsm import (
     softhsm_show_slots, softhsm_delete_token, softhsm_list_objects,
     softhsm_import_aes_key, softhsm_delete_key,
 )
+from bkps_config import is_spdm_softhsm_profile
 
 
 # ── Helper --------------------------------------------------------------
@@ -372,7 +373,7 @@ def _build_db(host) -> QGroupBox:
 
 # ── AES utilities --------------------------------------------------------
 def build_aes_utilities(host) -> QWidget:
-    """SoftHSM / BouncyCastle manual buttons (Agilex 5).  SIGMA hides these.
+    """SoftHSM / BouncyCastle manual buttons (Agilex 3/5).  SIGMA hides these.
 
     Layout:
       Row 1 (HBox): [AES key hex line-edit] [Import AES Key button]
@@ -455,7 +456,7 @@ def build_aes_utilities(host) -> QWidget:
 def refresh_aes_utility_visibility(host):
     """SIGMA hides the SoftHSM/BouncyCastle utility groupbox entirely."""
     profile = getattr(host.cfg, "profile_name", "") or ""
-    show = (profile == "agilex5")
+    show = is_spdm_softhsm_profile(profile)
     box = getattr(host, "_aes_util_box", None)
     if box is not None:
         box.setVisible(show)

@@ -22,6 +22,7 @@ from bkps_config import (
     aes_ccert_types_for_profile,
     detect_embedded_bkps_repo,
     detect_softhsm_tokens_dir,
+    is_spdm_softhsm_profile,
     LOGGING_TYPES,
     normalize_project_paths,
 )
@@ -387,7 +388,7 @@ class ConfigTab(BaseTab):
 
         # AES Encryption Password subsection: passphrase used by SIGMA
         # protocol supported devices (Agilex 7 / Stratix 10 / Easic N5X) openssl-based AES compact-cert
-        # flow.  Agilex 5 uses SoftHSM so the passphrase is not consulted;
+        # flow.  Agilex 3/5 use SoftHSM so the passphrase is not consulted;
         # the field is greyed out in that case.
         form = _new_section("AES Encryption Password")
         self._section_aes_passphrase = form._group_box  # entire section shown/hidden as one
@@ -485,8 +486,8 @@ class ConfigTab(BaseTab):
         )
         form.addRow(self._lbl_aes_ccert_iv, self._le_aes_ccert_iv)
 
-        # ── SoftHSM PKCS#11 (Agilex 5) ────────────────────────────────────
-        form = _new_section("SoftHSM PKCS\u266f11  (Agilex 5)")
+        # ── SoftHSM PKCS#11 (Agilex 3/5) ──────────────────────────────────
+        form = _new_section("SoftHSM PKCS\u266f11  (Agilex 3/5)")
         self._section_softhsm_label = form._group_box  # entire section shown/hidden as one
         self._softhsm_rows: list = []
 
@@ -560,7 +561,7 @@ class ConfigTab(BaseTab):
             (self._softhsm_tokens_row_label, self._softhsm_tokens_row_widget)
         )
 
-        self._le_softhsm_token_label = _le("SoftHSM Token Label", attr="softhsm_token_label", text=self.cfg.softhsm_token_label, tip="Label of the SoftHSM token used for AES key operations (Agilex 5).", fields=self._fields)
+        self._le_softhsm_token_label = _le("SoftHSM Token Label", attr="softhsm_token_label", text=self.cfg.softhsm_token_label, tip="Label of the SoftHSM token used for AES key operations (Agilex 3/5).", fields=self._fields)
         lbl = QLabel("Token Label:")
         form.addRow(lbl, self._le_softhsm_token_label)
         self._softhsm_rows.append((lbl, self._le_softhsm_token_label))
@@ -584,7 +585,7 @@ class ConfigTab(BaseTab):
             "Full path to softhsm2-util (leave empty to use PATH)",
             tip=(
                 "Full filesystem path to the softhsm2-util executable.\n"
-                "Used by the AES compact certificate tab (Agilex 5) for all\n"
+                "Used by the AES compact certificate tab (Agilex 3/5) for all\n"
                 "SoftHSM token operations.  Leave empty to fall back to PATH."
             ),
             attr="softhsm_util_path",
@@ -601,7 +602,7 @@ class ConfigTab(BaseTab):
             "Full path to pkcs11-tool (leave empty to use PATH)",
             tip=(
                 "Full filesystem path to the pkcs11-tool executable (from OpenSC).\n"
-                "Used by the AES compact certificate tab (Agilex 5) for AES key\n"
+                "Used by the AES compact certificate tab (Agilex 3/5) for AES key\n"
                 "generation and import via SoftHSM.  Leave empty to fall back to PATH."
             ),
             attr="pkcs11_tool_path",
@@ -611,9 +612,9 @@ class ConfigTab(BaseTab):
         form.addRow(self._pkcs11_tool_row_label, _pkcs11_tool_row)
         self._softhsm_rows.append((self._pkcs11_tool_row_label, _pkcs11_tool_row))
 
-        # ── BKPS Installation — Build from Source (Agilex 5) ─────────────
+        # ── BKPS Installation — Build from Source (Agilex 3/5) ───────────
         form = _new_section(
-            "BKPS Installation — Build from Source  (Agilex 5, SPDM protocol)"
+            "BKPS Installation — Build from Source  (Agilex 3/5, SPDM protocol)"
         )
         self._section_source_label = form._group_box
 
@@ -757,7 +758,7 @@ class ConfigTab(BaseTab):
 
         self._le_bkps_jar = _le(
             "Leave empty to build/extract automatically",
-            tip="Optional pre-built BKPS server JAR. Leave empty to build from source (Agilex 5) or extract from the bundle ZIP (SIGMA).",
+            tip="Optional pre-built BKPS server JAR. Leave empty to build from source (Agilex 3/5) or extract from the bundle ZIP (SIGMA).",
             attr="bkps_jar_path",
             fields=self._fields
         )
@@ -782,8 +783,8 @@ class ConfigTab(BaseTab):
 
         self._libspdm_row_label = QLabel("libspdm Wrapper Path:")
         self._le_libspdm = _le(
-            "Leave empty to build automatically (Agilex 5)",
-            tip="Path to the libspdm_wrapper shared library (Agilex 5). Leave empty to auto-build during installation.",
+            "Leave empty to build automatically (Agilex 3/5)",
+            tip="Path to the libspdm_wrapper shared library (Agilex 3/5). Leave empty to auto-build during installation.",
             attr="libspdm_wrapper_path",
             fields=self._fields
         )
@@ -1295,7 +1296,7 @@ class ConfigTab(BaseTab):
             self._install_bundle_row_widget.setVisible(not from_src)
         self._refresh_install_bundle_state()
 
-        # Repo dir + release: visible only for SPDM (Agilex 5)
+        # Repo dir + release: visible only for SPDM (Agilex 3/5)
         if self._repo_row_label:
             self._repo_row_label.setVisible(from_src)
         if self._repo_row_widget:
@@ -1313,18 +1314,18 @@ class ConfigTab(BaseTab):
             if widget:
                 widget.setVisible(from_src)
 
-        # SoftHSM section and fields: visible only for Agilex 5
+        # SoftHSM section and fields: visible only for Agilex 3/5 SPDM
         profile = entry[0] if entry else ""
-        is_agilex5 = (profile == "agilex5")
+        is_spdm = is_spdm_softhsm_profile(profile)
         if self._section_softhsm_label:
-            self._section_softhsm_label.setVisible(is_agilex5)
+            self._section_softhsm_label.setVisible(is_spdm)
         for lbl, le in getattr(self, "_softhsm_rows", []):
-            lbl.setVisible(is_agilex5)
-            le.setVisible(is_agilex5)
+            lbl.setVisible(is_spdm)
+            le.setVisible(is_spdm)
 
         # AES Passphrase: always visible.  Consumed by every AES QEK
         # creation path — SIGMA (bkps_keys.create_aes_key Step 1) and
-        # Agilex 5 (bkps_softhsm.softhsm_create_qek_and_ccert Step 5)
+        # Agilex 3/5 (bkps_softhsm.softhsm_create_qek_and_ccert Step 5)
         # both feed it to ``quartus_encrypt --operation=make_aes_key``
         # to produce the AES QEK used by BKPS provisioning.  JIC generation
         # does not consume this passphrase or alter bitstream protection.

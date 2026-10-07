@@ -222,6 +222,7 @@ def configure_system_softhsm_defaults(cfg) -> None:
 # Device family definitions
 # Maps display name -> (profile_name, protocol, build_from_source, configuration template)
 DEVICE_FAMILIES = {
+    "Agilex 3  (SPDM)":    ("agilex3",   "SPDM",  True,  "sample_AgilexB.json"),
     "Agilex 5  (SPDM)":    ("agilex5",   "SPDM",  True,  "sample_AgilexB.json"),
     "Agilex 7  (SIGMA)":   ("agilex",   "SIGMA", False, "sample_Agilex.json"),
     "Easic N5X  (SIGMA)":   ("easic_n5x",   "SIGMA", False, "sample_EasicN5X.json"),
@@ -237,24 +238,43 @@ LOGGING_TYPES = [
 
 # PUF type per device families
 PUF_TYPES = {
+    "agilex3": {"puf_activate": ["UDS_INTEL"], "set_authority": ["UDS_EFUSE", "UDS_INTEL"]},
     "agilex5": {"puf_activate": ["UDS_INTEL"], "set_authority": ["UDS_EFUSE", "UDS_INTEL"]},
     "agilex": {"puf_activate": ["UDS_IID"], "set_authority": ["UDS_EFUSE", "UDS_IID"]},
     "easic_n5x": {"set_authority": ["UDS_EFUSE"]}
 }
 
+# Agilex 3 / Agilex 5 share SoftHSM + SPDM provisioning behaviour.
+SPDM_SOFTHSM_PROFILES = frozenset({"agilex3", "agilex5"})
+
+
+def is_spdm_softhsm_profile(profile: str) -> bool:
+    """True for Agilex 3/5 SPDM SoftHSM device profiles."""
+    return (profile or "").strip().lower() in SPDM_SOFTHSM_PROFILES
+
+
+def default_aes_config_filename(profile: str) -> str:
+    """Default AES config basename under ``quartus_keys_dir``: ``{profile}_config.json``."""
+    name = (profile or "").strip().lower()
+    return f"{name}_config.json"
+
+
 # AES compact-certificate storage types per device profile.
 # Used as the ccert_type option in: quartus_pfg --ccert -o ccert_type=<value> ...
 # Each entry maps ccert_type -> [puf_type, key_storage].
 # key_storage is EFUSE, BBRAM, or OFFCHIP; AES ccert IV is required for OFFCHIP.
+_AGILEX_SPDM_AES_CCERT_TYPES: dict[str, list[str]] = {
+    "EFUSE_WRAPPED_AES_KEY": ["INTERNAL", "EFUSE"],
+    "EFUSE_UDS_INTEL_PUF_WRAPPED_AES_KEY": ["UDS_INTEL_PUF", "EFUSE"],
+    "BBRAM_WRAPPED_AES_KEY": ["INTERNAL", "BBRAM"],
+    "BBRAM_UDS_INTEL_PUF_WRAPPED_AES_KEY": ["UDS_INTEL_PUF", "BBRAM"],
+    "UDS_EFUSE_WRAPPED_AES_KEY": ["INTERNAL", "OFFCHIP"],
+    "UDS_INTEL_PUF_WRAPPED_AES_KEY": ["UDS_INTEL_PUF", "OFFCHIP"]
+}
+
 AES_CCERT_TYPES: dict[str, dict[str, list[str]]] = {
-    "agilex5": {
-        "EFUSE_WRAPPED_AES_KEY": ["INTERNAL", "EFUSE"],
-        "EFUSE_UDS_INTEL_PUF_WRAPPED_AES_KEY": ["UDS_INTEL_PUF", "EFUSE"],
-        "BBRAM_WRAPPED_AES_KEY": ["INTERNAL", "BBRAM"],
-        "BBRAM_UDS_INTEL_PUF_WRAPPED_AES_KEY": ["UDS_INTEL_PUF", "BBRAM"],
-        "UDS_EFUSE_WRAPPED_AES_KEY": ["INTERNAL", "OFFCHIP"],
-        "UDS_INTEL_PUF_WRAPPED_AES_KEY": ["UDS_INTEL_PUF", "OFFCHIP"]
-    },
+    "agilex3": _AGILEX_SPDM_AES_CCERT_TYPES,
+    "agilex5": _AGILEX_SPDM_AES_CCERT_TYPES,
     "agilex": {
         "EFUSE_WRAPPED_AES_KEY": ["INTERNAL", "EFUSE"],
         "BBRAM_WRAPPED_AES_KEY": ["INTERNAL", "BBRAM"],
@@ -341,7 +361,7 @@ class Config:
     hsm_keystore_password: str = ""   # Luna partition password / nCipher .sworld password
     hsm_keystore_path: str = ""       # Luna: tokenlabel:BKPPartition / nCipher: path to JKS
 
-    # SoftHSM PKCS#11 (Agilex 5 HSM-based AES key generation)
+    # SoftHSM PKCS#11 (Agilex 3/5 HSM-based AES key generation)
     softhsm_lib_path:    str = field(default_factory=detect_system_softhsm_library)
     softhsm_token_label: str = "AlteraAESToken"
     softhsm_user_pin:    str = "12345678"
@@ -415,7 +435,7 @@ class Config:
     security_provider: str = "bouncycastle"
     profile_name: str = "agilex5"
 
-    # SPDM wrapper library path (required for Agilex 5 / Agilex 7 SPDM provisioning)
+    # SPDM wrapper library path (required for Agilex 3/5 SPDM provisioning)
     libspdm_wrapper_path: str = ""
 
     # Logging level for BKPS application.yml (INFO or DEBUG)
@@ -491,7 +511,7 @@ class Config:
 
     @property
     def build_from_source(self) -> bool:
-        """True if this device family requires building BKPS from source (SPDM/Agilex 5)."""
+        """True if this device family requires building BKPS from source (SPDM)."""
         for _, (profile, _, from_src, _) in DEVICE_FAMILIES.items():
             if self.profile_name == profile:
                 return from_src
@@ -748,7 +768,7 @@ AES_CANCEL_ID={cfg.aes_cancel_id}    # --cancel value for AES cert signing key (
 BKPS_SIGNING_KEY_CANCEL_ID={cfg.bkps_signing_key_cancel_id}  # --cancel value for BKPS signing key (append_key)
 AES_CCERT_IV={cfg.aes_ccert_iv}      # IV hex; required only when key storage is OFFCHIP
 
-# ── SoftHSM PKCS#11 (Agilex 5) ───────────────────────────────────────────────
+# ── SoftHSM PKCS#11 (Agilex 3/5) ─────────────────────────────────────────────
 SOFTHSM_LIB_PATH={cfg.softhsm_lib_path}
 SOFTHSM_TOKEN_LABEL={cfg.softhsm_token_label}
 SOFTHSM_USER_PIN={cfg.softhsm_user_pin}
@@ -759,7 +779,7 @@ SOFTHSM_TOKENS_DIR={cfg.softhsm_tokens_dir}
 SOFTHSM_UTIL_PATH={cfg.softhsm_util_path}
 PKCS11_TOOL_PATH={cfg.pkcs11_tool_path}
 
-# ── BKPS Installation: Build from Source (Agilex 5 — SPDM) ──────────────────
+# ── BKPS Installation: Build from Source (Agilex 3/5 — SPDM) ────────────────
 # Used when BKPS_JAR_PATH and BKPS_SQL_PATH are both empty.
 # Leave empty to auto-detect when bkps_ui is already inside a cloned
 # device-security-software-services tree (skips git clone). Otherwise set

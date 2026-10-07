@@ -2,7 +2,7 @@
 """JTAG-based device provisioning for Intel FPGAs (connection, fuses, RKH, BKP, JIC, CoRIM, SPDM)."""
 
 import os
-from bkps_config import Config
+from bkps_config import Config, is_spdm_softhsm_profile
 from bkps_printer import print_header, print_step, print_success, print_warning, print_error, print_info
 from bkps_runner import _ps_run, get_output
 
@@ -293,8 +293,8 @@ def read_saved_corim_url(cfg: Config) -> str:
 # reference flash map and must not be changed without consulting the Quartus
 # flash layout documentation.
 
-def _build_pfg_agilex5(output_dir: str, flash_device: str, flash_loader: str, design_rbf: str) -> str:
-    """Return PFG XML for Agilex 5.
+def _build_pfg_agilex_spdm(output_dir: str, flash_device: str, flash_loader: str, design_rbf: str) -> str:
+    """Return PFG XML for Agilex 3/5 SPDM flash layout.
 
     Args:
         output_dir: Directory where quartus_pfg will write the JIC.
@@ -489,12 +489,12 @@ def generate_jic(cfg: Config, sof: str | None, output_dir: str,
 
     print_step(next_step, "Writing PFG configuration file...")
     # Select flash layout template based on device family
-    if cfg.profile_name == "agilex5":
-        pfg_xml = _build_pfg_agilex5(output_dir, flash_device, flash_loader, design_rbf)
+    if is_spdm_softhsm_profile(cfg.profile_name):
+        pfg_xml = _build_pfg_agilex_spdm(output_dir, flash_device, flash_loader, design_rbf)
     else:
         pfg_xml = _build_pfg(cfg, output_dir, flash_device, flash_loader, design_rbf, staged_puf)
 
-    output_stem = "output_files" if cfg.profile_name == "agilex5" else "output_file"
+    output_stem = "output_files" if is_spdm_softhsm_profile(cfg.profile_name) else "output_file"
     pfg_path = os.path.join(output_dir, f"{output_stem}.pfg")
     with open(pfg_path, "w") as fh:
         fh.write(pfg_xml)

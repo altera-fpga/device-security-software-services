@@ -206,9 +206,11 @@ class MainDispatchCoverageTests(unittest.TestCase):
         self.assertEqual(main._require(["a"], 0, "X"), "a")
         with tempfile.TemporaryDirectory() as root:
             cfg = _cfg(root)
-            self.assertTrue(main._is_agilex5(cfg))
+            self.assertTrue(main.is_spdm_softhsm_profile(cfg.profile_name))
+            cfg.profile_name = "agilex3"
+            self.assertTrue(main.is_spdm_softhsm_profile(cfg.profile_name))
             cfg.profile_name = "agilex"
-            self.assertFalse(main._is_agilex5(cfg))
+            self.assertFalse(main.is_spdm_softhsm_profile(cfg.profile_name))
 
     def test_populate_and_create_qek(self):
         with tempfile.TemporaryDirectory() as root:

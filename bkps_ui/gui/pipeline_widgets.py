@@ -181,7 +181,7 @@ from bkps_device import (
 )
 from bkps_config import (
     DEVICE_FAMILIES, PUF_TYPES, AES_CCERT_TYPES, aes_ccert_lookup,
-    normalize_project_paths,
+    is_spdm_softhsm_profile, normalize_project_paths,
 )
 from bkps_printer import print_warning, print_info
 
@@ -664,7 +664,7 @@ def _dispatch_bkps_repo_setup(cfg) -> None:
     sql     = getattr(cfg, "bkps_sql_path",        "") or ""
     libspdm = getattr(cfg, "libspdm_wrapper_path", "") or ""
     admin   = getattr(cfg, "bkps_admin_tools_dir", "") or ""
-    is_agilex5 = (getattr(cfg, "profile_name", "") == "agilex5")
+    is_spdm = is_spdm_softhsm_profile(getattr(cfg, "profile_name", ""))
 
     # Report one line per pre-built artifact so the operator can see exactly
     # which source is going to feed the repository setup step.
@@ -695,15 +695,15 @@ def _dispatch_bkps_repo_setup(cfg) -> None:
         print("Installing user-provided pre-built artifacts "
               "(install_from_files)...")
         install_from_files(cfg)
-    elif is_agilex5 and cfg.build_from_source:
-        print("No complete pre-built set — Agilex 5 build-from-source enabled.")
+    elif is_spdm and cfg.build_from_source:
+        print("No complete pre-built set — Agilex 3/5 build-from-source enabled.")
         build_all(cfg)
-    elif not is_agilex5:
+    elif not is_spdm:
         print("No complete pre-built set — extracting configured bundle ZIP.")
         install_bundle_zip(cfg)
     else:
         raise RuntimeError(
-            "Cannot install bundle for Agilex 5: no pre-built JAR/SQL/"
+            "Cannot install bundle for Agilex 3/5: no pre-built JAR/SQL/"
             "admin-tools/libspdm set on Config, and 'Build BKPS from source' "
             "is disabled."
         )
@@ -752,7 +752,7 @@ def build_installation_pipeline_box(host) -> QGroupBox:
                               "supported missing dependencies, then verifies them again. "
                               "Does not clean or modify BKPS project artifacts."),
         ("repo_setup",        "Cleans generated BKPS installation artifacts, then installs "
-                              "pre-built files, builds the configured Agilex 5 repository, "
+                              "pre-built files, builds the configured Agilex 3/5 repository, "
                               "or extracts the configured bundle ZIP."),
         ("security_provider", "Runs the setup_* helper for the selected Security Provider "
                               "(BouncyCastle / Luna / nCipher) from the Config tab."),
@@ -952,16 +952,16 @@ def build_aes_pipeline_box(host) -> QGroupBox:
     slay.addLayout(hex_row)
     layout.addWidget(sbox)
 
-    def _is_agilex5():
-        return (getattr(host.cfg, "profile_name", "") == "agilex5")
+    def _is_spdm():
+        return is_spdm_softhsm_profile(getattr(host.cfg, "profile_name", ""))
 
     def _pipe_init_token(cfg):
-        if not _is_agilex5():
+        if not _is_spdm():
             return True
         return softhsm_init_token(cfg)
 
     def _pipe_create_key(cfg):
-        if not _is_agilex5():
+        if not _is_spdm():
             return True
         aes_hex = host._aes_hex_edit.text().strip()
         if aes_hex:
@@ -972,12 +972,12 @@ def build_aes_pipeline_box(host) -> QGroupBox:
 
     def _pipe_create_qek(cfg):
         aes_hex = host._aes_hex_edit.text().strip()
-        if _is_agilex5():
+        if _is_spdm():
             result = softhsm_create_qek_and_ccert(cfg, aes_hex)
         else:
             result = create_aes_key(cfg)
         try:
-            if _is_agilex5():
+            if _is_spdm():
                 url = extract_and_save_corim_url_from_provision_helper(cfg)
                 print_info(f"Configuration corimUrl will be auto-filled: {url}")
         except Exception as exc:
@@ -995,9 +995,9 @@ def build_aes_pipeline_box(host) -> QGroupBox:
     host._step_dispatch[("aes", "create_qek_ccert")] = _pipe_create_qek
 
     specs = [
-        ("init_token",       "Initialise a SoftHSM token (Agilex 5).  On SIGMA this step "
+        ("init_token",       "Initialise a SoftHSM token (Agilex 3/5).  On SIGMA this step "
                              "is a no-op that auto-succeeds."),
-        ("create_key",       "Generate/import an AES key in SoftHSM (Agilex 5).  On SIGMA "
+        ("create_key",       "Generate/import an AES key in SoftHSM (Agilex 3/5).  On SIGMA "
                              "this step is a no-op that auto-succeeds."),
         ("create_qek_ccert", "Build QEK, wrap in ccert, sign → signed_aes_efuse.ccert.  "
                              "On SIGMA this runs bkps_keys.create_aes_key end-to-end."),
@@ -1011,6 +1011,7 @@ def build_aes_pipeline_box(host) -> QGroupBox:
 
 # ── Configuration pipeline -------------------------------------------------
 _FAMILY_TEMPLATE = {
+    "agilex3":   "sample_AgilexB.json",
     "agilex5":   "sample_AgilexB.json",
     "agilex":   "sample_Agilex.json",
     "easic_n5x": "sample_EasicN5X.json",
@@ -1021,10 +1022,10 @@ _IMPORT_MODES = ["ENCRYPTED", "PLAINTEXT"]
 _BOOL_CHOICES = ["True", "False"]
 
 # Allowed pufType values, filtered by device family.  EFUSE is universal;
-# INTEL / INTEL_USER are Agilex 5 only; IID / IIDUSER are Agilex 7 only.
+# INTEL / INTEL_USER are Agilex 3/5 only; IID / IIDUSER are Agilex 7 only.
 def _puf_type_options(profile: str) -> list[str]:
     prof = (profile or "").strip().lower()
-    if prof == "agilex5":
+    if is_spdm_softhsm_profile(prof):
         return ["EFUSE", "INTEL", "INTEL_USER"]
     if prof == "agilex":
         return ["EFUSE", "IID", "IIDUSER"]
@@ -1367,7 +1368,7 @@ def build_configuration_settings_box(host, include_config_id: bool = True) -> QG
                 _combo_select(combo, v)
                 combo.setToolTip(
                     "PUF type options are filtered by device family: "
-                    "INTEL / INTEL_USER are Agilex 5 only, IID / IIDUSER "
+                    "INTEL / INTEL_USER are Agilex 3/5 only, IID / IIDUSER "
                     "are Agilex 7 only, EFUSE is available on every family."
                 )
                 host._config_json_table.setCellWidget(r, 1, combo)
@@ -1780,13 +1781,13 @@ def _browse_dir(host, line_edit: QLineEdit):
 
 # ── Post-build helpers combined tabs call from their showEvent ------------
 def refresh_aes_pipeline_visibility(host) -> None:
-    """Show/hide Agilex-5-only AES buttons based on cfg.profile_name."""
+    """Show/hide Agilex 3/5 SoftHSM AES buttons based on cfg.profile_name."""
     profile = getattr(host.cfg, "profile_name", "") or ""
-    is_agilex5 = (profile == "agilex5")
+    is_spdm = is_spdm_softhsm_profile(profile)
     for sid in ("init_token", "create_key"):
         btn = host._pipe_buttons.get("aes", {}).get(sid)
         if btn is not None:
-            btn.setVisible(is_agilex5)
+            btn.setVisible(is_spdm)
     _refresh_step_arrows(host, "aes")
 
 

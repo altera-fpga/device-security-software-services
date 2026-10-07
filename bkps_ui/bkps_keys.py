@@ -283,7 +283,7 @@ def _verify_signing_key_active(cfg: Config, signing_key_id: str) -> None:
 
 
 def create_aes_key(cfg: Config) -> None:
-    """Create AES root key and unsigned ccert, then sign it (Agilex 5 uses key-info extraction; others use the .qek directly)."""
+    """Create AES root key and unsigned ccert, then sign it (Agilex 3/5 use key-info extraction; others use the .qek directly)."""
     print_header("Creating AES Root Key")
 
     keys_dir = cfg.quartus_keys_dir

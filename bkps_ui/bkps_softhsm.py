@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""SoftHSM PKCS#11 key operations for Agilex 5 AES provisioning."""
+"""SoftHSM PKCS#11 key operations for Agilex 3/5 SPDM AES provisioning."""
 
 import os
 import re
 import subprocess
-from bkps_config import Config, configure_system_softhsm_defaults
+from bkps_config import Config, configure_system_softhsm_defaults, is_spdm_softhsm_profile
 from bkps_windows_runtime import configure_windows_softhsm_defaults, windows_softhsm_root
 from bkps_printer import (
     print_header, print_step, print_success, print_warning,
@@ -233,7 +233,7 @@ def _shred_files(*paths: str) -> None:
 
 
 def softhsm_init_token(cfg: Config, parent_step=None) -> None:
-    """Initialize a new SoftHSM token for Agilex 5 AES key generation, skipping if the token label already exists.
+    """Initialize a new SoftHSM token for Agilex 3/5 AES key generation, skipping if the token label already exists.
 
     Args:
         parent_step: When set, print inner steps as parent.1, parent.2, ...
@@ -417,12 +417,17 @@ def softhsm_import_aes_key(cfg: Config, aes_hex: str, parent_step=None) -> None:
 
 
 def softhsm_create_qek_and_ccert(cfg: Config, aes_hex: str = "") -> None:
-    """Run the Agilex 5 AES key → QEK → ccert → sign flow using SoftHSM.
+    """Run the Agilex 3/5 AES key → QEK → ccert → sign flow using SoftHSM.
 
     Args:
         aes_hex: Optional 64-char hex AES key; leave empty to generate a fresh random 256-bit key.
     """
-    print_header("Creating AES Root Key via SoftHSM (Agilex 5)")
+    family = (getattr(cfg, "profile_name", "") or "").strip().lower()
+    if not is_spdm_softhsm_profile(family):
+        raise ValueError(
+            f"SoftHSM QEK/ccert is not supported for {family}"
+        )
+    print_header(f"Creating AES Root Key via SoftHSM ({family})")
 
     # Verify the exact provider and child-process environment before generating
     # or replacing any AES key material.
@@ -483,7 +488,7 @@ def softhsm_create_qek_and_ccert(cfg: Config, aes_hex: str = "") -> None:
         with open(pass_file, "w") as f:
             f.write(passphrase)
         _write_quartus_aes_key_file(hex_file, aes_hex)
-        _qe(cfg, ["--family=agilex5",
+        _qe(cfg, [f"--family={family}",
             "--operation=make_aes_key",
             f"--aes_key={hex_file}",
             f"--passphrase={pass_file}",
@@ -500,7 +505,7 @@ def softhsm_create_qek_and_ccert(cfg: Config, aes_hex: str = "") -> None:
         f"--hsm_lib={cfg.softhsm_lib_path}"
     )
     _qe(cfg, [
-        "--family=agilex5",
+        f"--family={family}",
         "--operation=make_aes_key",
         "--module=softHSM",
         f"--module_args={module_args}",
@@ -550,7 +555,7 @@ def softhsm_create_qek_and_ccert(cfg: Config, aes_hex: str = "") -> None:
     if cfg.aes_cancel_id:
         extra_opt.append(f"--cancel={cfg.aes_cancel_id}")
     _qs([
-        "--family=agilex5",
+        f"--family={family}",
         "--operation=sign",
         "--qky=aesccert1_sign_chain.qky",
         "--pem=aesccert1_private.pem",

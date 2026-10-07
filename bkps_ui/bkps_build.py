@@ -231,7 +231,7 @@ def build_all(cfg: Config) -> None:
     _apply_linux_spdm_wrapper_malloc_link(cfg.bkps_repo_dir)
 
     print_step(4, "Building selected BKPS artifacts...")
-    _ensure_agilex5_spdm_wrapper(cfg)
+    _ensure_spdm_wrapper(cfg)
 
     # ------------------------------------------------------------------ Step 5
     sid = print_step(5, f"Copying/updating files to {cfg.bkps_dir}...")
@@ -623,7 +623,7 @@ def _find_libspdm_wrapper_candidates(bkps_src: str) -> list[str]:
     return list(dict.fromkeys(candidates))
 
 
-def _ensure_agilex5_spdm_wrapper(cfg: Config) -> None:
+def _ensure_spdm_wrapper(cfg: Config) -> None:
     """Build repository-owned BKPS artifacts using the platform flow."""
 
     print_info("Building BKPS JAR, SQL schema, and SPDM wrapper...")

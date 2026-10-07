@@ -139,7 +139,7 @@ fi
 success "System packages installed."
 
 # =============================================================================
-# 1b. Install SoftHSM2 + PKCS#11 tools (required for SPDM devices, e.g. Agilex 5)
+# 1b. Install SoftHSM2 + PKCS#11 tools (required for SPDM devices, e.g. Agilex 3/5)
 # =============================================================================
 header "Installing SoftHSM2 + PKCS#11 tools (SPDM)"
 if [[ "$PKG_MGR" == "apt" ]]; then

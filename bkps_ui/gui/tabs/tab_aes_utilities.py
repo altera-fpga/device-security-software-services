@@ -9,7 +9,7 @@ from utility_widgets import build_aes_utilities, refresh_aes_utility_visibility
 
 
 class AesUtilitiesTab(BaseTab):
-    """Non-pipeline AES-ccert manual operations (Agilex 5 only)."""
+    """Non-pipeline AES-ccert manual operations (Agilex 3/5 only)."""
 
     def __init__(self, store: ConfigStore, capture: StdoutCapture, parent=None):
         self._util_buttons: list = []

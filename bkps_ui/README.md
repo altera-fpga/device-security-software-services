@@ -98,6 +98,7 @@ Device profiles:
 
 | Family     | Profile     |
 | ---------- | ----------- |
+| Agilex 3   | `agilex3`   |
 | Agilex 5   | `agilex5`   |
 | Agilex 7   | `agilex`    |
 | Easic N5X  | `easic_n5x` |
@@ -133,8 +134,8 @@ Server:
 
 AES:
 
-1. Init Token (Agilex 5)
-2. Create Key (Agilex 5)
+1. Init Token (Agilex 3/5)
+2. Create Key (Agilex 3/5)
 3. Create QEK + ccert + Sign
 
 Init Token and Create Key are not required for Agilex 7, Easic N5X, and Stratix 10.
@@ -158,7 +159,7 @@ Configuration:
 9. BKP Set Authority
 10. BKP Provision
 
-- PUF Activate is shown for Agilex 5 and Agilex 7 when the certificate type is not INTERNAL
+- PUF Activate is shown for Agilex 3/5 and Agilex 7 when the certificate type is not INTERNAL
 - Steps 7–8 are hidden for an INTERNAL certificate type, and on Stratix 10
 - Set Authority is hidden on Stratix 10
 - After PUF Activate, power-cycle the device before step 7
@@ -228,6 +229,7 @@ PUF values the GUI offers:
 
 | Family     | `--bkp-puf-activate` | `--bkp-set-authority`      |
 | ---------- | -------------------- | -------------------------- |
+| Agilex 3   | `UDS_INTEL`          | `UDS_EFUSE` or `UDS_INTEL` |
 | Agilex 5   | `UDS_INTEL`          | `UDS_EFUSE` or `UDS_INTEL` |
 | Agilex 7   | `UDS_IID`            | `UDS_EFUSE` or `UDS_IID`   |
 | Easic N5X  | not offered          | `UDS_EFUSE`                |
@@ -301,7 +303,7 @@ The same list is printed by `./run.sh --cli --help`.
 
 | Option                                                                 | Input      | Function                                               |
 | ---------------------------------------------------------------------- | ---------- | ------------------------------------------------------ |
-| `--init-token`, `--softhsm-init-token`                                 |            | Initialize the Agilex 5 SoftHSM token.                 |
+| `--init-token`, `--softhsm-init-token`                                 |            | Initialize the Agilex 3/5 SoftHSM token.               |
 | `--create-key`, `--softhsm-generate-aes-key`                           | `[64_HEX]` | Generate an AES-256 key, or import the supplied key.   |
 | `--softhsm-import-aes-key`                                             | `<64_HEX>` | Import an AES-256 key. The hex string is required.     |
 | `--create-qek-ccert`, `--softhsm-create-qek-ccert`, `--create-aes-key` | `[64_HEX]` | Create QEK and ccert files and update the AES JSON.    |
@@ -394,7 +396,7 @@ The same list is printed by `./run.sh --cli --help`.
 
 `python3`, `java`, `psql`, `openssl`, `wget`, `aria2c`, `jq`, `curl`, `git`, `unzip`, `keytool`, `cmake`, `make`, `nc`.
 
-- SoftHSM (`softhsm2-util`, `pkcs11-tool`, PKCS#11 library) is required for Agilex 5
+- SoftHSM (`softhsm2-util`, `pkcs11-tool`, PKCS#11 library) is required for Agilex 3/5
 - `setup.sh` installs SoftHSM on every Linux setup
 
 ### Windows
