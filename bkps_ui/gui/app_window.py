@@ -253,7 +253,7 @@ class AppWindow(QMainWindow):
         #     it constructs the checkbox for every flow.
         try:
             from PySide6.QtCore import QSettings
-            _s = QSettings("Intel", "BKPS-Studio")
+            _s = QSettings("Altera", "BKPS-Studio")
             for _grp in PIPELINE_STEPS.keys():
                 _s.remove(f"pipeline/manual_mode/{_grp}")
             _s.sync()

@@ -54,7 +54,7 @@ def main():
 
     app = QApplication(sys.argv)
     app.setApplicationName("BKPS Demo Automation")
-    app.setOrganizationName("Intel")
+    app.setOrganizationName("Altera")
 
     # Use Fusion style so Qt renders all widgets itself (no native Windows controls).
     # This makes QSS rules — including QToolTip { } — apply reliably on all platforms.

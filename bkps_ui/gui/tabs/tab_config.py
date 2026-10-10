@@ -766,7 +766,7 @@ class ConfigTab(BaseTab):
 
         self._le_bkps_sql = _le(
             "Leave empty to build/extract automatically",
-            tip="Optional pre-built BKPS database schema (.sql). Leave empty to generate via Gradle or extract from the bundle.",
+            tip="Optional pre-built BKPS database schema (.sql). Leave empty to build from source (Agilex 3/5) or extract from the bundle ZIP (SIGMA).",
             attr="bkps_sql_path",
             fields=self._fields
         )
@@ -774,7 +774,7 @@ class ConfigTab(BaseTab):
 
         self._le_bkps_admin_tools = _le(
             "Leave empty to clone repo and copy automatically",
-            tip="Optional pre-existing admin-tools directory (containing runner.py). Leave empty to clone / copy automatically.",
+            tip="Optional pre-existing admin-tools directory (containing runner.py). Leave empty to copy from cloned repo automatically.",
             attr="bkps_admin_tools_dir",
             fields=self._fields
         )
@@ -783,8 +783,8 @@ class ConfigTab(BaseTab):
 
         self._libspdm_row_label = QLabel("libspdm Wrapper Path:")
         self._le_libspdm = _le(
-            "Leave empty to build automatically (Agilex 3/5)",
-            tip="Path to the libspdm_wrapper shared library (Agilex 3/5). Leave empty to auto-build during installation.",
+            "Leave empty to build/extract automatically",
+            tip="Path to the libspdm_wrapper shared library. Leave empty to build from source (Agilex 3/5) or extract from the bundle ZIP (SIGMA).",
             attr="libspdm_wrapper_path",
             fields=self._fields
         )

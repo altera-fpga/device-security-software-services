@@ -473,7 +473,7 @@ def _load_persisted_manual_mode(group: str) -> bool:
     """Return the last-saved manual-mode flag for *group* (False if none)."""
     try:
         from PySide6.QtCore import QSettings
-        s = QSettings("Intel", "BKPS-Studio")
+        s = QSettings("Altera", "BKPS-Studio")
         return s.value(_MANUAL_MODE_SETTINGS_KEY.format(group=group),
                        False, type=bool)
     except Exception:
@@ -484,7 +484,7 @@ def _persist_manual_mode(group: str, on: bool) -> None:
     """Persist *on* as the manual-mode flag for *group* across app restarts."""
     try:
         from PySide6.QtCore import QSettings
-        s = QSettings("Intel", "BKPS-Studio")
+        s = QSettings("Altera", "BKPS-Studio")
         s.setValue(_MANUAL_MODE_SETTINGS_KEY.format(group=group), bool(on))
     except Exception:
         pass
