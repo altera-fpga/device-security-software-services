@@ -114,12 +114,15 @@ class AesCcertHelpersTests(unittest.TestCase):
     def test_spdm_softhsm_profile_and_default_config_name(self):
         self.assertTrue(cfg_mod.is_spdm_softhsm_profile("agilex3"))
         self.assertTrue(cfg_mod.is_spdm_softhsm_profile("agilex5"))
-        self.assertFalse(cfg_mod.is_spdm_softhsm_profile("agilex"))
+        self.assertFalse(cfg_mod.is_spdm_softhsm_profile("agilex7"))
         self.assertEqual(
             cfg_mod.default_aes_config_filename("agilex3"), "agilex3_config.json"
         )
         self.assertEqual(
             cfg_mod.default_aes_config_filename("agilex5"), "agilex5_config.json"
+        )
+        self.assertEqual(
+            cfg_mod.default_aes_config_filename("agilex7"), "agilex7_config.json"
         )
 
 
@@ -137,7 +140,7 @@ class ConfigDataclassTests(unittest.TestCase):
             self.assertTrue(cfg.client_cert.endswith("programmer_bkps_signed.crt"))
             self.assertTrue(cfg.client_key.endswith("programmer_private.pem"))
             cfg.profile_name = "agilex5"
-            self.assertIn("Agilex", cfg.device_family)
+            self.assertIn("Agilex 5", cfg.device_family)
             self.assertTrue(cfg.build_from_source)
             cfg.profile_name = "unknown_profile"
             self.assertEqual(cfg.device_family, "")

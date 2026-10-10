@@ -97,7 +97,7 @@ class RkhTests(unittest.TestCase):
                 device.provision_rkh_virtual(cfg2)
             ps2.assert_called()
 
-            cfg3 = _cfg(root, profile_name="agilex")
+            cfg3 = _cfg(root, profile_name="agilex7")
             (root / "keys2").mkdir(exist_ok=True)
             cfg3.quartus_keys_dir = str(root / "emptykeys")
             Path(cfg3.quartus_keys_dir).mkdir()
@@ -207,13 +207,13 @@ class PfgBuilderTests(unittest.TestCase):
         self.assertIn('name="output_files"', xml5)
         self.assertIn("LITTLEFS", xml5)
 
-        for profile in ("agilex", "easic_n5x", "stratix10", "unknown"):
+        for profile in ("agilex7", "easic_n5x", "stratix10", "unknown"):
             cfg = SimpleNamespace(profile_name=profile)
             xml = device._build_pfg(
                 cfg, "/out", "MT25QU02G", "DEV", "design.rbf", "dummy.puf"
             )
             self.assertIn('name="output_file"', xml)
-            if profile in ("agilex", "stratix10"):
+            if profile in ("agilex7", "stratix10"):
                 self.assertIn("PUF", xml)
             if profile == "easic_n5x":
                 self.assertIn("LITTLEFS", xml)

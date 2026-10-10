@@ -224,7 +224,7 @@ def configure_system_softhsm_defaults(cfg) -> None:
 DEVICE_FAMILIES = {
     "Agilex 3  (SPDM)":    ("agilex3",   "SPDM",  True,  "sample_AgilexB.json"),
     "Agilex 5  (SPDM)":    ("agilex5",   "SPDM",  True,  "sample_AgilexB.json"),
-    "Agilex 7  (SIGMA)":   ("agilex",   "SIGMA", False, "sample_Agilex.json"),
+    "Agilex 7  (SIGMA)":   ("agilex7",   "SIGMA", False, "sample_Agilex7.json"),
     "Easic N5X  (SIGMA)":   ("easic_n5x",   "SIGMA", False, "sample_EasicN5X.json"),
     "Stratix 10  (SIGMA)": ("stratix10", "SIGMA", False, "sample_S10.json"),
 }
@@ -240,7 +240,7 @@ LOGGING_TYPES = [
 PUF_TYPES = {
     "agilex3": {"puf_activate": ["UDS_INTEL"], "set_authority": ["UDS_EFUSE", "UDS_INTEL"]},
     "agilex5": {"puf_activate": ["UDS_INTEL"], "set_authority": ["UDS_EFUSE", "UDS_INTEL"]},
-    "agilex": {"puf_activate": ["UDS_IID"], "set_authority": ["UDS_EFUSE", "UDS_IID"]},
+    "agilex7": {"puf_activate": ["UDS_IID"], "set_authority": ["UDS_EFUSE", "UDS_IID"]},
     "easic_n5x": {"set_authority": ["UDS_EFUSE"]}
 }
 
@@ -275,7 +275,7 @@ _AGILEX_SPDM_AES_CCERT_TYPES: dict[str, list[str]] = {
 AES_CCERT_TYPES: dict[str, dict[str, list[str]]] = {
     "agilex3": _AGILEX_SPDM_AES_CCERT_TYPES,
     "agilex5": _AGILEX_SPDM_AES_CCERT_TYPES,
-    "agilex": {
+    "agilex7": {
         "EFUSE_WRAPPED_AES_KEY": ["INTERNAL", "EFUSE"],
         "BBRAM_WRAPPED_AES_KEY": ["INTERNAL", "BBRAM"],
         "BBRAM_IID_PUF_WRAPPED_AES_KEY": ["IID_PUF", "BBRAM"],

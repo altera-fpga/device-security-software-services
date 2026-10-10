@@ -995,12 +995,9 @@ def build_aes_pipeline_box(host) -> QGroupBox:
     host._step_dispatch[("aes", "create_qek_ccert")] = _pipe_create_qek
 
     specs = [
-        ("init_token",       "Initialise a SoftHSM token (Agilex 3/5).  On SIGMA this step "
-                             "is a no-op that auto-succeeds."),
-        ("create_key",       "Generate/import an AES key in SoftHSM (Agilex 3/5).  On SIGMA "
-                             "this step is a no-op that auto-succeeds."),
-        ("create_qek_ccert", "Build QEK, wrap in ccert, sign → signed_aes_efuse.ccert.  "
-                             "On SIGMA this runs bkps_keys.create_aes_key end-to-end."),
+        ("init_token",       "Initialise a SoftHSM token (Agilex 3/5)."),
+        ("create_key",       "Generate/import an AES key in SoftHSM (Agilex 3/5)."),
+        ("create_qek_ccert", "Build QEK, wrap in ccert, sign → signed_aes_efuse.ccert."),
     ]
     btns = _register_buttons(host, "aes", specs)
     layout.addLayout(_manual_mode_row(host, "aes"))
@@ -1013,7 +1010,7 @@ def build_aes_pipeline_box(host) -> QGroupBox:
 _FAMILY_TEMPLATE = {
     "agilex3":   "sample_AgilexB.json",
     "agilex5":   "sample_AgilexB.json",
-    "agilex":   "sample_Agilex.json",
+    "agilex7":   "sample_Agilex7.json",
     "easic_n5x": "sample_EasicN5X.json",
     "stratix10": "sample_S10.json",
 }
@@ -1027,7 +1024,7 @@ def _puf_type_options(profile: str) -> list[str]:
     prof = (profile or "").strip().lower()
     if is_spdm_softhsm_profile(prof):
         return ["EFUSE", "INTEL", "INTEL_USER"]
-    if prof == "agilex":
+    if prof == "agilex7":
         return ["EFUSE", "IID", "IIDUSER"]
     if prof == "easic_n5x":
         return ["EFUSE"]
@@ -1816,7 +1813,7 @@ def refresh_programming_pipeline_visibility(host) -> None:
         Generate JIC → Program Helper Image → Program Root Key Hash
             → Program JIC → BKP Prefetch → BKP Set Authority → BKP Provision
 
-    Non-INTERNAL (Agilex) keeps the full flow (post-PUF helper + RKH after
+    Non-INTERNAL (Agilex 3/5/7) keeps the full flow (post-PUF helper + RKH after
     power-cycle)::
 
         Generate JIC → Program Helper Image → Program Root Key Hash

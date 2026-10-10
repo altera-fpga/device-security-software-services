@@ -116,7 +116,7 @@ class JicGenerationTests(unittest.TestCase):
             rbf.write_bytes(b"rbf")
             out = work / "output"
             commands = []
-            cfg = SimpleNamespace(profile_name="agilex")
+            cfg = SimpleNamespace(profile_name="agilex7")
 
             with patch.object(
                 bkps_device, "_ps_run", self._quartus_stub(commands)

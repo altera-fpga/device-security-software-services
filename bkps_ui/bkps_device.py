@@ -352,12 +352,12 @@ def _build_pfg(cfg: Config, output_dir: str, flash_device: str, flash_loader: st
         flash_device: Flash device type string, e.g. "MT25QU02G".
         flash_loader: Flash loader device identifier string.
         design_rbf: Filename of the design RBF (relative to output_dir).
-        puf_file: .puf helper-data file assigned to the PUF partition on agilex and stratix10.
+        puf_file: .puf helper-data file assigned to the PUF partition on agilex7 and stratix10.
     """
     raw_section = ""
     puf_assign = ""
     partition_section = ""
-    if cfg.profile_name == "agilex":
+    if cfg.profile_name == "agilex7":
         raw_section = (
             f'<raw_files>\n<raw_file type="PUF" id="Raw_File_1">{puf_file}</raw_file>\n</raw_files>'
         )
@@ -481,7 +481,7 @@ def generate_jic(cfg: Config, sof: str | None, output_dir: str,
 
     # Agilex 7 / Stratix 10 PFG templates always reference a PUF raw file.
     staged_puf = "dummy.puf"
-    if cfg.profile_name in ("agilex", "stratix10"):
+    if cfg.profile_name in ("agilex7", "stratix10"):
         dummy_path = os.path.join(output_dir, staged_puf)
         with open(dummy_path, "wb"):
             pass

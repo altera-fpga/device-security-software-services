@@ -97,10 +97,10 @@ Device profiles:
 
 
 | Family     | Profile     |
-| ---------- | ----------- |
+| ---------- |-------------|
 | Agilex 3   | `agilex3`   |
 | Agilex 5   | `agilex5`   |
-| Agilex 7   | `agilex`    |
+| Agilex 7   | `agilex7`   |
 | Easic N5X  | `easic_n5x` |
 | Stratix 10 | `stratix10` |
 

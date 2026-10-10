@@ -1,5 +1,5 @@
 {
-    "name": "Sample configuration for AGILEX",
+    "name": "Sample configuration for AGILEX 7",
     "pufType": "EFUSE",
     "overbuild": {
         "max": -1

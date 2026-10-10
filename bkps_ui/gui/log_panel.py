@@ -18,7 +18,7 @@ from pathlib import Path
 from datetime import datetime
 
 from PySide6.QtCore import Qt, Slot
-from PySide6.QtGui import QFont, QTextBlockFormat, QTextCharFormat, QTextCursor
+from PySide6.QtGui import QFont, QTextCursor
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout,
     QTextEdit, QPushButton, QLabel,
@@ -150,12 +150,14 @@ class LogPanel(QWidget):
         build's output in a single paragraph, which the cap cannot trim and
         which has to be laid out in full on every repaint.
 
-        Each block is opened explicitly instead of relying on block-level HTML.
-        ``insertHtml`` merges the first block of its fragment into the block the
-        cursor sits in, so a ``<div>`` per line still ran the first line of every
-        batch onto the end of the previous batch's last line. A fresh character
-        format is set with each block so a colour left open by one line cannot
-        bleed into the next.
+        Lines are inserted as one HTML fragment of ``<div>`` blocks. Calling
+        ``insertBlock`` once per line works on older PySide6, but PySide6 6.12
+        aborts with ``none_dealloc`` after a few hundred such calls — which a
+        long build (and the capacity test) exceeds. A single ``insertHtml`` of
+        ``<div>``s still yields one document block per line so
+        ``maximumBlockCount`` can trim. An empty block is opened first when the
+        document is non-empty so ``insertHtml`` does not merge the first div
+        onto the previous batch's last line.
 
         A local cursor is used instead of the widget's own text cursor so a
         large document is not re-laid-out for a selection change, and the view
@@ -170,11 +172,14 @@ class LogPanel(QWidget):
         document = self._text.document()
         cursor = QTextCursor(document)
         cursor.movePosition(QTextCursor.MoveOperation.End)
+        if not document.isEmpty():
+            cursor.insertBlock()
+        parts: list[str] = []
         for line in html_lines:
-            if not document.isEmpty():
-                cursor.insertBlock(QTextBlockFormat(), QTextCharFormat())
-            if line:
-                cursor.insertHtml(line)
+            # Empty lines still need a block so the live line count matches
+            # emitted output; a bare <br/> inside the div keeps the paragraph.
+            parts.append(f"<div>{line}</div>" if line else "<div><br/></div>")
+        cursor.insertHtml("".join(parts))
         if following_tail:
             scrollbar.setValue(scrollbar.maximum())
 

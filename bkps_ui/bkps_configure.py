@@ -1106,7 +1106,7 @@ def run_prefetch(cfg: Config, family_id: str, device_id: str,
     """Send a prefetch request to BKPS for a specific device.
 
     Args:
-        family_id: Hex family ID (e.g. ``0x36`` for related SPDM families).
+        family_id: Hex family ID (e.g. 0x36 for Agilex 3/5).
         device_id: Device UID hex string.
         pdi: Optional PDI hex string.
         er_cert: Optional path to a DeviceID ER certificate file.

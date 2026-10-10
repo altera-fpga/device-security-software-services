@@ -373,7 +373,7 @@ def _build_db(host) -> QGroupBox:
 
 # ── AES utilities --------------------------------------------------------
 def build_aes_utilities(host) -> QWidget:
-    """SoftHSM / BouncyCastle manual buttons (Agilex 3/5).  SIGMA hides these.
+    """SoftHSM / BouncyCastle manual buttons (Agilex 3/5).
 
     Layout:
       Row 1 (HBox): [AES key hex line-edit] [Import AES Key button]

@@ -233,7 +233,7 @@ class VerifySigningKeyTests(unittest.TestCase):
 
 
 class RegisterSigningKeyTests(unittest.TestCase):
-    def test_agilex_path(self):
+    def test_agilex5_path(self):
         with tempfile.TemporaryDirectory() as tmp:
             keys_dir = Path(tmp)
             (keys_dir / "bkps_signing_public.pem").write_text("old")
