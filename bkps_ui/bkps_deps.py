@@ -11,7 +11,7 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
-from bkps_config import Config, detect_system_softhsm_library
+from bkps_config import Config, detect_system_softhsm_library, is_spdm_softhsm_profile
 from bkps_printer import print_header, print_step, print_success, print_warning, print_error, print_info
 from bkps_runner import command_exists, run, stream
 from bkps_windows_runtime import configure_windows_softhsm_defaults
@@ -86,7 +86,7 @@ _SOFT_TOOLS = {"quartus_pgm", "quartus_sign", "quartus_pfg", "quartus_encrypt"}
 # ── Public API ───────────────────────────────────────────────────────────────────
 
 def check_dependencies(cfg: Config, last_check: bool = False) -> tuple:
-    """Check required system tools and Python packages; SoftHSM extras for Agilex 5."""
+    """Check required system tools and Python packages; SoftHSM extras for Agilex 3/5."""
     # setup.bat can install tools after the parent GUI process was started.
     # Refresh its in-process PATH before probing so an already-installed tool
     # is not incorrectly sent through winget again.
@@ -183,10 +183,10 @@ def check_dependencies(cfg: Config, last_check: bool = False) -> tuple:
             )
             missing += 1
 
-    # SoftHSM tools — Linux only, soft check for Agilex 5
-    if getattr(cfg, "profile_name", "") == "agilex5":
+    # SoftHSM tools — Linux only, soft check for Agilex 3/5 SPDM
+    if is_spdm_softhsm_profile(getattr(cfg, "profile_name", "")):
         step_n += 1
-        print_step(step_n, "Checking SoftHSM / PKCS#11 tools (Agilex 5)...")
+        print_step(step_n, "Checking SoftHSM / PKCS#11 tools (Agilex 3/5)...")
 
         # SoftHSM library path (Config tab → SoftHSM section).
         lib_path = (getattr(cfg, "softhsm_lib_path", "") or "").strip()
@@ -274,7 +274,7 @@ def check_dependencies(cfg: Config, last_check: bool = False) -> tuple:
             missing_softhsm_tools.append("pkcs11-tool")
             missing += 1
 
-        # SoftHSM token/user PIN sanity checks — required for Agilex 5 flows.
+        # SoftHSM token/user PIN sanity checks — required for Agilex 3/5 flows.
         for attr, label in [
             ("softhsm_token_label", "Token Label"),
             ("softhsm_user_pin",    "User PIN"),
@@ -383,9 +383,9 @@ def install_dependencies(cfg: Config) -> None:
     print_step(4, "Checking test truststore...")
     _create_dummy_truststore()  # This function already checks internally
 
-    # ---- Step 5: SoftHSM setup (Agilex 5 on Linux only) ----
-    if getattr(cfg, "profile_name", "") == "agilex5" and missing_softhsm_tools:
-        print_step(5, "Setting up SoftHSM (Agilex 5)...")
+    # ---- Step 5: SoftHSM setup (Agilex 3/5 SPDM on Linux only) ----
+    if is_spdm_softhsm_profile(getattr(cfg, "profile_name", "")) and missing_softhsm_tools:
+        print_step(5, "Setting up SoftHSM (Agilex 3/5)...")
         _install_softhsm(cfg, distro_family)
 
     print_success("\nDependency installation complete!")

@@ -164,23 +164,23 @@ def register_bkps_signing_key(cfg: Config, parent_step=None) -> str:
             cancel_id=cancel_id,
             out_qky="bkps_signing_chain_single.qky",
         )
-        # Multi chain needs a cross-family (agilex) root that admin-tools
+        # Multi chain needs a cross-family (agilex7) root that admin-tools
         # can consume — generate a throwaway root and use it.
-        stem = "root_agilex"
+        stem = "root_agilex7"
         if not (os.path.isfile(f"{stem}_private.pem") and os.path.isfile(f"{stem}.qky")):
-            _quartus_create_root(keys_dir, family="agilex", stem=stem)
+            _quartus_create_root(keys_dir, family="agilex7", stem=stem)
         _sign_bkps_chain(
-            keys_dir, family="agilex",
+            keys_dir, family="agilex7",
             previous_pem=f"{stem}_private.pem",
             previous_qky=f"{stem}.qky",
             cancel_id=cancel_id,
             out_qky="bkps_signing_chain_multi.qky",
         )
         _runner(cfg, "root-signing-key", "add",
-            "--input", os.path.join(keys_dir, "root_agilex.qky"),
+            "--input", os.path.join(keys_dir, f"{stem}.qky"),
             skip_if=["already exists"])
     else:
-        # Native profile (agilex family) — single chain needs a cross-
+        # Non-stratix10 profile — single chain needs a cross-
         # family (stratix10) root that admin-tools can consume.
         stem = "root_stratix10"
         if not (os.path.isfile(f"{stem}_private.pem") and os.path.isfile(f"{stem}.qky")):
@@ -283,7 +283,7 @@ def _verify_signing_key_active(cfg: Config, signing_key_id: str) -> None:
 
 
 def create_aes_key(cfg: Config) -> None:
-    """Create AES root key and unsigned ccert, then sign it (Agilex 5 uses key-info extraction; others use the .qek directly)."""
+    """Create AES root key and unsigned ccert, then sign it (Agilex 3/5 use key-info extraction; others use the .qek directly)."""
     print_header("Creating AES Root Key")
 
     keys_dir = cfg.quartus_keys_dir

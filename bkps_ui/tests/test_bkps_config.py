@@ -96,19 +96,34 @@ class RuntimeHelpersTests(unittest.TestCase):
 
 class AesCcertHelpersTests(unittest.TestCase):
     def test_aes_ccert_types_and_lookup(self):
-        types = cfg_mod.aes_ccert_types_for_profile("agilex5")
-        self.assertIn("EFUSE_WRAPPED_AES_KEY", types)
+        for profile in ("agilex3", "agilex5"):
+            types = cfg_mod.aes_ccert_types_for_profile(profile)
+            self.assertIn("EFUSE_WRAPPED_AES_KEY", types)
+            self.assertEqual(types, cfg_mod._AGILEX_SPDM_AES_CCERT_TYPES)
+            puf, storage = cfg_mod.aes_ccert_lookup(profile, "EFUSE_WRAPPED_AES_KEY")
+            self.assertEqual(puf, "INTERNAL")
+            self.assertEqual(storage, "EFUSE")
+            self.assertTrue(
+                cfg_mod.aes_ccert_requires_iv(profile, "UDS_EFUSE_WRAPPED_AES_KEY")
+            )
         unknown = cfg_mod.aes_ccert_types_for_profile("nope")
         self.assertEqual(unknown, cfg_mod._DEFAULT_AES_CCERT_TYPES)
-
-        puf, storage = cfg_mod.aes_ccert_lookup("agilex5", "EFUSE_WRAPPED_AES_KEY")
-        self.assertEqual(puf, "INTERNAL")
-        self.assertEqual(storage, "EFUSE")
-        self.assertTrue(
-            cfg_mod.aes_ccert_requires_iv("agilex5", "UDS_EFUSE_WRAPPED_AES_KEY")
-        )
         with self.assertRaises(ValueError):
             cfg_mod.aes_ccert_lookup("agilex5", "NOT_A_TYPE")
+
+    def test_spdm_softhsm_profile_and_default_config_name(self):
+        self.assertTrue(cfg_mod.is_spdm_softhsm_profile("agilex3"))
+        self.assertTrue(cfg_mod.is_spdm_softhsm_profile("agilex5"))
+        self.assertFalse(cfg_mod.is_spdm_softhsm_profile("agilex7"))
+        self.assertEqual(
+            cfg_mod.default_aes_config_filename("agilex3"), "agilex3_config.json"
+        )
+        self.assertEqual(
+            cfg_mod.default_aes_config_filename("agilex5"), "agilex5_config.json"
+        )
+        self.assertEqual(
+            cfg_mod.default_aes_config_filename("agilex7"), "agilex7_config.json"
+        )
 
 
 class ConfigDataclassTests(unittest.TestCase):
@@ -125,7 +140,7 @@ class ConfigDataclassTests(unittest.TestCase):
             self.assertTrue(cfg.client_cert.endswith("programmer_bkps_signed.crt"))
             self.assertTrue(cfg.client_key.endswith("programmer_private.pem"))
             cfg.profile_name = "agilex5"
-            self.assertIn("Agilex", cfg.device_family)
+            self.assertIn("Agilex 5", cfg.device_family)
             self.assertTrue(cfg.build_from_source)
             cfg.profile_name = "unknown_profile"
             self.assertEqual(cfg.device_family, "")

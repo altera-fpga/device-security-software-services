@@ -28,10 +28,15 @@ _bkps = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _bkps not in sys.path:
     sys.path.insert(0, _bkps)
 
-from bkps_config import Config, load_config, create_config  # noqa: E402
+from bkps_config import (  # noqa: E402
+    Config,
+    create_config,
+    detect_embedded_bkps_repo,
+    load_config,
+)
 
 
-_SETTINGS_ORGANIZATION = "Intel"
+_SETTINGS_ORGANIZATION = "Altera"
 _SETTINGS_APPLICATION = "BKPS-Studio"
 _LAST_CONFIG_KEY = "session/last_config_file"
 
@@ -60,6 +65,11 @@ class ConfigStore:
         self._cfg.cm_provisioning_dir = ""
         self._cfg.bkps_repo_dir = ""
         self._cfg.config_file = ""
+        # Empty on first open: use the checkout that already contains bkps_ui.
+        # A loaded config replaces this when BKPS_REPO_DIR is set.
+        embedded = detect_embedded_bkps_repo()
+        if embedded:
+            self._cfg.bkps_repo_dir = embedded
         ConfigStore._instance = self
 
     @classmethod

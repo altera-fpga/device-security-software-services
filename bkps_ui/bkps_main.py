@@ -10,7 +10,13 @@ import traceback
 # Ensure the package directory is on sys.path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from bkps_config import Config, DEVICE_FAMILIES, load_config, create_config
+from bkps_config import (
+    Config,
+    DEVICE_FAMILIES,
+    is_spdm_softhsm_profile,
+    load_config,
+    create_config,
+)
 from bkps_printer import print_error, print_info, print_success, print_header, print_warning
 from bkps_runner import AlreadyExistsError, run_runner_tool
 from bkps_deps import (
@@ -216,11 +222,6 @@ def _apply_build_all_extras(cfg: Config, extra: list) -> None:
 _current_cmd = ""   # module-level mutable: set in main() so _require() can reference it
 
 
-def _is_agilex5(cfg: Config) -> bool:
-    """Return True when the configured profile is Agilex 5 (SoftHSM / SPDM)."""
-    return (getattr(cfg, "profile_name", "") or "").strip().lower() == "agilex5"
-
-
 def _family_aes_working_path(cfg: Config) -> str:
     """Working AES JSON path (``bkps_configs/aes_config_<profile>.json``).
 
@@ -259,7 +260,7 @@ def _run_create_qek_ccert(cfg: Config, aes_hex: str = "") -> None:
     optional CoRIM extract, then prepare the family working JSON. SoftHSM reloads
     BKPS when needed for ``qek_encryption_key``.
     """
-    if _is_agilex5(cfg):
+    if is_spdm_softhsm_profile(getattr(cfg, "profile_name", "")):
         softhsm_create_qek_and_ccert(cfg, aes_hex)
         try:
             url = extract_and_save_corim_url_from_provision_helper(cfg)
@@ -547,13 +548,13 @@ def _dispatch(cmd: str, extra: list, verbose: bool, yes: bool = False):  # noqa:
         _sql   = getattr(cfg, "bkps_sql_path", "") or ""
         _admintool = getattr(cfg, "bkps_admin_tools_dir", "") or ""
         _libspdm   = getattr(cfg, "libspdm_wrapper_path", "") or ""
-        is_agilex5 = (cfg.profile_name == "agilex5")
+        is_spdm = is_spdm_softhsm_profile(cfg.profile_name)
         if _jar and _sql and _admintool and _libspdm:
             print("Phase 2: Installing BKPS from pre-built files")
             print("="*60 + "\n")
             install_from_files(cfg)
         else:
-            if is_agilex5:
+            if is_spdm:
                 if cfg.build_from_source:
                     print("Phase 2: Building BKPS (from source, GitHub)")
                     print("="*60 + "\n")
@@ -1043,10 +1044,10 @@ Server Pipeline:
                                            --start-bkp-service for ongoing control)
 
 AES Pipeline:
-    --init-token                           1. Init Token (Agilex 5 SoftHSM)
+    --init-token                           1. Init Token (Agilex 3/5 SoftHSM)
     --create-key [AES_HEX]                 2. Create Key (blank = random AES-256)
     --create-qek-ccert [AES_HEX]           3. Create QEK + ccert + Sign.
-                                           Agilex 5: SoftHSM QEK/ccert, then extract
+                                           Agilex 3/5: SoftHSM QEK/ccert, then extract
                                            CoRIM and write aesKey.value, qek.value,
                                            and corimUrl into
                                            bkps_configs/aes_config_<family>.json.

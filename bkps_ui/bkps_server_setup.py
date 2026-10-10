@@ -9,7 +9,7 @@ import shutil
 import ssl
 import subprocess
 import sys
-from bkps_config import Config
+from bkps_config import Config, is_spdm_softhsm_profile
 from bkps_printer import print_header, print_step, print_success, print_warning, print_error, print_info
 from bkps_runner import run, stream
 
@@ -594,9 +594,9 @@ def create_bkps_config(cfg: Config) -> None:
     else:
         print_info(f"libspdm wrapper: {wrapper_path}")
 
-    # Agilex 5 is SPDM-only — sigma must default to false or Spring fails to
+    # Agilex 3/5 are SPDM-only — sigma must default to false or Spring fails to
     # autowire SigmaProtocol bean (no qualifying bean available).
-    sigma_default = "false" if cfg.profile_name == "agilex5" else "true"
+    sigma_default = "false" if is_spdm_softhsm_profile(cfg.profile_name) else "true"
     spdm_section = f"""
 lib-spdm-params:
     wrapper-library-path: {wrapper_path}

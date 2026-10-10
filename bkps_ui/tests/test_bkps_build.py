@@ -255,17 +255,17 @@ class BuildFlowTests(unittest.TestCase):
                      build, "_find_libspdm_wrapper_candidates",
                      return_value=[str(so)],
                  ):
-                build._ensure_agilex5_spdm_wrapper(cfg)
+                build._ensure_spdm_wrapper(cfg)
 
             with mock.patch.object(build.sys, "platform", "linux"), \
                  mock.patch.object(build, "build_native_dependencies", return_value=False):
                 with self.assertRaises(RuntimeError):
-                    build._ensure_agilex5_spdm_wrapper(cfg)
+                    build._ensure_spdm_wrapper(cfg)
 
             with mock.patch.object(build.sys, "platform", "win32"), \
                  mock.patch.object(build, "build_native_dependencies", return_value=False):
                 with self.assertRaises(RuntimeError):
-                    build._ensure_agilex5_spdm_wrapper(cfg)
+                    build._ensure_spdm_wrapper(cfg)
 
             dll = Path(td, "w.dll")
             dll.write_bytes(b"x")
@@ -276,7 +276,7 @@ class BuildFlowTests(unittest.TestCase):
                  ), \
                  mock.patch.object(build, "_validate_spdm_wrapper"), \
                  mock.patch.object(build, "_ensure_bkps_sql_schema"):
-                build._ensure_agilex5_spdm_wrapper(cfg)
+                build._ensure_spdm_wrapper(cfg)
 
             with mock.patch.object(build.sys, "platform", "win32"), \
                  mock.patch.object(build, "build_native_dependencies", return_value=True), \
@@ -284,7 +284,7 @@ class BuildFlowTests(unittest.TestCase):
                      build, "_find_libspdm_wrapper_candidates", return_value=[]
                  ):
                 with self.assertRaises(RuntimeError):
-                    build._ensure_agilex5_spdm_wrapper(cfg)
+                    build._ensure_spdm_wrapper(cfg)
 
             with mock.patch.object(build.sys, "platform", "linux"), \
                  mock.patch.object(build, "build_native_dependencies", return_value=True), \
@@ -292,7 +292,7 @@ class BuildFlowTests(unittest.TestCase):
                      build, "_find_libspdm_wrapper_candidates", return_value=[]
                  ):
                 with self.assertRaises(RuntimeError):
-                    build._ensure_agilex5_spdm_wrapper(cfg)
+                    build._ensure_spdm_wrapper(cfg)
 
             lib = mock.Mock()
             lib.libspdm_get_context_size_w = mock.Mock(return_value=16)
@@ -451,7 +451,7 @@ class BuildFlowTests(unittest.TestCase):
                ), \
                mock.patch.object(build, "_apply_local_gradle_zip_override"), \
                mock.patch.object(build, "_apply_linux_spdm_wrapper_malloc_link"), \
-               mock.patch.object(build, "_ensure_agilex5_spdm_wrapper"), \
+               mock.patch.object(build, "_ensure_spdm_wrapper"), \
                mock.patch.object(
                    build, "_require_bkps_executable_jar", return_value="/j.jar"
                ), \
@@ -477,7 +477,7 @@ class BuildFlowTests(unittest.TestCase):
                mock.patch.object(build, "get_output", return_value="origin/release/x\n"), \
                mock.patch.object(build, "_apply_local_gradle_zip_override"), \
                mock.patch.object(build, "_apply_linux_spdm_wrapper_malloc_link"), \
-               mock.patch.object(build, "_ensure_agilex5_spdm_wrapper"), \
+               mock.patch.object(build, "_ensure_spdm_wrapper"), \
                mock.patch.object(
                    build, "_require_bkps_executable_jar", return_value="/j.jar"
                ), \
@@ -507,7 +507,7 @@ class BuildFlowTests(unittest.TestCase):
                 return_value=(td, str(repo)),
             ), mock.patch.object(build, "_apply_local_gradle_zip_override"), \
                mock.patch.object(build, "_apply_linux_spdm_wrapper_malloc_link"), \
-               mock.patch.object(build, "_ensure_agilex5_spdm_wrapper"), \
+               mock.patch.object(build, "_ensure_spdm_wrapper"), \
                mock.patch.object(
                    build, "_require_bkps_executable_jar", return_value="/j.jar"
                ), \
@@ -532,7 +532,7 @@ class BuildFlowTests(unittest.TestCase):
                 return_value=(td, str(repo)),
             ), mock.patch.object(build, "_apply_local_gradle_zip_override"), \
                mock.patch.object(build, "_apply_linux_spdm_wrapper_malloc_link"), \
-               mock.patch.object(build, "_ensure_agilex5_spdm_wrapper"), \
+               mock.patch.object(build, "_ensure_spdm_wrapper"), \
                mock.patch.object(
                    build, "_require_bkps_executable_jar", return_value="/j.jar"
                ), \

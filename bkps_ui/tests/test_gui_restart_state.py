@@ -65,6 +65,31 @@ class RestartStateTests(unittest.TestCase):
             self.assertEqual(restored, expected)
             self.assertEqual(second.cfg.config_file, expected)
 
+    def test_first_open_fills_repo_dir_from_checkout_containing_bkps_ui(self):
+        ConfigStore._instance = None
+        embedded = os.path.abspath("/dsss-checkout")
+        with patch("config_store.detect_embedded_bkps_repo", return_value=embedded):
+            store = ConfigStore()
+        self.assertEqual(store.cfg.bkps_repo_dir, embedded)
+        self.assertEqual(store.cfg.bkps_dir, "")
+
+    def test_loaded_repo_dir_overrides_checkout_default(self):
+        with tempfile.TemporaryDirectory() as td:
+            custom = os.path.join(td, "custom")
+            conf = Path(td) / "project.conf"
+            conf.write_text(
+                f"BKPS_DIR={os.path.join(td, 'proj')}\nBKPS_REPO_DIR={custom}\n",
+                encoding="utf-8",
+            )
+            ConfigStore._instance = None
+            with patch("config_store.QSettings", _FakeSettings), patch(
+                "config_store.detect_embedded_bkps_repo",
+                return_value=os.path.join(td, "embedded"),
+            ):
+                store = ConfigStore()
+                store.load(str(conf))
+            self.assertEqual(store.cfg.bkps_repo_dir, os.path.abspath(custom))
+
     def test_completed_setup_restores_installation_and_server(self):
         with tempfile.TemporaryDirectory(dir=ROOT) as tmp:
             project = Path(tmp) / "project"

@@ -392,7 +392,7 @@ class KeystoreConfigImportTests(unittest.TestCase):
             Path(td, "libspdm_wrapper.so").write_bytes(b"so")
             cfg.libspdm_wrapper_path = ""
             ss.create_bkps_config(cfg)
-            cfg.profile_name = "agilex"
+            cfg.profile_name = "agilex7"
             cfg.libspdm_wrapper_path = str(Path(td, "libspdm_wrapper.so"))
             ss.create_bkps_config(cfg)
 

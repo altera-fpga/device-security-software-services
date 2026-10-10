@@ -110,7 +110,7 @@ class BkpConfigTab(PipelineHost, BaseTab):
         if pl is not None:
             profile = getattr(self.cfg, "profile_name", "") or ""
             from pipeline import StepStatus
-            if profile in ("agilex", "stratix10"):
+            if profile in ("agilex7", "stratix10"):
                 for sid in ("init_token", "create_key"):
                     if pl.status("aes", sid) != StepStatus.SUCCESS:
                         pl.set_status("aes", sid, StepStatus.SUCCESS)

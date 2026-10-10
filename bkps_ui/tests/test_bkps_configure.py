@@ -93,8 +93,8 @@ class HelpersTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             cfg = _cfg(td)
             with mock.patch.object(c, "run") as run:
-                c._quartus_create_root(td, "agilex", "root0")
-                c._sign_bkps_chain(td, "agilex", "a.pem", "a.qky", "0", "out.qky")
+                c._quartus_create_root(td, "agilex7", "root0")
+                c._sign_bkps_chain(td, "agilex7", "a.pem", "a.qky", "0", "out.qky")
                 self.assertGreaterEqual(run.call_count, 4)
             self.assertIn("REQUESTS_CA_BUNDLE", c._runner_env_with_ssl_ca(cfg))
             self.assertTrue(c._is_secure_enclave_error('"code": 2080'))

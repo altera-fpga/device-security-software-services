@@ -97,7 +97,7 @@ class RkhTests(unittest.TestCase):
                 device.provision_rkh_virtual(cfg2)
             ps2.assert_called()
 
-            cfg3 = _cfg(root, profile_name="agilex")
+            cfg3 = _cfg(root, profile_name="agilex7")
             (root / "keys2").mkdir(exist_ok=True)
             cfg3.quartus_keys_dir = str(root / "emptykeys")
             Path(cfg3.quartus_keys_dir).mkdir()
@@ -203,17 +203,17 @@ class CorimTests(unittest.TestCase):
 
 class PfgBuilderTests(unittest.TestCase):
     def test_build_pfg_profiles(self):
-        xml5 = device._build_pfg_agilex5("/out", "QSPI512", "DEV", "design.rbf")
+        xml5 = device._build_pfg_agilex_spdm("/out", "QSPI512", "DEV", "design.rbf")
         self.assertIn('name="output_files"', xml5)
         self.assertIn("LITTLEFS", xml5)
 
-        for profile in ("agilex", "easic_n5x", "stratix10", "unknown"):
+        for profile in ("agilex7", "easic_n5x", "stratix10", "unknown"):
             cfg = SimpleNamespace(profile_name=profile)
             xml = device._build_pfg(
                 cfg, "/out", "MT25QU02G", "DEV", "design.rbf", "dummy.puf"
             )
             self.assertIn('name="output_file"', xml)
-            if profile in ("agilex", "stratix10"):
+            if profile in ("agilex7", "stratix10"):
                 self.assertIn("PUF", xml)
             if profile == "easic_n5x":
                 self.assertIn("LITTLEFS", xml)
@@ -261,6 +261,27 @@ class GenerateJicExtraTests(unittest.TestCase):
                     device.generate_jic(
                         cfg, None, str(out), "MT25", "DEV", rbf=str(rbf)
                     )
+
+    def test_agilex3_uses_spdm_pfg_layout(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            out = root / "out"
+            out.mkdir()
+            rbf = root / "in.rbf"
+            rbf.write_bytes(b"rbf")
+            cfg = SimpleNamespace(profile_name="agilex3")
+
+            def stub(cmd, cwd=None, **_k):
+                if "output_files.pfg" in cmd:
+                    Path(cwd, "output_files.jic").write_bytes(b"jic")
+
+            with patch.object(device, "_ps_run", side_effect=stub):
+                result = device.generate_jic(
+                    cfg, None, str(out), "QSPI", "DEV", rbf=str(rbf)
+                )
+            self.assertTrue(result.endswith("output_files.jic"))
+            self.assertTrue((out / "output_files.pfg").is_file())
+            self.assertIn("LITTLEFS", (out / "output_files.pfg").read_text())
 
     def test_samefile_oserror_falls_back_to_copy(self):
         with tempfile.TemporaryDirectory() as tmp:

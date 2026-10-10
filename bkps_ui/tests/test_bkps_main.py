@@ -44,7 +44,7 @@ class CreateQekCcertDispatchTests(unittest.TestCase):
     def test_sigma_create_qek_ccert_uses_create_aes_key(self):
         with tempfile.TemporaryDirectory() as root:
             cfg = _cfg(root)
-            cfg.profile_name = "agilex"
+            cfg.profile_name = "agilex7"
             with patch.object(main, "_cfg", return_value=cfg), \
                  patch.object(main, "create_aes_key") as aes, \
                  patch.object(main, "softhsm_create_qek_and_ccert") as qek, \
@@ -206,9 +206,12 @@ class MainDispatchCoverageTests(unittest.TestCase):
         self.assertEqual(main._require(["a"], 0, "X"), "a")
         with tempfile.TemporaryDirectory() as root:
             cfg = _cfg(root)
-            self.assertTrue(main._is_agilex5(cfg))
-            cfg.profile_name = "agilex"
-            self.assertFalse(main._is_agilex5(cfg))
+            cfg.profile_name = "agilex5"
+            self.assertTrue(main.is_spdm_softhsm_profile(cfg.profile_name))
+            cfg.profile_name = "agilex3"
+            self.assertTrue(main.is_spdm_softhsm_profile(cfg.profile_name))
+            cfg.profile_name = "agilex7"
+            self.assertFalse(main.is_spdm_softhsm_profile(cfg.profile_name))
 
     def test_populate_and_create_qek(self):
         with tempfile.TemporaryDirectory() as root:
@@ -242,7 +245,7 @@ class MainDispatchCoverageTests(unittest.TestCase):
                      side_effect=RuntimeError("y"),
                  ):
                 main._run_create_qek_ccert(cfg)
-            cfg.profile_name = "agilex"
+            cfg.profile_name = "agilex7"
             with patch.object(main, "create_aes_key"), \
                  patch.object(main, "populate_generated_configuration_values"):
                 main._run_create_qek_ccert(cfg)
@@ -452,7 +455,7 @@ class MainDispatchCoverageTests(unittest.TestCase):
                 )
                 main._dispatch("--first-time-installation", [], False, True)
 
-            cfg.profile_name = "agilex"
+            cfg.profile_name = "agilex7"
             cfg.bkps_jar_path = "/j.jar"
             cfg.bkps_sql_path = "/s.sql"
             cfg.bkps_admin_tools_dir = "/admin"
